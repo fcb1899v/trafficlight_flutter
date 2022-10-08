@@ -18,6 +18,7 @@ class _MySettingsPageState extends State<MySettingsPage> {
 
   late double width;
   late double height;
+  late Locale locale;
   late String lang;
   late String countryCode;
   late BannerAd myBanner;
@@ -37,8 +38,12 @@ class _MySettingsPageState extends State<MySettingsPage> {
     setState(() {
       width = context.width();
       height = context.height();
+      locale = context.locale();
+      lang = locale.languageCode;
+      countryCode = locale.getCountryCode();
     });
-    _getCountryInfo(Localizations.localeOf(context));
+    "width: $width, height: $height".debugPrint();
+    "Locale: $locale, CountryCode: $countryCode".debugPrint();
   }
 
   @override
@@ -85,14 +90,6 @@ class _MySettingsPageState extends State<MySettingsPage> {
         signalSliderSettingsTile("go", context.goTime()),
         signalSliderSettingsTile("flash", context.flashTime()),
       ]);
-
-  _getCountryInfo(Locale locale) {
-    setState(() {
-      lang = locale.languageCode;
-      countryCode = locale.getCountryCode();
-    });
-    "Locale: $locale, CountryCode: $countryCode".debugPrint();
-  }
 }
 
 SwitchSettingsTile signalSwitchSettingsTile(BuildContext context, String key, String title) =>

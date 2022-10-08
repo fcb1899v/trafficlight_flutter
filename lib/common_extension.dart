@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:signalbutton/settings.dart';
 import 'constant.dart';
 
 
@@ -39,6 +40,10 @@ extension ContextExt on BuildContext {
   String toNew() => AppLocalizations.of(this)!.toNew;
   String toOld() => AppLocalizations.of(this)!.toOld;
   String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
+
+  void pushSettingsPage() =>
+      Navigator.push(this, MaterialPageRoute(builder: (context) => const MySettingsPage()));
+
 }
 
 extension StringExt on String {
@@ -48,9 +53,6 @@ extension StringExt on String {
       print(this);
     }
   }
-
-  void pushPage(BuildContext context) =>
-      Navigator.of(context).pushNamedAndRemoveUntil(this, (_) => false);
 
   void musicAudio() async {
     AudioPlayer audioPlayer = AudioPlayer();

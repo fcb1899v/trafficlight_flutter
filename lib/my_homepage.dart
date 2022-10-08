@@ -6,7 +6,6 @@ import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
 import 'main.dart';
-import 'settings.dart';
 import 'admob.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -19,6 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late double width;
   late double height;
+  late Locale locale;
   late String lang;
   late bool isPressed;
   late bool isGreen;    //true: Green, false: Red
@@ -65,12 +65,16 @@ class _MyHomePageState extends State<MyHomePage> {
       initSettings();
     });
     setState((){
-      width = MediaQuery.of(context).size.width;
-      height = MediaQuery.of(context).size.height;
-      lang = Localizations.localeOf(context).languageCode;
+      width = context.width();
+      height = context.height();
+      locale = context.locale();
+      lang = locale.languageCode;
+      countryCode = locale.getCountryCode();
+      countryList = countryCode.getCountryList();
+      if (countryCode == "US") isNew = true;
     });
     "width: $width, height: $height".debugPrint();
-    _getCountryInfo(Localizations.localeOf(context));
+    "Locale: $locale, CountryCode: $countryCode, CountryList: $countryList".debugPrint();
     _getSavedData();
     _loopRedSound();
   }
@@ -97,8 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: myHomeAppBar(),
-      body: Stack(
-        alignment: Alignment.center,
+      body: Stack(alignment: Alignment.center,
         children: [
           backGroundImage(height, countryCode),
           Container(width: width, height: height, color: transpWhiteColor),
@@ -132,9 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: whiteColor, size: 32),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(
-              builder: (context) => const MySettingsPage())
-            ),
+            onPressed: () => context.pushSettingsPage(),
           ),
         ],
       );
@@ -326,14 +327,5 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     "Wait: $waitTime, Go: $goTime, Flash: $flashTime".debugPrint();
     "redSound: $isRedSound, greenSound: $isGreenSound".debugPrint();
-  }
-
-  _getCountryInfo(Locale locale) {
-    setState(() {
-      countryCode = locale.getCountryCode();
-      countryList = countryCode.getCountryList();
-      if (countryCode == "US") isNew = true;
-    });
-    "Locale: $locale, CountryCode: $countryCode, CountryList: $countryList".debugPrint();
   }
 }
