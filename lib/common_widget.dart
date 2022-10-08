@@ -87,14 +87,14 @@ Widget jpSignal(double height, bool isNew, bool isGreen, bool isFlash, bool opaq
 
 ///Background
 //common
-Widget backGroundImage(double height, String countryCode) =>
+Widget backGroundImage(BuildContext context, double height, String countryCode) =>
     Column(children: [
       const Spacer(flex: 1),
       (countryCode == "JP") ? jpFlagImage(height): countryFlagImage(height, countryCode),
       const Spacer(flex: 1),
       (countryCode == "JP") ? jpFlagImage(height): countryFlagImage(height, countryCode),
       const Spacer(flex: 1),
-      SizedBox(height: height.admobHeight())
+      SizedBox(height: context.admobHeight())
     ]);
 
 Widget countryFlagImage(double height, String countryCode) =>
@@ -305,39 +305,48 @@ Widget jpFrameLabel(double height, bool isGreen, bool isPressed, bool isNew, boo
     );
 
 ///Floating Button
-Widget selectCountryFlag(String lang, String nextCountry, double size) =>
-    Container(width: 1.5 * size, height: size, color: whiteColor,
-      padding: (nextCountry == "JP") ? EdgeInsets.all(size.jpFlagPadding()): null,
-      child: Stack(children: [
-        (nextCountry == "JP") ? jpFlagImage(100): Image.asset(nextCountry.countryFlag()),
+Widget selectCountryFlag(BuildContext context, String nextCountry) =>
+    Column(mainAxisAlignment: MainAxisAlignment.center,
+      children: [
         Container(
-          alignment: Alignment.center,
-          child: Text("▶︎",
-            style: TextStyle(
-              fontSize: 0.6 * size,
-              fontWeight: FontWeight.bold,
-              color: whiteColor,
-              backgroundColor: (nextCountry == "JP") ? transpColor: transpBlackColor,
-            ),
-          ),
+          height: context.flagArrowHeight(),
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Image.asset(whiteArrow),
         ),
-      ]),
+        Container(
+          width: context.flagWidth(),
+          height: context.flagHeight(),
+          color: whiteColor,
+          padding: (nextCountry == "JP") ? EdgeInsets.all(context.jpFlagPadding()): null,
+          child: (nextCountry == "JP") ? jpFlagImage(100): Image.asset(nextCountry.countryFlag()),
+        ),
+        const SizedBox(height: 2),
+      ]
     );
 
 Widget selectOldOrNew(BuildContext context, String countryCode, bool isNew, double fontSize) =>
-    Text(context.oldOrNew(isNew),
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontWeight: FontWeight.bold,
-      ),
+    Column(mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          height: context.flagArrowHeight(),
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Image.asset(whiteArrow),
+        ),
+        Text(context.oldOrNew(isNew),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ]
     );
 
 ///Admob
-Widget adMobBannerWidget(double width, double height, BannerAd myBanner) =>
+Widget adMobBannerWidget(BuildContext context, BannerAd myBanner) =>
     Container(
-      width: width.admobWidth(),
-      height: height.admobHeight(),
+      width: context.admobWidth(),
+      height: context.admobHeight(),
       color: whiteColor,
       child: AdWidget(ad: myBanner),
     );

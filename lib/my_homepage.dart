@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: myHomeAppBar(),
       body: Stack(alignment: Alignment.center,
         children: [
-          backGroundImage(height, countryCode),
+          backGroundImage(context, height, countryCode),
           Container(width: width, height: height, color: transpWhiteColor),
           Column(children: [
             const Spacer(flex: 1),
@@ -111,12 +111,12 @@ class _MyHomePageState extends State<MyHomePage> {
             const Spacer(flex: 1),
             pushButton(),
             const Spacer(flex: 1),
-            adMobBannerWidget(width, height, myBanner),
+            adMobBannerWidget(context, myBanner),
           ]),
         ],
       ),
       floatingActionButton: Container(
-        margin: EdgeInsets.only(bottom: height.admobHeight() * 0.8),
+        margin: EdgeInsets.only(bottom: context.admobHeight() * 0.8),
         child: Row(children: [
           const SizedBox(width: 32),
           selectOldAndNewButton(),
@@ -165,25 +165,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget selectOldAndNewButton() =>
       SizedBox(
-        width: height.floatingButtonSize(),
-        height: height.floatingButtonSize(),
+        width: context.floatingButtonSize(),
+        height: context.floatingButtonSize(),
         child: FloatingActionButton(
           foregroundColor: whiteColor,
           backgroundColor: blackColor,
           heroTag:'isNew',
-          child: selectOldOrNew(context, countryCode, isNew, height.floatingFontSize()),
+          child: selectOldOrNew(context, countryCode, isNew, context.floatingFontSize()),
           onPressed: () async  => _isNewPressed(),
         )
       );
 
   Widget selectCountryButton() =>
       SizedBox(
-        width: height.floatingButtonSize(),
-        height: height.floatingButtonSize(),
+        width: context.floatingButtonSize(),
+        height: context.floatingButtonSize(),
         child: FloatingActionButton(
           backgroundColor: blackColor,
           heroTag:'country',
-          child: selectCountryFlag(countryCode, countryNumber.nextCountry(countryList), height.flagSize()),
+          child: selectCountryFlag(context, countryNumber.nextCountry(countryList)),
           onPressed: () async => _nextCountry(),
         )
       );

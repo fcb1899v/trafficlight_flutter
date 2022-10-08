@@ -54,7 +54,7 @@ class _MySettingsPageState extends State<MySettingsPage> {
         appBar: settingsAppBar(),
         body: Container(
           height: height,
-          padding: EdgeInsets.all(width.settingsSidePadding()),
+          padding: EdgeInsets.all(context.settingsSidePadding()),
           child: Column(children: [
             SingleChildScrollView(
               controller: ScrollController(),
@@ -62,7 +62,7 @@ class _MySettingsPageState extends State<MySettingsPage> {
               child: settingsTiles(),
             ),
             const Spacer(flex: 1),
-            if (height > 750) adMobBannerWidget(width, height, myBanner),
+            if (height > 750) adMobBannerWidget(context, myBanner),
          ]),
         ),
       ),

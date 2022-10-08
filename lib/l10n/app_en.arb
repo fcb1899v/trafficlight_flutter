@@ -9,6 +9,6 @@
   "toSettings": "Settings", "@settings": {"description":  ""},
   "toOn": "On", "@on": {"description":  ""},
   "toOff": "Off", "@off": {"description":  ""},
-  "toNew": "▶\nNew", "@new": {"description":  ""},
-  "toOld": "▶\nOld", "@old": {"description":  ""}
+  "toNew": "New", "@new": {"description":  ""},
+  "toOld": "Old", "@old": {"description":  ""}
 }

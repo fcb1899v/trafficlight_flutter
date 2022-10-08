@@ -104,6 +104,9 @@ const String auButton = "${jpImageAssets}button_au.png";
 const String auFrameOff = "${auImageAssets}frame_au_off.png";
 const String auFrameOn = "${auImageAssets}frame_au_on.png";
 
+//Floating Button Image
+const String whiteArrow = "assets/images/whiteArrow.png";
+
 
 //Signal Height Rate
 const double jpNewSignalHeightRate =  0.35;

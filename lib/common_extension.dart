@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:signalbutton/settings.dart';
+import 'settings.dart';
 import 'constant.dart';
 
 
@@ -21,10 +21,28 @@ extension LocaleExt on Locale {
 extension ContextExt on BuildContext {
 
   ///Common
-  double width() => MediaQuery.of(this).size.width;
-  double height() => MediaQuery.of(this).size.height;
   Locale locale() => Localizations.localeOf(this);
   String lang() => locale().languageCode;
+
+  ///Size
+  double width() => MediaQuery.of(this).size.width;
+  double height() => MediaQuery.of(this).size.height;
+
+  //this is width
+  double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
+
+  //this is height
+  double floatingButtonSize() => height() / 14;
+  double floatingFontSize() => height() / 60;
+  double flagWidth() => height() / 30;
+  double flagHeight() => height() / 45;
+  double flagArrowHeight() => height() / 45;
+  double jpFlagPadding() => flagHeight() / 8;
+
+  //Admob
+  double admobHeight() => (height() < 750) ? 50: (height() < 1000) ? 50 + (height() - 750) / 5: 100;
+  double admobWidth() => width() - 100;
+
 
   ///LETS SIGNAL
   String appTitle() => AppLocalizations.of(this)!.appTitle;
@@ -265,20 +283,3 @@ extension IntExt on int {
       countryList[(this + 1) % 3];
 
 }
-
-extension DoubleExt on double {
-
-  //this is width
-  double settingsSidePadding() => this < 600 ? 10: this / 2 - 290;
-
-  //this is height
-  double floatingButtonSize() => this / 14;
-  double floatingFontSize() => this / 60;
-  double flagSize() => this / 35;
-  double jpFlagPadding() => flagSize() * 4;
-
-  //Admob
-  double admobHeight() => (this < 750) ? 50: (this < 1000) ? 50 + (this - 750) / 5: 100;
-  double admobWidth() => this - 100;
-}
-
