@@ -1,0 +1,15 @@
+{
+  "@@locale": "ja",
+  "appTitle" : "レッツ・シン・ゴー",
+  "thisApp": "このアプリはリアルな歩行者信号シミュレーターです。",
+  "waitTime": "赤信号の待ち時間 [秒]",
+  "goTime": "青信号の点灯時間 [秒]",
+  "flashTime": "青信号の点滅時間 [秒]",
+  "redSound": "赤信号のサウンド",
+  "greenSound": "青信号のサウンド",
+  "toSettings": "設定",
+  "toOn": "オン",
+  "toOff": "オフ",
+  "toNew": "▶︎\n新式",
+  "toOld": "▶︎\n旧式"
+}

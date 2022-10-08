@@ -1,0 +1,81 @@
+name: signalbutton
+description: push button signal simulator
+publish_to: 'none'
+version: 1.0.7+7
+
+environment:
+  sdk: ">=2.16.2 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Firebase Analytics
+  firebase_core: ^1.24.0
+  firebase_analytics: ^9.3.8
+  # App Icon
+  cupertino_icons: ^1.0.5
+  flutter_launcher_icons: ^0.10.0
+  # Audio Player
+  audioplayers: ^0.20.1
+  # Vibration
+  vibration: ^1.7.6
+  # Text to Speech
+  flutter_tts: ^3.5.3
+  # Settings
+  flutter_settings_screens: ^0.3.3-null-safety+2
+  # Device Info
+  device_info_plus: ^5.0.5
+# Admob
+  google_mobile_ads: ^2.0.1
+  app_tracking_transparency: ^2.0.2+4
+  # Localize
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.17.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+  # App Splash
+  flutter_native_splash: ^2.2.10+1
+
+flutter_icons:
+  image_path: "assets/images/icon.png"
+  android: true
+  ios: true
+  adaptive_icon_background: "#373635"
+  adaptive_icon_foreground: "assets/images/appIcon.png"
+
+flutter_native_splash:
+  image: "assets/images/human.png"
+  color: "373635"
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/pedestrian/us/
+    - assets/images/pedestrian/jp/
+    - assets/images/pedestrian/uk/
+    - assets/images/pedestrian/au/
+    - assets/images/traffic/us/
+    - assets/images/traffic/jp/
+    - assets/images/traffic/uk/
+    - assets/images/traffic/au/
+    - assets/audios/
+
+  fonts:
+    - family: cornerStone
+      fonts:
+        - asset: assets/fonts/cornerstone.ttf
+    - family: freeTfb
+      fonts:
+        - asset: assets/fonts/freetfb.ttf
+    - family: dotFont
+      fonts:
+        - asset: assets/fonts/Ketai-dot-font.otf
+    - family: beon
+      fonts:
+        - asset: assets/fonts/beon.ttf

@@ -1,0 +1,14 @@
+{
+  "appTitle": "LETS SIGNAL", "@appTitle": {"description": ""},
+  "thisApp": "This app is a realistic crosswalk traffic signal simulator.", "@thisApp": {"description": ""},
+  "waitTime": "Waiting time of red light [sec]", "@waitTime": {"description":  ""},
+  "goTime": "Lighting time of green light [sec]", "@goTime": {"description":  ""},
+  "flashTime": "Flashing time of green light [sec]", "@flashTime": {"description":  ""},
+  "redSound": "Sound of red light", "@redSound": {"description":  ""},
+  "greenSound": "Sound of green light", "@greenSound": {"description":  ""},
+  "toSettings": "Settings", "@settings": {"description":  ""},
+  "toOn": "On", "@on": {"description":  ""},
+  "toOff": "Off", "@off": {"description":  ""},
+  "toNew": "▶\nNew", "@new": {"description":  ""},
+  "toOld": "▶\nOld", "@old": {"description":  ""}
+}
