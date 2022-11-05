@@ -25,13 +25,20 @@ dependencies:
   flutter_settings_screens: ^0.3.3-null-safety+2
   # Device Info
   device_info_plus: ^5.0.5
-# Admob
+  # Admob
   google_mobile_ads: ^2.0.1
   app_tracking_transparency: ^2.0.2+4
   # Localize
   flutter_localizations:
     sdk: flutter
   intl: ^0.17.0
+  #env
+  flutter_dotenv: ^5.0.2
+  #Revenue Cat
+  purchases_flutter: ^4.3.1
+  #Provider
+  hooks_riverpod: ^2.1.1
+  flutter_hooks: ^0.18.5+1
 
 dev_dependencies:
   flutter_test:
@@ -65,17 +72,12 @@ flutter:
     - assets/images/traffic/uk/
     - assets/images/traffic/au/
     - assets/audios/
+    - .env
 
   fonts:
-    - family: cornerStone
-      fonts:
-        - asset: assets/fonts/cornerstone.ttf
     - family: freeTfb
       fonts:
         - asset: assets/fonts/freetfb.ttf
-    - family: dotFont
-      fonts:
-        - asset: assets/fonts/Ketai-dot-font.otf
     - family: beon
       fonts:
         - asset: assets/fonts/beon.ttf

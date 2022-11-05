@@ -8,44 +8,41 @@ import 'settings.dart';
 import 'constant.dart';
 
 
-extension LocaleExt on Locale {
-
-  //this is diffHour
-  String getCountryCode() {
-    "Timezone: ${DateTime.now().timeZoneName}".debugPrint();
-    return ("$this" == "en" &&  DateTime.now().timeZoneName == "UTC") ? "UK":
-           ("$this" == "ja") ? "JP": "US";
-  }
-}
-
 extension ContextExt on BuildContext {
 
-  ///Common
+  ///Locale
   Locale locale() => Localizations.localeOf(this);
   String lang() => locale().languageCode;
+  String getCountryCode() {
+    "Timezone: ${DateTime.now().timeZoneName}".debugPrint();
+    "Locale: ${locale()}".debugPrint();
+    return ("${locale()}" == "en" &&  DateTime.now().timeZoneName == "UTC") ? "UK":
+    ("${locale()}" == "ja") ? "JP": "US";
+  }
 
   ///Size
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
-
-  //this is width
+  double topPadding() => MediaQuery.of(this).padding.top;
+  //Settings
   double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
-
-  //this is height
-  double floatingButtonSize() => height() / 14;
-  double floatingFontSize() => height() / 60;
-  double flagWidth() => height() / 30;
-  double flagHeight() => height() / 45;
-  double flagArrowHeight() => height() / 45;
-  double jpFlagPadding() => flagHeight() / 8;
-
   //Admob
   double admobHeight() => (height() < 750) ? 50: (height() < 1000) ? 50 + (height() - 750) / 5: 100;
   double admobWidth() => width() - 100;
 
-
-  ///LETS SIGNAL
+  ///Localization
   String appTitle() => AppLocalizations.of(this)!.appTitle;
+  String settingsTitle() => AppLocalizations.of(this)!.settingsTitle;
+  String upgradeTitle() => AppLocalizations.of(this)!.upgradeTitle;
+  String premiumPlan() => AppLocalizations.of(this)!.premiumPlan;
+  String plan() => AppLocalizations.of(this)!.plan;
+  String free() => AppLocalizations.of(this)!.free;
+  String premium() => AppLocalizations.of(this)!.premium;
+  String upgrade() => AppLocalizations.of(this)!.upgrade;
+  String pushButton() => AppLocalizations.of(this)!.pushButton;
+  String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
+  String carSignal() => AppLocalizations.of(this)!.carSignal;
+  String noAds() => AppLocalizations.of(this)!.noAds;
   String thisApp() => AppLocalizations.of(this)!.thisApp;
   String waitTime() => AppLocalizations.of(this)!.waitTime;
   String goTime() => AppLocalizations.of(this)!.goTime;
@@ -59,9 +56,9 @@ extension ContextExt on BuildContext {
   String toOld() => AppLocalizations.of(this)!.toOld;
   String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
 
+  //
   void pushSettingsPage() =>
       Navigator.push(this, MaterialPageRoute(builder: (context) => const MySettingsPage()));
-
 }
 
 extension StringExt on String {
@@ -106,180 +103,65 @@ extension StringExt on String {
       Settings.getValue("key_$this", defaultValue: true)!;
 
   //this is countryCode
-  List<String> getCountryList() =>
-      (this == "UK") ? ukList:
-      (this == "JP") ? jpList:
-      usList;
-
-  double buttonTotalHeightRate(bool isNew) =>
-      (this == "UK") ? isNew.ukButtonTotalHeightRate():
-      (this == "JP") ? isNew.jpButtonTotalHeightRate():
-      isNew.usButtonTotalHeightRate();
-
-  double buttonTopMarginRate(bool isNew) =>
-      (this == "UK") ? isNew.ukButtonTopMarginRate():
-      (this == "JP") ? isNew.jpButtonTopMarginRate():
-      isNew.usButtonTopMarginRate();
-
-  String signalSoundG(bool isNew) =>
-      (this == "UK") ? isNew.ukSignalSoundG():
-      (this == "JP") ? isNew.jpSignalSoundG():
-      isNew.usSignalSoundG();
-
-  String signalSoundR(bool isNew) =>
-      (this == "UK") ? isNew.ukSignalSoundR():
-      (this == "JP") ? isNew.jpSignalSoundR():
-      isNew.usSignalSoundR();
-
-  double signalVolume(bool isGreen, bool isNew) =>
-      (this == "UK" && isGreen && isNew) ? isNew.ukSignalVolume(isGreen):
-      (this == "JP") ? isNew.jpSignalVolume(isGreen):
-      isNew.usSignalVolume();
-
-  String countryFlag() =>
-      (this == "UK") ? ukFlag:
-      (this == "JP") ? jpFlag:
-      usFlag;
-}
-
-
-extension BoolExt on bool {
-
-  ///this is isNew
-  //Frame Image File
-  String jpFrameImage() => (this) ? jpNewFrame: jpOldFrame;
-  String usFrameImage() => (this) ? usNewFrame: usOldFrame;
-  String ukFrameImage(bool isGreen, bool isPressed) =>
-      (this && isGreen) ? ukNewFrameG:
-      (this && !isGreen) ? ukNewFrameR:
-      (isPressed) ? ukOldFrameOn:
-      ukOldFrameOff;
-
-  //Button Image File
-  String jpButtonImage() => (this) ? jpNewButton: jpOldButton;
-  String usButtonImage(bool isPressed) =>
-      (!this) ? usOldButton:
-      (isPressed) ? usNewButtonOn:
-      usNewButtonOff;
-  String ukButtonImage(bool isPressed) =>
-      (!this) ? ukOldButton:
-      (isPressed) ? ukNewButtonOn:
-      ukNewButtonOff;
-
-  //Signal Image Height Rate
-  double usSignalHeightRate() =>
-      (this) ? usNewSignalHeightRate: usOldSignalHeightRate;
-  double ukSignalHeightRate() =>
-      (this) ? ukNewSignalHeightRate: ukOldSignalHeightRate;
-  double jpSignalHeightRate() =>
-      (this) ? jpNewSignalHeightRate: jpOldSignalHeightRate;
-
-  //Push Button Total Height Rate
-  double usButtonTotalHeightRate() =>
-      (this) ? usNewButtonTotalHeightRate: usOldButtonTotalHeightRate;
-  double ukButtonTotalHeightRate() =>
-      (this) ? ukNewButtonTotalHeightRate: ukOldButtonTotalHeightRate;
-  double jpButtonTotalHeightRate() =>
-      (this) ? jpNewButtonTotalHeightRate: jpOldButtonTotalHeightRate;
-
-  //Button Image Height Rate
-  double usButtonHeightRate() => (this) ? usNewButtonHeightRate: usOldButtonHeightRate;
-  double ukButtonHeightRate() => (this) ? ukNewButtonHeightRate: ukOldButtonHeightRate;
-  double jpButtonHeightRate() => (this) ? jpNewButtonHeightRate: jpOldButtonHeightRate;
-
-  //Button Top Margin
-  double usButtonTopMarginRate() => (this) ? usNewButtonTopMarginRate: usOldButtonTopMarginRate;
-  double ukButtonTopMarginRate() => (this) ? ukNewButtonTopMarginRate: ukOldButtonTopMarginRate;
-  double jpButtonTopMarginRate() => (this) ? jpNewButtonTopMarginRate: jpOldButtonTopMarginRate;
-
-  //Frame Image Height Rate
-  double usFrameHeightRate() => (this) ? usNewFrameHeightRate: usOldFrameHeightRate;
-  double ukFrameHeightRate() => (this) ? ukNewFrameHeightRate: ukOldFrameHeightRate;
-  double jpFrameHeightRate() => (this) ? jpNewFrameHeightRate: jpOldFrameHeightRate;
-
-  //jp Label Margin
-  double jpLabelTopMarginRate() => this ? jpNewLabelTopMarginRate: jpOldLabelTopMarginRate;
-  double jpLabelMiddleMarginRate() => this ? jpNewLabelMiddleMarginRate: jpOldLabelMiddleMarginRate;
-
-  //Green Sound
-  String usSignalSoundG() => (this) ? usSoundNewG: usSoundOldG;
-  String ukSignalSoundG() => (this) ? ukSoundNewG: ukSoundOldG;
-  String jpSignalSoundG() => (this) ? jpSoundNewG: jpSoundOldG;
-
-  //Red Sound
-  String usSignalSoundR() => (this) ? usSoundNewR: usSoundOldR;
-  String ukSignalSoundR() => (this) ? ukSoundNewR: ukSoundOldR;
-  String jpSignalSoundR() => (this) ? jpSoundNewR: jpSoundOldR;
-
-  //Sound Volume
-  double usSignalVolume() => (this) ? 1: 0; //this is isNew
-  double ukSignalVolume(bool isGreen) => (this && isGreen) ? 1: 0; //this is isNew
-  double jpSignalVolume(bool isGreen) => (isGreen) ? 1: 0; //this is isGreen
-
-  // this is isPressed
-  String jpFrameMessage(bool isGreen, bool isNew, bool isUpper) =>
-      (!isGreen && this && isUpper) ? "おまちください":
-      (!isNew && !isGreen && !this && !isUpper) ? "おしてください":
-      (isNew && !isGreen && !this && !isUpper) ? "ふれてください":
-      "";
-
-  //this is isGreen
-  String usSignalImage(bool isFlash, bool isNew, bool opaque) =>
-      (this && !isFlash && isNew) ? usNewSignalG:
-      (isNew && isFlash && opaque) ? usNewSignalOff:
-      (isNew) ? usNewSignalR:
-      (this && !isFlash && !isNew) ? usOldSignalG:
-      (isFlash && opaque) ? usOldSignalOff:
-      usOldSignalR;
-
-  String jpSignalImage(bool isFlash, bool isNew, bool opaque) =>
-      (!this && isNew) ? jpNewSignalR:
-      (isNew && isFlash && opaque) ? jpNewSignalOff:
-      (isNew) ? jpNewSignalG:
-      (!this) ? jpOldSignalR:
-      (isFlash && opaque) ? jpOldSignalOff:
-      jpOldSignalG;
-
-  String ukSignalImage(bool isFlash, bool isNew, bool opaque, int countDown) =>
-      (!this && isNew) ? ukNewSignalR:
-      (isFlash && countDown < 2 && isNew) ? ukNewSignalOff:
-      (isNew) ? ukNewSignalG:
-      (!this) ? ukOldSignalR:
-      (isFlash && opaque) ? ukOldSignalOff:
-      ukOldSignalG;
+  int getDefaultCounter() =>
+      (this == "UK") ? 2:
+      (this == "JP") ? 4:
+      (this == "AU") ? 5:
+      0;
 }
 
 
 extension IntExt on int {
 
   //this is countDown
-  List<bool> jpCountMeterColor(int goTime) =>
-    (this / goTime > 0.875) ? [true, true, true, true, true, true, true, true]:
-    (this / goTime > 0.750) ? [false, true, true, true, true, true, true, true]:
-    (this / goTime > 0.625) ? [false, false, true, true, true, true, true, true]:
-    (this / goTime > 0.500) ? [false, false, false, true, true, true, true, true]:
-    (this / goTime > 0.375) ? [false, false, false, false, true, true, true, true]:
-    (this / goTime > 0.250) ? [false, false, false, false, false, true, true, true]:
-    (this / goTime > 0.125) ? [false, false, false, false, false, false, true, true]:
-    (this / goTime > 0) ? [false, false, false, false, false, false, false, true]:
-    [false, false, false, false, false, false, false, false];
+  List<bool> countMeterColor(int greenTime) =>
+      (this / greenTime > 0.875) ? [true, true, true, true, true, true, true, true]:
+      (this / greenTime > 0.750) ? [false, true, true, true, true, true, true, true]:
+      (this / greenTime > 0.625) ? [false, false, true, true, true, true, true, true]:
+      (this / greenTime > 0.500) ? [false, false, false, true, true, true, true, true]:
+      (this / greenTime > 0.375) ? [false, false, false, false, true, true, true, true]:
+      (this / greenTime > 0.250) ? [false, false, false, false, false, true, true, true]:
+      (this / greenTime > 0.125) ? [false, false, false, false, false, false, true, true]:
+      (this / greenTime > 0) ? [false, false, false, false, false, false, false, true]:
+      [false, false, false, false, false, false, false, false];
 
-  //this is countDown
-  List<Color> jpGreenMeterList(int i) => List.filled(i, greenColor);
-  List<Color> jpGrayMeterList(int i) => List.filled(i, signalGrayColor);
-
-  int countDownNumber(bool isFlash, bool is10) =>
+  int cdNumber(bool isFlash, bool is10) =>
       (is10 && this > 9 && isFlash) ? this ~/ 10:
       (!is10 && isFlash) ? this % 10:
       8;
 
-  int isOne() => (this == 1) ? this: 0;
+  double isOne() => (this == 1) ? this * 1.0: 0;
 
-  Color countDownColor(Color color, bool isFlash, bool is10) =>
+  Color cdNumColor(Color color, bool isFlash, bool is10) =>
       (((is10 && this > 9) || !is10) && isFlash) ? color: signalGrayColor;
 
-  //this is countryNumber
-  String nextCountry(List<String> countryList) =>
-      countryList[(this + 1) % 3];
+  //this is counter
+  String trafficSignalImageString(bool isGreen, isYellow, isArrow, opaque) =>
+      (isArrow) ? trafficSignalArrowString[this]:
+      (isGreen) ? trafficSignalRedString[this]:
+      (opaque) ? trafficSignalOffString[this]:
+      (isYellow) ? trafficSignalYellowString[this]:
+      trafficSignalGreenString[this];
 
+  String pedestrianSignalImageString(bool isGreen, isFlash, opaque) =>
+      (isGreen && isFlash && opaque) ? pedestrianSignalOffString[this]:
+      (isGreen && isFlash) ? pedestrianSignalFlashString[this]:
+      (isGreen) ? pedestrianSignalGreenString[this]:
+      pedestrianSignalRedString[this];
+
+  String buttonFrameImageString(bool isGreen, isFlash, opaque, isPressed) =>
+      (!isGreen && isPressed) ? buttonFrameWaitString[this]:
+      (!isGreen) ? buttonFrameRedString[this]:
+      (isFlash && opaque) ? buttonFrameOffString[this]:
+      buttonFrameGreenString[this];
+
+  String pushButtonImageString(bool isGreen, isPressed) =>
+      (!isGreen && isPressed) ? pushButtonOnString[this]:
+      pushButtonOffString[this];
+
+  String jpFrameMessage(bool isPressed, isGreen, bool isUpper) =>
+      (!isGreen && isPressed && isUpper) ? "おまちください":
+      (!isGreen && !isPressed && this == 5 && !isUpper) ? "おしてください":
+      (!isGreen && !isPressed && this == 4 && !isUpper) ? "ふれてください":
+      "";
 }
