@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,13 +19,7 @@ class MySettingsPage extends StatefulWidget {
 
 class _MySettingsPageState extends State<MySettingsPage> {
 
-  late double width;
-  late double height;
   late int counter;
-  late Locale locale;
-  late String lang;
-  late String countryCode;
-  late BannerAd myBanner;
   late CustomerInfo customerInfo;
   late bool isPremium;
   late bool isTraffic;
@@ -39,19 +32,18 @@ class _MySettingsPageState extends State<MySettingsPage> {
     super.initState();
     setState(() {
       isPremium = false;
+      isTraffic = false;
       isNoAds = false;
       price = "";
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => initSettings());
-    setState(() => myBanner = AdmobService().getBannerAd());
     initPlatformState();
-    Purchases.addCustomerInfoUpdateListener((_) => updateCustomerStatus());
   }
 
   Future<void> initPlatformState() async {
     await Purchases.setDebugLogsEnabled(true);
-    final PurchasesConfiguration _configuration = PurchasesConfiguration(dotenv.get("REVENUECAT_IOS_API_KEY"));
-    await Purchases.configure(_configuration);
+    final PurchasesConfiguration configuration = PurchasesConfiguration(dotenv.get("REVENUE_CAT_IOS_API_KEY"));
+    await Purchases.configure(configuration);
     await Purchases.enableAdServicesAttributionTokenCollection();
     Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
       'Received readyForPromotedProductPurchase event for productID: $productID'.debugPrint();
@@ -71,14 +63,14 @@ class _MySettingsPageState extends State<MySettingsPage> {
   }
 
   Future<void> updateCustomerStatus() async {
-    final _customerInfo = await Purchases.getCustomerInfo();
-    final _carsEntitlements = _customerInfo.entitlements.active["signal_for_cars"];
-    final _noAdsEntitlements = _customerInfo.entitlements.active["no_ads"];
+    final customerInfo = await Purchases.getCustomerInfo();
+    final carsEntitlements = customerInfo.entitlements.active["signal_for_cars"];
+    final noAdsEntitlements = customerInfo.entitlements.active["no_ads"];
     final Offerings offerings = await Purchases.getOfferings();
     setState(() {
+      isTraffic = carsEntitlements != null;
+      isNoAds = noAdsEntitlements != null;
       price = offerings.current!.availablePackages[0].storeProduct.priceString;
-      isTraffic = _carsEntitlements != null;
-      isNoAds = _noAdsEntitlements != null;
       if (isTraffic && isNoAds) isPremium = true;
     });
     "price: ${offerings.current!.availablePackages[0].storeProduct.priceString}".debugPrint();
@@ -88,20 +80,19 @@ class _MySettingsPageState extends State<MySettingsPage> {
   void didChangeDependencies() {
     "call didChangeDependencies".debugPrint();
     super.didChangeDependencies();
-    setState(() {
-      width = context.width();
-      height = context.height();
-      locale = context.locale();
-      lang = locale.languageCode;
-      countryCode = locale.countryCode ?? "US";
-      counter = countryCode.getDefaultCounter();
-    });
-    "width: $width, height: $height".debugPrint();
+    final locale = context.locale();
+    final lang = locale.languageCode;
+    final countryCode = locale.countryCode ?? "US";
+    setState(() => counter = countryCode.getDefaultCounter());
     "counter: $counter, Locale: $locale, Language: $lang, CountryCode: $countryCode".debugPrint();
   }
 
   @override
   Widget build(BuildContext context) {
+    final double width = context.width();
+    final double height = context.height();
+    final BannerAd myBanner = AdmobService().getBannerAd();
+    "width: $width, height: $height".debugPrint();
     return WillPopScope(
       onWillPop: () async => Future.value(false),
       child: Scaffold(
@@ -111,7 +102,7 @@ class _MySettingsPageState extends State<MySettingsPage> {
             child: SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.all(context.settingsSidePadding()),
-                child: settingsTiles(),
+                child: settingsTiles(height),
               ),
             ),
           ),
@@ -137,9 +128,9 @@ class _MySettingsPageState extends State<MySettingsPage> {
         ),
       );
 
-  Widget settingsTiles() =>
+  Widget settingsTiles(double height) =>
       Column(children: [
-        if ((Platform.isIOS || Platform.isMacOS) && !isPremium) upgradeSettingsTile(),
+        if ((Platform.isIOS || Platform.isMacOS) && !isPremium) upgradeSettingsTile(height),
         signalSwitchSettingsTile("greenSound", context.greenSound()),
         signalSwitchSettingsTile("redSound", context.redSound()),
         signalSliderSettingsTile("wait", context.waitTime()),
@@ -147,7 +138,7 @@ class _MySettingsPageState extends State<MySettingsPage> {
         signalSliderSettingsTile("flash", context.flashTime()),
       ]);
 
-  SimpleSettingsTile upgradeSettingsTile() =>
+  SimpleSettingsTile upgradeSettingsTile(double height) =>
       SimpleSettingsTile(
         leading: const Icon(Icons.shopping_cart_outlined),
         title: context.upgradeTitle(),
@@ -183,13 +174,14 @@ class _MySettingsPageState extends State<MySettingsPage> {
     try {
       await Purchases.purchaseProduct(premiumProduct);
       setState(() => isPremium = true);
+      Purchases.addCustomerInfoUpdateListener((_) => updateCustomerStatus());
     } catch (e) {
       "failed: $e".debugPrint();
     }
     if (isPremium) {
       "isPremium: $isPremium".debugPrint();
       Navigator.of(context).pop();
-    };
+    }
   }
 
   SwitchSettingsTile signalSwitchSettingsTile(String key, String title) =>

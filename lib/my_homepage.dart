@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,12 +19,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  late double width;
-  late double height;
   late int counter;
-  late Locale locale;
-  late String lang;
-  late String countryCode;
   late bool isPressed;
   late bool isGreen;    //true: Green, false: Red
   late bool isNew;
@@ -38,10 +32,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late int goTime;
   late int flashTime;
   late int countDown;
-  late BannerAd myBanner;
-  late String appUserID;
-  late CustomerInfo customerInfo;
-  late Offerings offerings;
   late bool isPremium;
   late bool isNoAds;
   late bool isTraffic;
@@ -67,7 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
       isNoAds = false;
       isTraffic = false;
       countDown = 0;
-      myBanner = AdmobService().getBannerAd();
     });
     initPlatformState();
     Purchases.addCustomerInfoUpdateListener((_) => updateCustomerStatus());
@@ -75,8 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> initPlatformState() async {
     await Purchases.setDebugLogsEnabled(true);
-    final PurchasesConfiguration _configuration = PurchasesConfiguration(dotenv.get("REVENUECAT_IOS_API_KEY"));
-    await Purchases.configure(_configuration);
+    final PurchasesConfiguration configuration = PurchasesConfiguration(dotenv.get("REVENUE_CAT_IOS_API_KEY"));
+    await Purchases.configure(configuration);
     await Purchases.enableAdServicesAttributionTokenCollection();
     Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
       'Received readyForPromotedProductPurchase event for productID: $productID'.debugPrint();
@@ -96,12 +85,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> updateCustomerStatus() async {
-    final _customerInfo = await Purchases.getCustomerInfo();
-    final _carsEntitlements = _customerInfo.entitlements.active["signal_for_cars"];
-    final _noAdsEntitlements = _customerInfo.entitlements.active["no_ads"];
+    final customerInfo = await Purchases.getCustomerInfo();
+    final carsEntitlements = customerInfo.entitlements.active["signal_for_cars"];
+    final noAdsEntitlements = customerInfo.entitlements.active["no_ads"];
     setState(() {
-      isTraffic = _carsEntitlements != null;
-      isNoAds = _noAdsEntitlements != null;
+      isTraffic = carsEntitlements != null;
+      isNoAds = noAdsEntitlements != null;
       if (isTraffic && isNoAds) isPremium = true;
     });
   }
@@ -110,22 +99,17 @@ class _MyHomePageState extends State<MyHomePage> {
   void didChangeDependencies() {
     "call didChangeDependencies".debugPrint();
     super.didChangeDependencies();
+    final Locale locale = context.locale();
+    final String lang = locale.languageCode;
+    final String countryCode = locale.countryCode ?? "US";
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initPlugin(context);
       initSettings();
     });
-    setState((){
-      width = context.width();
-      height = context.height();
-      locale = context.locale();
-      lang = locale.languageCode;
-      countryCode = locale.countryCode ?? "US";
-      counter = countryCode.getDefaultCounter();
-    });
-    "width: $width, height: $height".debugPrint();
-    "counter: $counter, Locale: $locale, Language: $lang, CountryCode: $countryCode".debugPrint();
+    setState(() => counter = countryCode.getDefaultCounter());
     _getSavedData();
     _loopRedSound();
+    "counter: $counter, Locale: $locale, Language: $lang, CountryCode: $countryCode".debugPrint();
   }
 
   @override
@@ -151,6 +135,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = context.width();
+    final height = context.height();
+    final BannerAd myBanner = AdmobService().getBannerAd();
+    "width: $width, height: $height".debugPrint();
+
     return Scaffold(
       appBar: myHomeAppBar(context, counter),
       body: Stack(alignment: Alignment.center,
@@ -162,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const Spacer(flex: 1),
             signalImage(context, counter, countDown, goTime + flashTime, isGreen, isFlash, opaque, isPedestrian, isYellow, isArrow),
             const Spacer(flex: 1),
-            pushButton(),
+            pushButton(height),
             const Spacer(flex: 1),
             adMobBannerWidget(context, myBanner, isNoAds),
           ]),
@@ -174,14 +163,14 @@ class _MyHomePageState extends State<MyHomePage> {
           if (isTraffic) Row(children: [
           //if (isTraffic || kDebugMode) Row(children: [
             const Spacer(),
-            changeModeButton(),
+            changeModeButton(height),
           ]),
           const Spacer(flex: 2),
           Row(children: [
             const SizedBox(width: 32),
-            changeSignalButton(false),
+            changeSignalButton(height, false),
             const Spacer(),
-            changeSignalButton(true),
+            changeSignalButton(height, true),
           ]),
           SizedBox(height: context.admobHeight() * 0.8),
         ])
@@ -189,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget pushButton() =>
+  Widget pushButton(double height) =>
       Stack(alignment: Alignment.topCenter,
         children: [
           pushButtonFrame(context, counter, isGreen, isFlash, opaque, isPressed)      ,
@@ -208,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ]
       );
 
-  Widget changeSignalButton(bool isNext) =>
+  Widget changeSignalButton(double height, bool isNext) =>
       SizedBox(
         width: height * floatingButtonSizeRate,
         height: height * floatingButtonSizeRate,
@@ -224,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       );
 
-  Widget changeModeButton() =>
+  Widget changeModeButton(double height) =>
       SizedBox(
         width: height * floatingButtonSizeRate,
         height: height * floatingButtonSizeRate,
