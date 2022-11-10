@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 
+///Signal Number
+const int signalNumber = 7;
+
 ///App Name
 const String appTitle = "LETS SIGNAL";
 const String appTitleImage = "assets/images/letsSignal.png";
 const double appBarHeight = 56;
 
-///Language
-const List<String> countryList = ["US", "US", "UK", "UK", "JP", "JP", "AU"];
-const List<String> langList = ["en", "en", "en", "en", "ja", "ja", "en"];
-
 ///Time
-const int waitTime_0 = 4;     //seconds
+const int waitTime_0 = 8;     //seconds
 const int goTime_0 = 8;       //seconds
 const int flashTime_0 = 8;    //seconds
-const int yellowTime = 3;     //seconds
-const int arrowTime = 3;      //seconds
+const int yellowTime_0 = 3;     //seconds
+const int arrowTime_0 = 3;      //seconds
 const int deltaFlash = 500;   //milliseconds
 
 ///Vibration
@@ -50,8 +49,9 @@ const List<Color> backGroundColor = [
 /// Sound
 const String buttonSound = "audios/pon.mp3";
 const String audioFile = "audios/sound_";
-const double musicVolume = 1;
-const double buttonVolume = 1;
+const String noneSound = "audios/sound_none.mp3";
+const double musicVolume = 0.5;
+const double buttonVolume = 0.5;
 // Green
 const List<String> soundGreen = [
   "${audioFile}us_g.mp3",
@@ -218,8 +218,8 @@ const List<String> pedestrianSignalOffString = [
   "${pedestrianUKImageAssets}signal_uk_old_off.png"
 ];
 //Countdown Number
-const List<double> cdNumTopSpaceRate = [0.07, 0, 0.187, 0, 0, 0, 0];
-const List<double> cdNumLeftSpaceRate = [0.14, 0, 0.158, 0, 0, 0, 0];
+const List<double> cdNumTopSpaceRate = [0.07, 0, 0.189, 0, 0, 0, 0];
+const List<double> cdNumLeftSpaceRate = [0.14, 0, 0.157, 0, 0, 0, 0];
 const List<double> cdNumPaddingRate = [0.03, 0, 0.018, 0, 0, 0, 0];
 const List<double> cdNumFontSizeRate = [0.115, 0, 0.055, 0, 0, 0, 0];
 const List<Color> cdNumColor = [orangeColor, transpColor, yellowColor, transpColor, transpColor, transpColor, transpColor];

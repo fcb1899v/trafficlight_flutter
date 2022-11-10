@@ -16,13 +16,15 @@ dependencies:
   cupertino_icons: ^1.0.5
   flutter_launcher_icons: ^0.10.0
   # Audio Player
-  audioplayers: ^0.20.1
+  audioplayers: ^0.20.0
   # Vibration
   vibration: ^1.7.6
   # Text to Speech
   flutter_tts: ^3.5.3
   # Settings
   flutter_settings_screens: ^0.3.3-null-safety+2
+  # SharedPreference
+  shared_preferences: ^2.0.15
   # Device Info
   device_info_plus: ^5.0.5
   # Admob
@@ -36,9 +38,16 @@ dependencies:
   flutter_dotenv: ^5.0.2
   #Revenue Cat
   purchases_flutter: ^4.3.1
-  #Provider
+  #MVVM
+  riverpod: ^2.1.1
+  flutter_riverpod: ^2.1.1
   hooks_riverpod: ^2.1.1
   flutter_hooks: ^0.18.5+1
+  freezed: ^2.2.1
+  freezed_annotation: ^2.2.0
+  build_runner: ^2.3.2
+  json_annotation: ^4.7.0
+  json_serializable: ^6.5.4
 
 dev_dependencies:
   flutter_test:

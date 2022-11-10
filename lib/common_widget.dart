@@ -39,7 +39,7 @@ PreferredSize myHomeAppBar(BuildContext context, int counter) =>
     PreferredSize(
       preferredSize: const Size.fromHeight(appBarHeight),
       child: AppBar(
-        title: titleText(context, counter, context.appTitle()),
+        title: titleText(context, context.appTitle()),
         backgroundColor: signalGrayColor,
         centerTitle: true,
         actions: [
@@ -51,7 +51,7 @@ PreferredSize myHomeAppBar(BuildContext context, int counter) =>
       ),
     );
 
-Widget upgradeAppBar(BuildContext context, int counter) =>
+Widget upgradeAppBar(BuildContext context) =>
     Container(
       height: upgradeAppBarHeight + context.topPadding(),
       padding: EdgeInsets.only(top: context.topPadding() - 10),
@@ -69,12 +69,12 @@ Widget upgradeAppBar(BuildContext context, int counter) =>
             ),
             const Spacer(),
           ]),
-          titleText(context, counter, context.upgrade()),
+          titleText(context, context.upgrade()),
         ],
       ),
     );
 
-Widget titleText(BuildContext context, int counter, String title) =>
+Widget titleText(BuildContext context, String title) =>
     Text(title,
       style: const TextStyle(
         fontFamily: "beon",

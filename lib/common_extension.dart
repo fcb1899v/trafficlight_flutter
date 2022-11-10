@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -13,12 +12,6 @@ extension ContextExt on BuildContext {
   ///Locale
   Locale locale() => Localizations.localeOf(this);
   String lang() => locale().languageCode;
-  String getCountryCode() {
-    "Timezone: ${DateTime.now().timeZoneName}".debugPrint();
-    "Locale: ${locale()}".debugPrint();
-    return ("${locale()}" == "en" &&  DateTime.now().timeZoneName == "UTC") ? "UK":
-    ("${locale()}" == "ja") ? "JP": "US";
-  }
 
   ///Size
   double width() => MediaQuery.of(this).size.width;
@@ -69,24 +62,7 @@ extension StringExt on String {
     }
   }
 
-  void musicAudio() async {
-    AudioPlayer audioPlayer = AudioPlayer();
-    debugPrint();
-    await audioPlayer.stop();
-    await audioPlayer.setVolume(musicVolume);
-    await audioPlayer.setReleaseMode(ReleaseMode.LOOP);
-    await audioPlayer.play(this);
-  }
-
-  void buttonAudio() async {
-    AudioPlayer audioPlayer = AudioPlayer();
-    debugPrint();
-    await audioPlayer.stop();
-    await audioPlayer.setVolume(buttonVolume);
-    await audioPlayer.play(this);
-  }
-
-  Future<void> speakText(BuildContext context) async {
+  Future<void> speakText() async {
     FlutterTts flutterTts = FlutterTts();
     await flutterTts.setLanguage("en-US");
     await flutterTts.setSpeechRate(0.8);
@@ -96,17 +72,20 @@ extension StringExt on String {
   }
 
   //this is key
-  int getSettingValueInt(int defaultValue) =>
-      Settings.getValue<double>("key_$this", defaultValue: defaultValue.toDouble())!.toInt();
+  int getSettingsValueInt(int defaultValue) =>
+      Settings.getValue<double>("key_$this", defaultValue: defaultValue.toDouble())?.toInt() ?? defaultValue;
 
-  bool getSettingValueBool() =>
-      Settings.getValue("key_$this", defaultValue: true)!;
+  bool getSettingsValueBool(bool defaultValue) =>
+      Settings.getValue<bool>("key_$this", defaultValue: defaultValue) ?? defaultValue;
+
+  String getSettingsValueString(String defaultValue) =>
+      Settings.getValue<String>("key_$this", defaultValue: defaultValue) ?? defaultValue;
 
   //this is countryCode
   int getDefaultCounter() =>
-      (this == "UK") ? 2:
+      (this == "GB") ? 2:
       (this == "JP") ? 4:
-      (this == "AU") ? 5:
+      (this == "AU") ? 6:
       0;
 }
 
@@ -137,11 +116,10 @@ extension IntExt on int {
 
   //this is counter
   String trafficSignalImageString(bool isGreen, isYellow, isArrow, opaque) =>
-      (isArrow) ? trafficSignalArrowString[this]:
-      (isGreen) ? trafficSignalRedString[this]:
-      (opaque) ? trafficSignalOffString[this]:
       (isYellow) ? trafficSignalYellowString[this]:
-      trafficSignalGreenString[this];
+      (isArrow) ? trafficSignalArrowString[this]:
+      (!isGreen) ? trafficSignalGreenString[this]:
+      trafficSignalRedString[this];
 
   String pedestrianSignalImageString(bool isGreen, isFlash, opaque) =>
       (isGreen && isFlash && opaque) ? pedestrianSignalOffString[this]:
