@@ -6,6 +6,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'common_extension.dart';
 import 'common_widget.dart';
@@ -30,6 +31,7 @@ class MySettingsPage extends HookConsumerWidget {
     final isPremium = useState("premium".getSettingsValueBool(false));
     final isCars = useState("cars".getSettingsValueBool(false));
     final isNoAds = useState("noAds".getSettingsValueBool(false));
+    final isPrice = useState(true);
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
 
     final waitTime = useState("wait".getSettingsValueInt(waitTime_0));
@@ -92,7 +94,8 @@ class MySettingsPage extends HookConsumerWidget {
                   child: Column(children: [
                     if (!isPremiumProvider && premiumPrice.value != "") SimpleSettingsTile(
                       leading: const Icon(Icons.shopping_cart_outlined),
-                      title: context.upgradeTitle(),
+                      title: context.upgrade(),
+                      subtitle: context.upgradeTitle(),
                       onTap: () {},
                       child: Container(
                         padding: EdgeInsets.all(context.settingsSidePadding()),
@@ -104,31 +107,35 @@ class MySettingsPage extends HookConsumerWidget {
                             color: Colors.white,
                             child: Column(children: [
                               premiumTitle(context),
-                              upgradePrice(context, premiumPrice.value),
+                              if (isPrice.value) upgradePrice(context, premiumPrice.value),
                               ElevatedButton(
                                 onPressed: () async {
-                                  try {
-                                    await Purchases.purchaseProduct(premiumProduct);
-                                    final customerInfo = await Purchases.getCustomerInfo();
-                                    isCars.value = customerInfo.entitlements.active["signal_for_cars"] != null;
-                                    isNoAds.value = customerInfo.entitlements.active["no_ads"] != null;
-                                    if (isCars.value && isNoAds.value) isPremium.value = true;
-                                    "isPremium: ${isPremium.value}, isCars: ${isCars.value}, isNoAds: ${isNoAds.value}".debugPrint();
-                                    await Settings.setValue<bool>('key_cars', isCars.value);
-                                    await Settings.setValue<bool>('key_noAds', isNoAds.value);
-                                    await Settings.setValue<bool>('key_premium', isPremium.value);
-                                    plan.setCurrentPlan(isCars.value, isNoAds.value, isPremium.value);
-                                    "isPremiumProvider: $isPremiumProvider, isCarsProvider: $isCarsProvider, isNoAdsProvider: $isNoAdsProvider".debugPrint();
-                                    Navigator.of(context).pop();
-                                  } catch (e) {
-                                    "failed: $e".debugPrint();
-                                  }
-                                },
+                                    try {
+                                      final pref = await SharedPreferences.getInstance();
+                                      await Purchases.purchaseProduct(premiumProduct);
+                                      final customerInfo = await Purchases.getCustomerInfo();
+                                      isCars.value = customerInfo.entitlements.active["signal_for_cars"] != null;
+                                      isNoAds.value = customerInfo.entitlements.active["no_ads"] != null;
+                                      if (isCars.value && isNoAds.value) isPremium.value = true;
+                                      "isPremium: ${isPremium.value}, isCars: ${isCars.value}, isNoAds: ${isNoAds.value}".debugPrint();
+                                      await pref.setBool('key_cars', isCars.value);
+                                      await pref.setBool('key_noAds', isNoAds.value);
+                                      await pref.setBool('key_premium', isPremium.value);
+                                      plan.setCurrentPlan(isCars.value, isNoAds.value, isPremium.value);
+                                      "isPremiumProvider: $isPremiumProvider, isCarsProvider: $isCarsProvider, isNoAdsProvider: $isNoAdsProvider".debugPrint();
+                                      if (isPremium.value) {
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop();
+                                      }
+                                    } catch (e) {
+                                      "failed: $e".debugPrint();
+                                    }
+                                  },
                                 style: ElevatedButton.styleFrom(
                                   side: const BorderSide(color: signalGrayColor, width: 2),
                                   shadowColor: transpBlackColor,
                                 ),
-                                child: upgradeButtonText(context),
+                                child: upgradeButtonText(context, isPrice.value),
                               ),
                               SizedBox(height: height * upgradeButtonBottomMarginRate),
                               upgradeDataTable(context),
@@ -137,6 +144,18 @@ class MySettingsPage extends HookConsumerWidget {
                         ]),
                       ),
                     ),
+                    // SwitchSettingsTile(
+                    //   leading: const Icon(Icons.music_note),
+                    //   title: context.crosswalkSound(),
+                    //   enabledLabel: context.toOn(),
+                    //   disabledLabel: context.toOff(),
+                    //   defaultValue: true,
+                    //   settingKey: 'key_sound',
+                    //   onChange: (value) async {
+                    //     await Settings.setValue<bool>('key_sound', value, notify: true);
+                    //     ('sound: $value').debugPrint();
+                    //   },
+                    // ),
                     SliderSettingsTile(
                       defaultValue: waitTime.value.toDouble(),
                       decimalPrecision: 0,
@@ -173,30 +192,6 @@ class MySettingsPage extends HookConsumerWidget {
                         ('flashTime: ${value.toInt()}').debugPrint();
                       },
                     ),
-                    // SwitchSettingsTile(
-                    //   leading: const Icon(Icons.music_note),
-                    //   title: context.redSound(),
-                    //   enabledLabel: context.toOn(),
-                    //   disabledLabel: context.toOff(),
-                    //   defaultValue: true,
-                    //   settingKey: 'key_redSound',
-                    //   onChange: (value) async {
-                    //     await Settings.setValue<bool>('key_redSound', value, notify: true);
-                    //     ('redSound: $value').debugPrint();
-                    //   },
-                    // ),
-                    // SwitchSettingsTile(
-                    //   leading: const Icon(Icons.music_note),
-                    //   title: context.greenSound(),
-                    //   enabledLabel: context.toOn(),
-                    //   disabledLabel: context.toOff(),
-                    //   defaultValue: true,
-                    //   settingKey: 'key_greenSound',
-                    //   onChange: (value) async {
-                    //     await Settings.setValue<bool>('key_greenSound', value, notify: true);
-                    //     ('greenSound: $value').debugPrint();
-                    //   },
-                    // ),
                   ])
                 ),
               ),

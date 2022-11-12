@@ -293,10 +293,10 @@ Widget upgradePrice(BuildContext context, String price) =>
       ),
     );
 
-Widget upgradeButtonText(BuildContext context) =>
+Widget upgradeButtonText(BuildContext context, bool isPrice) =>
     Container(
       padding: EdgeInsets.all(context.height() * upgradeButtonPaddingRate),
-      child: Text(context.upgrade(),
+      child: Text(isPrice ? context.upgrade(): context.restore(),
         style: TextStyle(
           fontSize: context.height() * upgradeButtonFontSizeRate,
           fontWeight: FontWeight.bold,

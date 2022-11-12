@@ -8,6 +8,8 @@
   "free": "フリー",
   "premium": "プレミアム",
   "upgrade": "アップグレード",
+  "restore": "復元する",
+  "restoreCompleted": "復元が完了しました",
   "pushButton": "押しボタン",
   "pedestrianSignal": "歩行者用信号",
   "carSignal": "車用信号",
@@ -16,11 +18,11 @@
   "waitTime": "赤信号の待ち時間 [秒]",
   "goTime": "青信号の点灯時間 [秒]",
   "flashTime": "青信号の点滅時間 [秒]",
-  "redSound": "赤信号のサウンド",
-  "greenSound": "青信号のサウンド",
+  "crosswalkSound": "横断歩道の音",
   "toSettings": "設定",
   "toOn": "オン",
   "toOff": "オフ",
   "toNew": "新式",
-  "toOld": "旧式"
+  "toOld": "旧式",
+  "confirmed": "確認"
 }

@@ -50,8 +50,8 @@ const List<Color> backGroundColor = [
 const String buttonSound = "audios/pon.mp3";
 const String audioFile = "audios/sound_";
 const String noneSound = "audios/sound_none.mp3";
-const double musicVolume = 0.5;
-const double buttonVolume = 0.5;
+const double musicVolume = 1;
+const double buttonVolume = 1;
 // Green
 const List<String> soundGreen = [
   "${audioFile}us_g.mp3",

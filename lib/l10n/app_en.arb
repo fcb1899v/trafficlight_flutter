@@ -1,12 +1,14 @@
 {
   "appTitle": "LETS SIGNAL", "@appTitle": {"description": ""},
   "settingsTitle": "Settings", "@settingsTitle": {"description": ""},
-  "upgradeTitle": "Upgrade to Premium", "@upgradeTitle": {"description": ""},
+  "upgradeTitle": "Upgrade to premium plan", "@upgradeTitle": {"description": ""},
   "premiumPlan": "Premium Plan", "@premiumPlan": {"description": ""},
   "plan": "Plan", "@plan": {"description": ""},
   "free": "Free", "@free": {"description": ""},
   "premium": "Premium", "@premium": {"description": ""},
   "upgrade": "Upgrade", "@upgrade": {"description": ""},
+  "restore": "Restore", "@restore": {"description": ""},
+  "restoreCompleted": "Restore completed", "@restoreCompleted": {"description": ""},
   "pushButton": "Push\nButton", "@pushButton": {"description": ""},
   "pedestrianSignal": "Signal for\nPedestrians", "@pedestrianSignal": {"description": ""},
   "carSignal": "Signal for\nCars", "@carSignal": {"description": ""},
@@ -15,11 +17,11 @@
   "waitTime": "Waiting time of red light [sec]", "@waitTime": {"description":  ""},
   "goTime": "Lighting time of green light [sec]", "@goTime": {"description":  ""},
   "flashTime": "Flashing time of green light [sec]", "@flashTime": {"description":  ""},
-  "redSound": "Sound of red light", "@redSound": {"description":  ""},
-  "greenSound": "Sound of green light", "@greenSound": {"description":  ""},
+  "crosswalkSound": "Sound of crosswalk", "@crosswalkSound": {"description":  ""},
   "toSettings": "Settings", "@settings": {"description":  ""},
   "toOn": "On", "@on": {"description":  ""},
   "toOff": "Off", "@off": {"description":  ""},
   "toNew": "New", "@new": {"description":  ""},
-  "toOld": "Old", "@old": {"description":  ""}
+  "toOld": "Old", "@old": {"description":  ""},
+  "confirmed": "OK", "@confirmed": {"description":  ""}
 }

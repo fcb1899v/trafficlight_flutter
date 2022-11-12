@@ -2,10 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'settings.dart';
 import 'constant.dart';
-
 
 extension ContextExt on BuildContext {
 
@@ -32,6 +30,8 @@ extension ContextExt on BuildContext {
   String free() => AppLocalizations.of(this)!.free;
   String premium() => AppLocalizations.of(this)!.premium;
   String upgrade() => AppLocalizations.of(this)!.upgrade;
+  String restore() => AppLocalizations.of(this)!.restore;
+  String restoreCompleted() => AppLocalizations.of(this)!.restoreCompleted;
   String pushButton() => AppLocalizations.of(this)!.pushButton;
   String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
   String carSignal() => AppLocalizations.of(this)!.carSignal;
@@ -40,16 +40,15 @@ extension ContextExt on BuildContext {
   String waitTime() => AppLocalizations.of(this)!.waitTime;
   String goTime() => AppLocalizations.of(this)!.goTime;
   String flashTime() => AppLocalizations.of(this)!.flashTime;
-  String redSound() => AppLocalizations.of(this)!.redSound;
-  String greenSound() => AppLocalizations.of(this)!.greenSound;
+  String crosswalkSound() => AppLocalizations.of(this)!.crosswalkSound;
   String toSettings() => AppLocalizations.of(this)!.toSettings;
   String toOn() => AppLocalizations.of(this)!.toOn;
   String toOff() => AppLocalizations.of(this)!.toOff;
   String toNew() => AppLocalizations.of(this)!.toNew;
   String toOld() => AppLocalizations.of(this)!.toOld;
+  String confirmed() => AppLocalizations.of(this)!.confirmed;
   String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
 
-  //
   void pushSettingsPage() =>
       Navigator.push(this, MaterialPageRoute(builder: (context) => const MySettingsPage()));
 }
@@ -60,15 +59,6 @@ extension StringExt on String {
     if (kDebugMode) {
       print(this);
     }
-  }
-
-  Future<void> speakText() async {
-    FlutterTts flutterTts = FlutterTts();
-    await flutterTts.setLanguage("en-US");
-    await flutterTts.setSpeechRate(0.8);
-    await flutterTts.setVolume(1.0);
-    await flutterTts.setPitch(1.0);
-    await flutterTts.speak(this);
   }
 
   //this is key

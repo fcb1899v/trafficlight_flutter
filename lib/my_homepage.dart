@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'main.dart';
@@ -53,9 +55,8 @@ class MyHomePage extends HookConsumerWidget {
 
     final audioPlayer = useState(AudioPlayer());
     final buttonPlayer = useState(AudioPlayer());
-    final AudioCache _audioPlayer = AudioCache(fixedPlayer: AudioPlayer());
-    final AudioCache _buttonPlayer = AudioCache(fixedPlayer: AudioPlayer());
     final audioSound = useState(soundRed[counter.value]);
+    final flutterTts = useState(FlutterTts());
 
     useEffect(() {
       "width: $width, height: $height".debugPrint();
@@ -69,28 +70,49 @@ class MyHomePage extends HookConsumerWidget {
         await Purchases.configure(PurchasesConfiguration(dotenv.get("REVENUE_CAT_IOS_API_KEY")));
         await Purchases.enableAdServicesAttributionTokenCollection();
         Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
-          'Received readyForPromotedProductPurchase event for productID: $productID'.debugPrint();
+          'productID: $productID'.debugPrint();
           try {
             final purchaseResult = await startPurchase.call();
-            'Promoted purchase for productID ${purchaseResult.productIdentifier} completed, or product was'
-                'already purchased. customerInfo returned is: ${purchaseResult.customerInfo}'.debugPrint();
+            "productID ${purchaseResult.productIdentifier}".debugPrint();
+            "customerInfo: ${purchaseResult.customerInfo}".debugPrint();
           } on PlatformException catch (e) {
-            'Error purchasing promoted product: ${e.message}'.debugPrint();
+            'Error: ${e.message}'.debugPrint();
           }
         });
+
+        if (!(isPremium.value)) {
+          final pref = await SharedPreferences.getInstance();
+          final restoredInfo = await Purchases.restorePurchases();
+          "restoredInfo: $restoredInfo".debugPrint();
+          isCars.value = restoredInfo.entitlements.active["signal_for_cars"] != null;
+          isNoAds.value = restoredInfo.entitlements.active["no_ads"] != null;
+          if (isCars.value && isNoAds.value) isPremium.value = true;
+          "isPremium: ${isPremium.value}, isCars: ${isCars.value}, isNoAds: ${isNoAds.value}".debugPrint();
+          await pref.setBool('key_cars', isCars.value);
+          await pref.setBool('key_noAds', isNoAds.value);
+          await pref.setBool('key_premium', isPremium.value);
+        }
         plan.setCurrentPlan(isCars.value, isNoAds.value, isPremium.value);
         "isPremiumProvider: $isPremiumProvider, isCarsProvider: $isCarsProvider, isNoAdsProvider: $isNoAdsProvider".debugPrint();
-        audioPlayer.value = await _audioPlayer.loop(audioSound.value, volume: musicVolume);
+
+        await flutterTts.value.setLanguage("en-US");
+        await flutterTts.value.setVolume(musicVolume);
+        await buttonPlayer.value.setVolume(buttonVolume);
+        await buttonPlayer.value.setSourceAsset(buttonSound);
+        await audioPlayer.value.setVolume(musicVolume);
+        await audioPlayer.value.setReleaseMode(ReleaseMode.loop);
+        await audioPlayer.value.setSourceAsset(audioSound.value);
         "redSound: play: ${audioSound.value}".debugPrint();
       });
-      return () => audioPlayer.value.stop();
+      return () => audioPlayer.value.release();
     }, const []);
 
     setGreenSound() async {
       await audioPlayer.value.stop();
       "redSound: stop".debugPrint();
       audioSound.value = soundGreen[counter.value];
-      audioPlayer.value = await _audioPlayer.loop(audioSound.value, volume: musicVolume);
+      await audioPlayer.value.setSourceAsset(audioSound.value);
+      await audioPlayer.value.resume();
       "greenSound: play: ${soundGreen[counter.value]}".debugPrint();
     }
 
@@ -98,7 +120,8 @@ class MyHomePage extends HookConsumerWidget {
       await audioPlayer.value.stop();
       "greenSound: stop".debugPrint();
       audioSound.value = soundRed[counter.value];
-      audioPlayer.value = await _audioPlayer.loop(audioSound.value, volume: musicVolume);
+      await audioPlayer.value.setSourceAsset(audioSound.value);
+      await audioPlayer.value.resume();
       "redSound: play: ${soundRed[counter.value]}".debugPrint();
     }
 
@@ -113,12 +136,10 @@ class MyHomePage extends HookConsumerWidget {
     }
 
     pushButtonEffect() async {
-      if (counter.value == 0 && !isGreen.value) {
-        "wait".speakText(); "Wait!".debugPrint();
-      }
-      buttonPlayer.value = await _buttonPlayer.play(buttonSound, volume: buttonVolume);
+      if (counter.value == 0 && !isGreen.value) await flutterTts.value.speak("wait");
+      await buttonPlayer.value.resume();
       "button: $buttonSound".debugPrint();
-      Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
+      await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     }
 
     flashGreenState(int i) {

@@ -16,7 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   flutter_launcher_icons: ^0.10.0
   # Audio Player
-  audioplayers: ^0.20.0
+  audioplayers: ^1.1.1
   # Vibration
   vibration: ^1.7.6
   # Text to Speech
