@@ -9,11 +9,13 @@ const String appTitleImage = "assets/images/letsSignal.png";
 const double appBarHeight = 56;
 
 ///Time
+const int maxTime = 30;       //seconds
+const int minTime = 4;        //seconds
 const int waitTime_0 = 8;     //seconds
 const int goTime_0 = 8;       //seconds
 const int flashTime_0 = 8;    //seconds
-const int yellowTime_0 = 3;     //seconds
-const int arrowTime_0 = 3;      //seconds
+const int yellowTime_0 = 3;   //seconds
+const int arrowTime_0 = 3;    //seconds
 const int deltaFlash = 500;   //milliseconds
 
 ///Vibration
@@ -23,6 +25,7 @@ const int vibAmp = 128;
 ///Color
 const Color blackColor = Colors.black;
 const Color whiteColor = Colors.white;
+const Color grayColor = Colors.grey;
 const Color transpColor = Colors.transparent;
 const Color signalGrayColor = Color.fromRGBO(35, 35, 35, 1);    //#232323
 const Color transpGrayColor = Color.fromRGBO(180, 180, 180, 0.9);
@@ -30,12 +33,16 @@ const Color transpBlackColor = Color.fromRGBO(0, 0, 0, 0.9);
 const Color transpWhiteColor = Color.fromRGBO(255, 255, 255, 0.9);
 const Color edgeColor1 = Color.fromRGBO(180, 180, 180, 1);      //#b4b4b4
 const Color edgeColor2 = Color.fromRGBO(230, 230, 230, 1);      //#e6e6e6
-const Color amberColor = Colors.amber;      //#fad25a
-const Color yellowColor = Color.fromRGBO(250, 210, 90, 1);      //#fad25a
 const Color darkYellowColor = Color.fromRGBO(190, 140, 60, 1);  //#be8c3c
 const Color orangeColor = Color.fromRGBO(209, 130, 64, 1);      //#d18240
+const Color yellowColor = Color.fromRGBO(250, 210, 90, 1);      //#fad25a
 const Color greenColor = Color.fromRGBO(87, 191, 163, 1);       //#57BFA3
 const Color redColor = Color.fromRGBO(200, 77, 62, 1);          //#C84D3E
+const Color transpYellowColor = Color.fromRGBO(250, 210, 90, 0.8);      //#fad25a
+const Color transpGreenColor = Color.fromRGBO(87, 191, 163, 0.8);       //#57BFA3
+const Color transpRedColor = Color.fromRGBO(200, 77, 62, 0.8);          //#C84D3E
+
+
 const List<Color> backGroundColor = [
   transpGrayColor,
   transpGrayColor,
@@ -308,4 +315,11 @@ const double upgradeTableIconSizeRate = 0.03;
 const double upgradeTableHeadingHeightRate = 0.03;
 const double upgradeTableHeightRate = 0.06;
 const double upgradeButtonPaddingRate = 0.003;
-const double upgradeButtonBottomMarginRate = 0.04;
+const double upgradeButtonBottomMarginRate = 0.035;
+const double upgradeButtonBorderWidth = 1;
+const double upgradeMarginWidthRate = 0.05;
+const double upgradeCircularProgressMarginBottomRate = 0.4;
+
+///Settings
+const double settingsTilePaddingSize = 20;
+const double settingsTileRadiusSize = 15;

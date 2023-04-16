@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'my_homepage.dart';
 import 'settings.dart';
+import 'upgrade.dart';
 import 'constant.dart';
 
 extension ContextExt on BuildContext {
@@ -25,21 +27,38 @@ extension ContextExt on BuildContext {
   String appTitle() => AppLocalizations.of(this)!.appTitle;
   String settingsTitle() => AppLocalizations.of(this)!.settingsTitle;
   String upgradeTitle() => AppLocalizations.of(this)!.upgradeTitle;
+  String restoreTitle() => AppLocalizations.of(this)!.restoreTitle;
   String premiumPlan() => AppLocalizations.of(this)!.premiumPlan;
   String plan() => AppLocalizations.of(this)!.plan;
   String free() => AppLocalizations.of(this)!.free;
   String premium() => AppLocalizations.of(this)!.premium;
   String upgrade() => AppLocalizations.of(this)!.upgrade;
+  String toUpgrade() => AppLocalizations.of(this)!.toUpgrade;
   String restore() => AppLocalizations.of(this)!.restore;
+  String toRestore() => AppLocalizations.of(this)!.toRestore;
+  String successPurchase() => AppLocalizations.of(this)!.successPurchase;
+  String successRestore() => AppLocalizations.of(this)!.successRestore;
+  String successPurchaseMessage(bool isRestore) => isRestore ? successRestore(): successPurchase();
+  String error() => AppLocalizations.of(this)!.error;
+  String connectError() => AppLocalizations.of(this)!.connectError;
+  String readError() => AppLocalizations.of(this)!.readError;
+  String failPurchase() => AppLocalizations.of(this)!.failPurchase;
+  String noPastPurchase() => AppLocalizations.of(this)!.noPastPurchase;
+  String failPurchaseMessage(bool isRestore) => isRestore ? noPastPurchase(): failPurchase();
   String restoreCompleted() => AppLocalizations.of(this)!.restoreCompleted;
+  String loading() => AppLocalizations.of(this)!.loading;
+  String loadingError() => AppLocalizations.of(this)!.loadingError;
   String pushButton() => AppLocalizations.of(this)!.pushButton;
   String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
   String carSignal() => AppLocalizations.of(this)!.carSignal;
   String noAds() => AppLocalizations.of(this)!.noAds;
   String thisApp() => AppLocalizations.of(this)!.thisApp;
+  String timeSettings() => AppLocalizations.of(this)!.timeSettings;
+  String timeUnit() => AppLocalizations.of(this)!.timeUnit;
   String waitTime() => AppLocalizations.of(this)!.waitTime;
   String goTime() => AppLocalizations.of(this)!.goTime;
   String flashTime() => AppLocalizations.of(this)!.flashTime;
+  String soundSettings() => AppLocalizations.of(this)!.soundSettings;
   String crosswalkSound() => AppLocalizations.of(this)!.crosswalkSound;
   String toSettings() => AppLocalizations.of(this)!.toSettings;
   String toOn() => AppLocalizations.of(this)!.toOn;
@@ -49,8 +68,12 @@ extension ContextExt on BuildContext {
   String confirmed() => AppLocalizations.of(this)!.confirmed;
   String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
 
+  void pushHomePage() =>
+      Navigator.pushReplacement(this, MaterialPageRoute(builder: (BuildContext context) =>  const MyHomePage()));
   void pushSettingsPage() =>
       Navigator.push(this, MaterialPageRoute(builder: (context) => const MySettingsPage()));
+  void pushUpgradePage() =>
+      Navigator.push(this, MaterialPageRoute(builder: (context) => const MyUpgradePage()));
 }
 
 extension StringExt on String {
@@ -63,7 +86,7 @@ extension StringExt on String {
 
   //this is key
   int getSettingsValueInt(int defaultValue) =>
-      Settings.getValue<double>("key_$this", defaultValue: defaultValue.toDouble())?.toInt() ?? defaultValue;
+    Settings.getValue<int>("key_$this", defaultValue: defaultValue) ?? defaultValue;
 
   bool getSettingsValueBool(bool defaultValue) =>
       Settings.getValue<bool>("key_$this", defaultValue: defaultValue) ?? defaultValue;

@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'common_extension.dart';
@@ -8,12 +8,7 @@ import 'constant.dart';
 
 Future<void> initPlugin(BuildContext context) async {
   final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  final iosInfo = await deviceInfo.iosInfo;
-  final iosOsVersion = iosInfo.systemVersion!;
-  if (status == TrackingStatus.notDetermined) {
-    if (double.parse(iosOsVersion) >= 15) {
-      "iOS${double.parse(iosOsVersion)}".debugPrint();
+  if (status == TrackingStatus.notDetermined && context.mounted) {
       await showCupertinoDialog(context: context,
         builder: (context) {
           return CupertinoAlertDialog(
@@ -21,14 +16,14 @@ Future<void> initPlugin(BuildContext context) async {
             content: Text(context.thisApp()),
             actions: [
               CupertinoDialogAction(
-                child: const Text('OK'),
+                child: const Text('OK', style: TextStyle(color: Colors.blue)),
                 onPressed: () => Navigator.pop(context),
               )
             ],
           );
         }
       );
-    }
+    // }
     await Future.delayed(const Duration(milliseconds: 200));
     await AppTrackingTransparency.requestTrackingAuthorization();
   }
@@ -51,7 +46,7 @@ PreferredSize myHomeAppBar(BuildContext context, int counter) =>
       ),
     );
 
-Widget upgradeAppBar(BuildContext context) =>
+Widget upgradeAppBar(BuildContext context, bool isPremium, isPurchase) =>
     Container(
       height: upgradeAppBarHeight + context.topPadding(),
       padding: EdgeInsets.only(top: context.topPadding() - 10),
@@ -60,16 +55,14 @@ Widget upgradeAppBar(BuildContext context) =>
         children: [
           Row(children: [
             const SizedBox(width: 15),
-            GestureDetector(
-              child: const Icon(Icons.arrow_back_ios, color: whiteColor),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              }
+            if (!isPurchase) IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              color: whiteColor,
+              onPressed: () => Navigator.of(context).pop(),
             ),
             const Spacer(),
           ]),
-          titleText(context, context.upgrade()),
+          titleText(context, (isPremium) ? context.restore(): context.upgrade()),
         ],
       ),
     );
@@ -265,6 +258,62 @@ Widget jpFrameLabel(BuildContext context, int counter, bool isPressed, isGreen, 
       ),
     );
 
+///Settings
+AppBar settingsAppBar(BuildContext context, String title, bool isPurchase) =>
+    AppBar(
+      title: titleText(context, title),
+      centerTitle: true,
+      automaticallyImplyLeading: false,
+      backgroundColor: signalGrayColor,
+      foregroundColor: whiteColor,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios),
+        onPressed: () async => (isPurchase) ? null: context.pushHomePage(),
+      ),
+    );
+
+
+Widget settingsTitle(BuildContext context, String title, int time) =>
+    Row(children: [
+      const Icon(Icons.watch_later_outlined, color: grayColor),
+      const SizedBox(width: 10),
+      Text(title, style: const TextStyle(color: blackColor)),
+      const Spacer(),
+      Text("$time${context.timeUnit()} ", style: const TextStyle(color: blackColor)),
+    ]);
+
+sliderTheme(BuildContext context, Color activeColor) =>
+    SliderTheme.of(context).copyWith(
+      trackHeight: 6,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+      thumbColor: activeColor,
+      valueIndicatorColor: activeColor,
+      overlayColor: activeColor.withAlpha(80),
+      activeTrackColor: activeColor,
+      inactiveTrackColor: transpGrayColor,
+      activeTickMarkColor: activeColor,
+      inactiveTickMarkColor: grayColor,
+    );
+
+EdgeInsets settingsTitlePadding(bool isBottom) =>
+    EdgeInsets.only(
+      top: settingsTilePaddingSize,
+      bottom: isBottom ? settingsTilePaddingSize / 2: 0,
+      left: settingsTilePaddingSize,
+      right: settingsTilePaddingSize,
+    );
+
+BoxDecoration settingsTileDecoration(bool isTop, isBottom) =>
+    BoxDecoration(
+      color: (Platform.isIOS || Platform.isMacOS) ? whiteColor: transpColor,
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(isTop ? settingsTileRadiusSize: 0),
+        topRight: Radius.circular(isTop ? settingsTileRadiusSize: 0),
+        bottomLeft: Radius.circular(isBottom ? settingsTileRadiusSize: 0),
+        bottomRight: Radius.circular(isBottom ? settingsTileRadiusSize: 0),
+      ),
+    );
+
 ///Upgrade
 Widget premiumTitle(BuildContext context) =>
     SizedBox(
@@ -279,29 +328,29 @@ Widget premiumTitle(BuildContext context) =>
       ),
     );
 
-Widget upgradePrice(BuildContext context, String price) =>
+Widget upgradePrice(BuildContext context, String price, bool isPremium) =>
     Container(
       padding: EdgeInsets.all(context.height() * premiumPricePaddingRate),
-      child: Text(price,
+      child: (!isPremium) ? Text(price,
         style: TextStyle(
           fontSize: context.height() * premiumPriceFontSizeRate,
           fontWeight: FontWeight.bold,
           fontFamily: "beon",
-          color: amberColor,
+          color: yellowColor,
           decoration: TextDecoration.none
         ),
-      ),
+      ): null,
     );
 
-Widget upgradeButtonText(BuildContext context, bool isPrice) =>
+Widget upgradeButtonText(BuildContext context, bool isRestore) =>
     Container(
       padding: EdgeInsets.all(context.height() * upgradeButtonPaddingRate),
-      child: Text(isPrice ? context.upgrade(): context.restore(),
+      child: Text(isRestore ? context.toRestore(): context.toUpgrade(),
         style: TextStyle(
           fontSize: context.height() * upgradeButtonFontSizeRate,
-          fontWeight: FontWeight.bold,
+          fontWeight: isRestore ? FontWeight.normal: FontWeight.bold,
           fontFamily: "beon",
-          color: signalGrayColor,
+          color: isRestore ? whiteColor: signalGrayColor,
           decoration: TextDecoration.none
         )
       )
@@ -364,12 +413,12 @@ DataCell iconDataCell(BuildContext context, IconData icon, Color color) =>
     );
 
 ///Admob
-Widget adMobBannerWidget(BuildContext context, BannerAd myBanner, bool isNoAds) =>
+Widget adMobBannerWidget(BuildContext context, BannerAd myBanner) =>
     Container(
       width: context.admobWidth(),
       height: context.admobHeight(),
       color: transpColor,
-      child: (isNoAds) ? null: AdWidget(ad: myBanner),
+      child: AdWidget(ad: myBanner),
     );
 
 

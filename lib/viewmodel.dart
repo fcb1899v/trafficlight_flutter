@@ -10,22 +10,16 @@ final planProvider = StateNotifierProvider<PlanNotifier, PlanState>(
 @immutable
 class PlanState {
   const PlanState({
-    this.isCars = false,
-    this.isNoAds = false,
     this.isPremium = false,
   });
-  final bool isCars;
-  final bool isNoAds;
   final bool isPremium;
 }
 
 class PlanNotifier extends StateNotifier<PlanState> {
   PlanNotifier(): super(const PlanState());
 
-  setCurrentPlan(bool isCars, bool isNoAds, bool isPremium) {
+  setCurrentPlan(bool isPremium) {
     state = PlanState(
-      isCars: isCars,
-      isNoAds: isNoAds,
       isPremium: isPremium,
     );
   }

@@ -1,18 +1,15 @@
+import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'main.dart';
 import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
+import 'main.dart';
 import 'viewmodel.dart';
 import 'admob.dart';
 
@@ -37,14 +34,11 @@ class MyHomePage extends HookConsumerWidget {
     final isFlash = useState(false);
     final opaque = useState(false);
     final isPedestrian = useState(true);
+    final isSound = useState('sound'.getSettingsValueBool(true));
 
     final plan = ref.read(planProvider.notifier);
-    final isCarsProvider = ref.watch(planProvider).isCars;
-    final isNoAdsProvider = ref.watch(planProvider).isNoAds;
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     final isPremium = useState("premium".getSettingsValueBool(false));
-    final isCars = useState("cars".getSettingsValueBool(false));
-    final isNoAds = useState("noAds".getSettingsValueBool(false));
 
     final countDown = useState(0);
     final waitTime = useState("wait".getSettingsValueInt(waitTime_0));
@@ -53,58 +47,31 @@ class MyHomePage extends HookConsumerWidget {
     final yellowTime = useState(yellowTime_0);
     final arrowTime = useState(arrowTime_0);
 
-    final audioPlayer = useState(AudioPlayer());
-    final buttonPlayer = useState(AudioPlayer());
+    final audioPlayer = useState(AudioPlayer()..setReleaseMode(ReleaseMode.stop));
+    final buttonPlayer = useState(AudioPlayer()..setReleaseMode(ReleaseMode.stop));
     final audioSound = useState(soundRed[counter.value]);
     final flutterTts = useState(FlutterTts());
 
     useEffect(() {
-      "width: $width, height: $height".debugPrint();
-      "counter: ${counter.value}, CountryCode: ${locales.first.countryCode}".debugPrint();
-      "isPremium: ${isPremium.value}, isCars: ${isCars.value}, isNoAds: ${isNoAds.value}".debugPrint();
-      "waitTIme: ${waitTime.value}, goTime: ${goTime.value}, flashTime: ${flashTime.value}".debugPrint();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        initPlugin(context);
+        if (Platform.isIOS || Platform.isMacOS) initPlugin(context);
         initSettings();
-        await Purchases.setDebugLogsEnabled(true);
-        await Purchases.configure(PurchasesConfiguration(dotenv.get("REVENUE_CAT_IOS_API_KEY")));
-        await Purchases.enableAdServicesAttributionTokenCollection();
-        Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
-          'productID: $productID'.debugPrint();
-          try {
-            final purchaseResult = await startPurchase.call();
-            "productID ${purchaseResult.productIdentifier}".debugPrint();
-            "customerInfo: ${purchaseResult.customerInfo}".debugPrint();
-          } on PlatformException catch (e) {
-            'Error: ${e.message}'.debugPrint();
-          }
-        });
-
-        if (!(isPremium.value)) {
-          final pref = await SharedPreferences.getInstance();
-          final restoredInfo = await Purchases.restorePurchases();
-          "restoredInfo: $restoredInfo".debugPrint();
-          isCars.value = restoredInfo.entitlements.active["signal_for_cars"] != null;
-          isNoAds.value = restoredInfo.entitlements.active["no_ads"] != null;
-          if (isCars.value && isNoAds.value) isPremium.value = true;
-          "isPremium: ${isPremium.value}, isCars: ${isCars.value}, isNoAds: ${isNoAds.value}".debugPrint();
-          await pref.setBool('key_cars', isCars.value);
-          await pref.setBool('key_noAds', isNoAds.value);
-          await pref.setBool('key_premium', isPremium.value);
-        }
-        plan.setCurrentPlan(isCars.value, isNoAds.value, isPremium.value);
-        "isPremiumProvider: $isPremiumProvider, isCarsProvider: $isCarsProvider, isNoAdsProvider: $isNoAdsProvider".debugPrint();
-
+        plan.setCurrentPlan(isPremium.value);
         await flutterTts.value.setLanguage("en-US");
-        await flutterTts.value.setVolume(musicVolume);
-        await buttonPlayer.value.setVolume(buttonVolume);
+        await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
+        await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
         await buttonPlayer.value.setSourceAsset(buttonSound);
-        await audioPlayer.value.setVolume(musicVolume);
+        await audioPlayer.value.setVolume(isSound.value ? musicVolume: 0);
         await audioPlayer.value.setReleaseMode(ReleaseMode.loop);
         await audioPlayer.value.setSourceAsset(audioSound.value);
-        "redSound: play: ${audioSound.value}".debugPrint();
+        await audioPlayer.value.release();
       });
-      return () => audioPlayer.value.release();
+      "width: $width, height: $height".debugPrint();
+      "counter: ${counter.value}, CountryCode: ${locales.first.countryCode}".debugPrint();
+      "waitTIme: ${waitTime.value}, goTime: ${goTime.value}, flashTime: ${flashTime.value}".debugPrint();
+      "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
+      "redSound: play: ${audioSound.value}".debugPrint();
+      return () async => (isSound.value) ? null: await audioPlayer.value.stop();
     }, const []);
 
     setGreenSound() async {
@@ -112,7 +79,7 @@ class MyHomePage extends HookConsumerWidget {
       "redSound: stop".debugPrint();
       audioSound.value = soundGreen[counter.value];
       await audioPlayer.value.setSourceAsset(audioSound.value);
-      await audioPlayer.value.resume();
+      if (isSound.value) await audioPlayer.value.resume();
       "greenSound: play: ${soundGreen[counter.value]}".debugPrint();
     }
 
@@ -121,7 +88,7 @@ class MyHomePage extends HookConsumerWidget {
       "greenSound: stop".debugPrint();
       audioSound.value = soundRed[counter.value];
       await audioPlayer.value.setSourceAsset(audioSound.value);
-      await audioPlayer.value.resume();
+      if (isSound.value) await audioPlayer.value.resume();
       "redSound: play: ${soundRed[counter.value]}".debugPrint();
     }
 
@@ -133,6 +100,12 @@ class MyHomePage extends HookConsumerWidget {
       yellowTime.value = (waitTime.value > yellowTime_0 + arrowTime_0) ? yellowTime_0: 2;
       arrowTime.value = (waitTime.value > yellowTime_0 + arrowTime_0) ? yellowTime_0: 2;
       "yellowTime: ${yellowTime.value}, arrowTime: ${arrowTime.value}".debugPrint();
+    }
+
+    setAudioVolume() async {
+      await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
+      await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
+      await audioPlayer.value.setVolume(isSound.value ? musicVolume: 0);
     }
 
     pushButtonEffect() async {
@@ -158,7 +131,7 @@ class MyHomePage extends HookConsumerWidget {
     calcCountDown() async {
       countDown.value = goTime.value + flashTime.value;
       "countDown: ${countDown.value}".debugPrint();
-      await setGreenSound();
+      if (isSound.value) await setGreenSound();
       for (int i = 0; i < goTime.value; i++) {
         await Future.delayed(const Duration(seconds: 1)).then((_) async {
           countDown.value = countDown.value - 1;
@@ -174,21 +147,21 @@ class MyHomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(appBarHeight),
-        child: AppBar(
-          title: titleText(context, context.appTitle()),
-          backgroundColor: signalGrayColor,
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings, color: whiteColor, size: 32),
-              onPressed: () async {
-                context.pushSettingsPage();
-              },
-            ),
-          ],
-        ),
+      appBar: AppBar(
+        title: titleText(context, context.appTitle()),
+        backgroundColor: signalGrayColor,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: whiteColor, size: 32),
+            onPressed: () async => {
+              await audioPlayer.value.stop(),
+              await buttonPlayer.value.stop(),
+              context.pushSettingsPage(),
+            }
+          ),
+        ],
       ),
       body: Stack(alignment: Alignment.center,
         children: [
@@ -213,6 +186,7 @@ class MyHomePage extends HookConsumerWidget {
                       if (!isGreen.value && !isFlash.value && !isPressed.value) {
                         //各種パラメータの取得
                         await setTimeParameter();
+                        await setAudioVolume();
                         //ボタンが押された状態にする
                         isPressed.value = true;
                         "isPressedState: isPressed: ${isPressed.value}".debugPrint();
@@ -243,8 +217,9 @@ class MyHomePage extends HookConsumerWidget {
                         await Future.delayed(const Duration(seconds: 0)).then((_) async {
                           isGreen.value = false; isFlash.value = false; isPressed.value = false;
                           "redState: isGreen: ${isGreen.value}, isFlash: ${isFlash.value}, isPressed: ${isPressed.value}".debugPrint();
-                          await setRedSound();
-                       });
+                          if (isSound.value) await setRedSound();
+                          await setAudioVolume();
+                        });
                       }
                     },
                     child: SizedBox(
@@ -257,14 +232,15 @@ class MyHomePage extends HookConsumerWidget {
               ]
             ),
             const Spacer(flex: 1),
-            adMobBannerWidget(context, myBanner, isNoAdsProvider),
+            (isPremiumProvider) ? const SizedBox(height: 20): adMobBannerWidget(context, myBanner),
           ]),
         ],
       ),
       floatingActionButton: SizedBox(
         child: Column(children: [
           const Spacer(flex: 3),
-          if (isCarsProvider) Row(children: [
+          // if (!isCarsProvider) Row(children: [
+          if (isPremiumProvider) Row(children: [
             const Spacer(),
             SizedBox(
               width: height * floatingButtonSizeRate,
@@ -299,7 +275,10 @@ class MyHomePage extends HookConsumerWidget {
                   //前の信号に変更
                   nextOrBackCounter(false);
                   //音声を変更
-                  (isGreen.value) ? setGreenSound(): setRedSound();
+                  if (isSound.value) {
+                    (isGreen.value) ? setGreenSound() : setRedSound();
+                    setAudioVolume();
+                  }
                 }
               ),
             ),
@@ -320,12 +299,15 @@ class MyHomePage extends HookConsumerWidget {
                   //次の信号に変更
                   nextOrBackCounter(true);
                   //音声を変更
-                  (isGreen.value) ? setGreenSound(): setRedSound();
+                  if (isSound.value) {
+                    (isGreen.value) ? setGreenSound() : setRedSound();
+                    setAudioVolume();
+                  }
                 }
               ),
             ),
           ]),
-          SizedBox(height: context.admobHeight() * 0.8),
+          SizedBox(height: context.admobHeight() + height * floatingButtonSizeRate / 2),
         ]),
       ),
     );
