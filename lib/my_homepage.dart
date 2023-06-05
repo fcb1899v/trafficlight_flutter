@@ -1,32 +1,27 @@
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:devicelocale/devicelocale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
 import 'main.dart';
 import 'viewmodel.dart';
-import 'admob.dart';
+import 'admob_banner.dart';
 
 class MyHomePage extends HookConsumerWidget {
   const MyHomePage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
     final width = context.width();
     final height = context.height();
-    final BannerAd myBanner = AdmobService().getBannerAd();
 
-    final List<Locale> locales = WidgetsBinding.instance.window.locales;
-    final String countryCode = locales.first.countryCode ?? "US";
-    final counter = useState(countryCode.getDefaultCounter());
-
+    final counter = useState(0);
     final isPressed = useState(false);
     final isGreen = useState(false);
     final isYellow = useState(false);
@@ -52,25 +47,32 @@ class MyHomePage extends HookConsumerWidget {
     final audioSound = useState(soundRed[counter.value]);
     final flutterTts = useState(FlutterTts());
 
+    initSounds() async {
+      final locale = await Devicelocale.currentLocale ?? "en-US";
+      final countryCode = locale.substring(3, 5);
+      counter.value = countryCode.getDefaultCounter();
+      await flutterTts.value.setLanguage(locale);
+      await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
+      await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
+      await buttonPlayer.value.setSourceAsset(buttonSound);
+      await audioPlayer.value.setVolume(isSound.value ? musicVolume: 0);
+      await audioPlayer.value.setReleaseMode(ReleaseMode.loop);
+      await audioPlayer.value.setSourceAsset(audioSound.value);
+      await audioPlayer.value.release();
+      "Locale: $locale, counter: ${counter.value}".debugPrint();
+    }
+
     useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Platform.isIOS || Platform.isMacOS) initPlugin(context);
+        initSounds();
         initSettings();
         plan.setCurrentPlan(isPremium.value);
-        await flutterTts.value.setLanguage("en-US");
-        await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
-        await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
-        await buttonPlayer.value.setSourceAsset(buttonSound);
-        await audioPlayer.value.setVolume(isSound.value ? musicVolume: 0);
-        await audioPlayer.value.setReleaseMode(ReleaseMode.loop);
-        await audioPlayer.value.setSourceAsset(audioSound.value);
-        await audioPlayer.value.release();
+        "width: $width, height: $height".debugPrint();
+        "waitTIme: ${waitTime.value}, goTime: ${goTime.value}, flashTime: ${flashTime.value}".debugPrint();
+        "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
+        "redSound: play: ${audioSound.value}".debugPrint();
       });
-      "width: $width, height: $height".debugPrint();
-      "counter: ${counter.value}, CountryCode: ${locales.first.countryCode}".debugPrint();
-      "waitTIme: ${waitTime.value}, goTime: ${goTime.value}, flashTime: ${flashTime.value}".debugPrint();
-      "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
-      "redSound: play: ${audioSound.value}".debugPrint();
       return () async => (isSound.value) ? null: await audioPlayer.value.stop();
     }, const []);
 
@@ -115,19 +117,6 @@ class MyHomePage extends HookConsumerWidget {
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     }
 
-    flashGreenState(int i) {
-      if (i == 0) {
-        isFlash.value = true;
-        "greenFlashState: isGreen: ${isGreen.value}, isFlash: ${isFlash.value}".debugPrint();
-      }
-      opaque.value = !opaque.value;
-      "opaque: ${opaque.value}".debugPrint();
-      if (i % 2 == 1) {
-        countDown.value = (countDown.value - deltaFlash / 1000 * 2).toInt();
-        "countDown: ${countDown.value}".debugPrint();
-      }
-    }
-
     calcCountDown() async {
       countDown.value = goTime.value + flashTime.value;
       "countDown: ${countDown.value}".debugPrint();
@@ -144,6 +133,60 @@ class MyHomePage extends HookConsumerWidget {
       "${(isNext) ? "next": "back"}Counter".debugPrint();
       counter.value = (counter.value + ((isNext) ? 1: -1)) % signalNumber;
       "counter: ${counter.value}".debugPrint();
+    }
+
+    //ボタンが押された状態にする
+    setPressedButtonState() {
+      isPressed.value = true;
+      "isPressedState: isPressed: ${isPressed.value}".debugPrint();
+    }
+
+    //黄色点灯状態にする
+    setYellowState() {
+      isYellow.value = true;
+      isArrow.value = false;
+      isGreen.value = false;
+      "yellowState: isYellow: ${isYellow.value}".debugPrint();
+    }
+
+    //矢印点灯状態にする
+    setArrowState() {
+      isYellow.value = false;
+      isArrow.value = true;
+      isGreen.value = false;
+      "arrowState: isArrow: ${isArrow.value}".debugPrint();
+    }
+
+    //緑色点灯状態にする
+    setGreenState() {
+      isYellow.value = false;
+      isArrow.value = false;
+      isGreen.value = true;
+      "greenState: isGreen: ${isGreen.value}".debugPrint();
+    }
+
+    //緑色点滅状態にする
+    flashGreenState(int i) {
+      if (i == 0) {
+        isFlash.value = true;
+        "flashState: isGreen: ${isGreen.value}, isFlash: ${isFlash.value}".debugPrint();
+      }
+      opaque.value = !opaque.value;
+      "opaque: ${opaque.value}".debugPrint();
+      if (i % 2 == 1) {
+        countDown.value = (countDown.value - deltaFlash / 1000 * 2).toInt();
+        "countDown: ${countDown.value}".debugPrint();
+      }
+    }
+
+    //赤色点灯状態になる
+    setRedState() async {
+      isGreen.value = false;
+      isFlash.value = false;
+      isPressed.value = false;
+      "redState: isGreen: ${isGreen.value}, isFlash: ${isFlash.value}, isPressed: ${isPressed.value}".debugPrint();
+      if (isSound.value) await setRedSound();
+      await setAudioVolume();
     }
 
     return Scaffold(
@@ -170,76 +213,63 @@ class MyHomePage extends HookConsumerWidget {
           Column(
             children: [
             const Spacer(flex: 1),
-            signalImage(context, counter.value, countDown.value, goTime.value + flashTime.value, isGreen.value, isFlash.value, opaque.value, isPedestrian.value, isYellow.value, isArrow.value),
+            (isPedestrian.value) ?
+              pedestrianSignalImage(context, counter.value, countDown.value, goTime.value + flashTime.value, isGreen.value, isFlash.value, opaque.value):
+              trafficSignalImage(context, counter.value, goTime.value + flashTime.value, isGreen.value, isYellow.value, isArrow.value, opaque.value),
             const Spacer(flex: 1),
             Stack(alignment: Alignment.topCenter,
               children: [
+                //Push Button Frame
                 pushButtonFrame(context, counter.value, isGreen.value, isFlash.value, opaque.value, isPressed.value)      ,
-                Column(children: [
-                  SizedBox(height: height * buttonTopMarginRate[counter.value]),
-                  ElevatedButton(
-                    style: pushButtonStyle(),
-                    onPressed: () async {
-                      //ボタンを押した時の効果
-                      await pushButtonEffect();
-                      //赤色点灯かつボタンが押されていないときに発動
-                      if (!isGreen.value && !isFlash.value && !isPressed.value) {
-                        //各種パラメータの取得
-                        await setTimeParameter();
-                        await setAudioVolume();
-                        //ボタンが押された状態にする
-                        isPressed.value = true;
-                        "isPressedState: isPressed: ${isPressed.value}".debugPrint();
-                        await Future.delayed(Duration(seconds: (waitTime.value - yellowTime.value - arrowTime.value))).then((_) async {
-                          //黄色点灯状態にする
-                          isGreen.value = false; isYellow.value = true;
-                          "yellowState: isGreen: ${isGreen.value}, isYellow: ${isYellow.value}".debugPrint();
-                        });
-                        await Future.delayed(Duration(seconds: yellowTime.value)).then((_) async {
-                          //矢印点灯状態にする
-                          isYellow.value = false; isArrow.value = true;
-                          "arrowState: isYellow: ${isYellow.value}, isArrow: ${isArrow.value}".debugPrint();
-                        });
-                        await Future.delayed(Duration(seconds: arrowTime.value)).then((_) async {
-                          //緑色点灯状態にする
-                          isGreen.value = true; isYellow.value = false; isArrow.value = false;
-                          "greenState: isGreen: ${isGreen.value}, isYellow: ${isYellow.value}, isArrow: ${isArrow.value}".debugPrint();
-                          //countDownの計算
-                          await calcCountDown();
-                          //greenTime後に緑色点滅状態になる
-                          for (int i = 0; i < flashTime.value * 1000 ~/ deltaFlash + 1; i++) {
-                            //緑色点滅状態にする
-                            await Future.delayed(const Duration(milliseconds: deltaFlash))
-                                .then((_) async => flashGreenState(i));
-                          }
-                        });
-                        //赤色点灯状態になる
-                        await Future.delayed(const Duration(seconds: 0)).then((_) async {
-                          isGreen.value = false; isFlash.value = false; isPressed.value = false;
-                          "redState: isGreen: ${isGreen.value}, isFlash: ${isFlash.value}, isPressed: ${isPressed.value}".debugPrint();
-                          if (isSound.value) await setRedSound();
-                          await setAudioVolume();
-                        });
-                      }
-                    },
-                    child: SizedBox(
-                      height: height * buttonHeightRate[counter.value],
-                      child: Image(image: AssetImage(counter.value.pushButtonImageString(isGreen.value, isPressed.value)))
-                    ),
-                  ),
-                ]),
-                frameLabels(context, counter.value, isPressed.value, isGreen.value)
+                //Push Button
+                GestureDetector(
+                  child: pushButtonImage(context, counter.value, isGreen.value, isPressed.value),
+                  onTap: () async {
+                    //ボタンを押した時の効果
+                    await pushButtonEffect();
+                    //赤色点灯かつボタンが押されていないときに発動
+                    if (!isGreen.value && !isFlash.value && !isPressed.value) {
+                      //各種パラメータの取得
+                      await setTimeParameter();
+                      await setAudioVolume();
+                      //ボタンが押された状態にする
+                      setPressedButtonState();
+                      //黄色点灯状態にする
+                      await Future.delayed(Duration(seconds: (waitTime.value - yellowTime.value - arrowTime.value)))
+                          .then((_) async => setYellowState());
+                      //矢印点灯状態にする
+                      await Future.delayed(Duration(seconds: yellowTime.value))
+                          .then((_) async => setArrowState());
+                      //緑色点灯状態にする
+                      await Future.delayed(Duration(seconds: arrowTime.value)).then((_) async {
+                        setGreenState();
+                        //countDownの計算
+                        await calcCountDown();
+                        //緑色点滅状態にする
+                        for (int i = 0; i < flashTime.value * 1000 ~/ deltaFlash + 1; i++) {
+                          await Future.delayed(const Duration(milliseconds: deltaFlash))
+                              .then((_) async => flashGreenState(i));
+                        }
+                      });
+                      //赤色点灯状態になる
+                      await Future.delayed(const Duration(seconds: 0))
+                          .then((_) async => setRedState());
+                    }
+                  },
+                ),
+                //Push Button Frame Label
+                jpFrameLabel(context, counter.value, isPressed.value, isGreen.value)
               ]
             ),
             const Spacer(flex: 1),
-            (isPremiumProvider) ? const SizedBox(height: 20): adMobBannerWidget(context, myBanner),
+            (isPremiumProvider) ? SizedBox(height: context.admobHeight()): const AdBannerWidget(),
           ]),
         ],
       ),
-      floatingActionButton: SizedBox(
+      floatingActionButton: Container(
+        margin: EdgeInsets.only(bottom: context.admobHeight() + height * floatingButtonSizeRate / 2),
         child: Column(children: [
           const Spacer(flex: 3),
-          // if (!isCarsProvider) Row(children: [
           if (isPremiumProvider) Row(children: [
             const Spacer(),
             SizedBox(
@@ -258,8 +288,8 @@ class MyHomePage extends HookConsumerWidget {
           ]),
           const Spacer(flex: 2),
           Row(children: [
-            const SizedBox(width: 32),
-            SizedBox(
+            Container(
+              margin: const EdgeInsets.only(left: 32),
               width: height * floatingButtonSizeRate,
               height: height * floatingButtonSizeRate,
               child: FloatingActionButton(
@@ -307,7 +337,6 @@ class MyHomePage extends HookConsumerWidget {
               ),
             ),
           ]),
-          SizedBox(height: context.admobHeight() + height * floatingButtonSizeRate / 2),
         ]),
       ),
     );

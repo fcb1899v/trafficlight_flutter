@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'common_extension.dart';
@@ -13,7 +12,7 @@ import 'common_widget.dart';
 import 'constant.dart';
 import 'viewmodel.dart';
 import 'main.dart';
-import 'admob.dart';
+import 'admob_banner.dart';
 
 class MyUpgradePage extends HookConsumerWidget {
   const MyUpgradePage({Key? key}) : super(key: key);
@@ -23,7 +22,7 @@ class MyUpgradePage extends HookConsumerWidget {
 
     final width = context.width();
     final height = context.height();
-    final BannerAd myBanner = AdmobService().getBannerAd();
+    final apiKey = dotenv.get((Platform.isIOS || Platform.isMacOS) ? "REVENUE_CAT_IOS_API_KEY": "REVENUE_CAT_ANDROID_API_KEY");
 
     final plan = ref.read(planProvider.notifier);
     final isPremiumProvider = ref.watch(planProvider).isPremium;
@@ -31,10 +30,6 @@ class MyUpgradePage extends HookConsumerWidget {
     final isPremiumRestore = useState("premiumRestore".getSettingsValueBool(false));
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
     final isPurchasing = useState(false);
-
-    final apiKey = (Platform.isIOS || Platform.isMacOS) ?
-      dotenv.get("REVENUE_CAT_IOS_API_KEY"):
-      dotenv.get("REVENUE_CAT_ANDROID_API_KEY");
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -133,17 +128,9 @@ class MyUpgradePage extends HookConsumerWidget {
       );
 
     ///Buy Button
-    ElevatedButton buyButton(bool isRestore) => ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isRestore ? greenColor: yellowColor,
-        side: BorderSide(
-          color: isRestore ? grayColor: signalGrayColor,
-          width: upgradeButtonBorderWidth
-        ),
-        shadowColor: transpBlackColor,
-      ),
-      child: upgradeButtonText(context, isRestore),
-      onPressed: () async {
+    GestureDetector upgradeButton(bool isRestore) => GestureDetector(
+      child: upgradeButtonImage(context, isRestore),
+      onTap: () async {
         "isRestore: $isRestore".debugPrint();
         isPurchasing.value = true;
         "isPurchasing: ${isPurchasing.value}".debugPrint();
@@ -179,23 +166,17 @@ class MyUpgradePage extends HookConsumerWidget {
                 child: Column(children: [
                   premiumTitle(context),
                   upgradePrice(context, premiumPrice.value, isPremiumRestore.value),
-                  buyButton(isPremiumRestore.value),
+                  upgradeButton(isPremiumRestore.value),
                   SizedBox(height: height * upgradeButtonBottomMarginRate),
                   upgradeDataTable(context),
                   SizedBox(height: height * upgradeButtonBottomMarginRate),
-                  buyButton(!isPremiumRestore.value),
+                  upgradeButton(!isPremiumRestore.value),
                 ]),
               ),
               const Spacer(flex: 1),
-              if (!isPremiumProvider) adMobBannerWidget(context, myBanner),
+              (isPremiumProvider) ? SizedBox(height: context.admobHeight()): const AdBannerWidget(),
             ]),
-            if (isPurchasing.value) Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(color: greenColor),
-                SizedBox(height: height * upgradeCircularProgressMarginBottomRate),
-              ]
-            ),
+            if (isPurchasing.value) circularProgressIndicator(context),
           ]
         ),
       ),

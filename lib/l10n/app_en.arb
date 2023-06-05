@@ -1,5 +1,6 @@
 {
   "appTitle": "LETS SIGNAL", "@appTitle": {"description": ""},
+  "thisApp": "This app is a realistic traffic light simulator.", "@thisApp": {"description": ""},
   "settingsTitle": "Settings", "@settingsTitle": {"description": ""},
   "upgradeTitle": "Upgrade to premium plan", "@upgradeTitle": {"description": ""},
   "restoreTitle": "Restore premium plan", "@restoreTitle": {"description": ""},
@@ -25,7 +26,6 @@
   "pedestrianSignal": "Signal for\nPedestrians", "@pedestrianSignal": {"description": ""},
   "carSignal": "Signal for\nCars", "@carSignal": {"description": ""},
   "noAds": "No Ads", "@noAds": {"description": ""},
-  "thisApp": "This app is a realistic traffic light simulator.", "@thisApp": {"description": ""},
   "timeSettings": "Settings of time", "@timeSettings": {"description": ""},
   "timeUnit": " [sec]", "@timeUnit": {"description":  ""},
   "waitTime": "Waiting time of red light", "@waitTime": {"description":  ""},

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -13,7 +12,7 @@ import 'common_widget.dart';
 import 'constant.dart';
 import 'viewmodel.dart';
 import 'main.dart';
-import 'admob.dart';
+import 'admob_banner.dart';
 
 class MySettingsPage extends HookConsumerWidget {
   const MySettingsPage({Key? key}) : super(key: key);
@@ -23,22 +22,17 @@ class MySettingsPage extends HookConsumerWidget {
 
     final width = context.width();
     final height = context.height();
-    final BannerAd myBanner = AdmobService().getBannerAd();
+    final apiKey = dotenv.get((Platform.isIOS || Platform.isMacOS) ? "REVENUE_CAT_IOS_API_KEY": "REVENUE_CAT_ANDROID_API_KEY");
 
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     final isPremium = useState("premium".getSettingsValueBool(false));
     final isPremiumRestore = useState("premiumRestore".getSettingsValueBool(false));
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
     final isReadError = useState(false);
-
     final waitTime = useState("wait".getSettingsValueInt(waitTime_0));
     final goTime = useState("go".getSettingsValueInt(goTime_0));
     final flashTime = useState("flash".getSettingsValueInt(flashTime_0));
     final isSound = useState('sound'.getSettingsValueBool(true));
-
-    final apiKey = dotenv.get(
-      (Platform.isIOS || Platform.isMacOS) ? "REVENUE_CAT_IOS_API_KEY": "REVENUE_CAT_ANDROID_API_KEY"
-    );
 
     getPremiumPrice() async {
       final Offerings offerings = await Purchases.getOfferings();
@@ -184,20 +178,10 @@ class MySettingsPage extends HookConsumerWidget {
           title: Text(context.upgrade()),
           tiles: [
             SettingsTile(
-              title: Text(
-                (premiumPrice.value != "") ? context.premiumPlan():
-                (isReadError.value) ? context.readError():
-                context.loading()
-              ),
-              leading: Icon(
-                (premiumPrice.value != "") ? Icons.shopping_cart_outlined:
-                (isReadError.value) ? Icons.error:
-                Icons.downloading
-              ),
-              trailing:
-                (premiumPrice.value != "") ? const Icon(Icons.arrow_forward_ios): null,
-              onPressed: (context) =>
-                (premiumPrice.value != "") ? context.pushUpgradePage(): null,
+              title: Text(context.settingsPremiumTitle(premiumPrice.value, isReadError.value)),
+              leading: premiumPrice.value.settingsPremiumLeadingIcon(isReadError.value),
+              trailing: premiumPrice.value.settingsPremiumTrailingIcon(),
+              onPressed: (context) => (premiumPrice.value != "") ? context.pushUpgradePage(): null,
             ),
           ]
         ),
@@ -205,13 +189,9 @@ class MySettingsPage extends HookConsumerWidget {
         SettingsSection(
           tiles: [
             CustomSettingsTile(
-              child: Container(
-                color: transpColor,
-                child: Column(children: [
-                  if (!isPremiumProvider) const SizedBox(height: 30),
-                  if (!isPremiumProvider) adMobBannerWidget(context, myBanner),
-                ])
-              ),
+              child: (isPremiumProvider) ?
+                SizedBox(height: context.admobHeight()):
+                const AdBannerWidget(),
             ),
           ]
         ),

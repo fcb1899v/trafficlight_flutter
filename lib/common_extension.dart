@@ -14,6 +14,7 @@ extension ContextExt on BuildContext {
   String lang() => locale().languageCode;
 
   ///Size
+  //Common
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
   double topPadding() => MediaQuery.of(this).padding.top;
@@ -25,6 +26,7 @@ extension ContextExt on BuildContext {
 
   ///Localization
   String appTitle() => AppLocalizations.of(this)!.appTitle;
+  String thisApp() => AppLocalizations.of(this)!.thisApp;
   String settingsTitle() => AppLocalizations.of(this)!.settingsTitle;
   String upgradeTitle() => AppLocalizations.of(this)!.upgradeTitle;
   String restoreTitle() => AppLocalizations.of(this)!.restoreTitle;
@@ -52,7 +54,6 @@ extension ContextExt on BuildContext {
   String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
   String carSignal() => AppLocalizations.of(this)!.carSignal;
   String noAds() => AppLocalizations.of(this)!.noAds;
-  String thisApp() => AppLocalizations.of(this)!.thisApp;
   String timeSettings() => AppLocalizations.of(this)!.timeSettings;
   String timeUnit() => AppLocalizations.of(this)!.timeUnit;
   String waitTime() => AppLocalizations.of(this)!.waitTime;
@@ -67,6 +68,9 @@ extension ContextExt on BuildContext {
   String toOld() => AppLocalizations.of(this)!.toOld;
   String confirmed() => AppLocalizations.of(this)!.confirmed;
   String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
+  String settingsPremiumTitle(String premiumPrice, bool isReadError) =>
+      (premiumPrice != "") ? premiumPlan():
+      (isReadError) ? readError(): loading();
 
   void pushHomePage() =>
       Navigator.pushReplacement(this, MaterialPageRoute(builder: (BuildContext context) =>  const MyHomePage()));
@@ -96,10 +100,21 @@ extension StringExt on String {
 
   //this is countryCode
   int getDefaultCounter() =>
-      (this == "GB") ? 2:
-      (this == "JP") ? 4:
+      (this == "GB") ? 3:
+      (this == "JP") ? 5:
       (this == "AU") ? 6:
       0;
+
+  //Settings
+  Icon settingsPremiumLeadingIcon(bool isReadError) =>
+      (this != "") ? const Icon(Icons.shopping_cart_outlined):
+      (isReadError) ? const Icon(Icons.error):
+      const Icon(Icons.downloading);
+  Icon? settingsPremiumTrailingIcon() =>
+      (this != "") ? const Icon(Icons.arrow_forward_ios): null;
+
+
+
 }
 
 
@@ -116,16 +131,17 @@ extension IntExt on int {
       (this / greenTime > 0.125) ? [false, false, false, false, false, false, true, true]:
       (this / greenTime > 0) ? [false, false, false, false, false, false, false, true]:
       [false, false, false, false, false, false, false, false];
-
-  int cdNumber(bool isFlash, bool is10) =>
-      (is10 && this > 9 && isFlash) ? this ~/ 10:
-      (!is10 && isFlash) ? this % 10:
-      8;
-
   double isOne() => (this == 1) ? this * 1.0: 0;
+  int cdTenNumber(bool isFlash) => (this > 9 && isFlash) ? this ~/ 10: 8;
+  int cdFirstNumber(bool isFlash) => (isFlash) ? this % 10: 8;
+  String cdTenNumberString(bool isFlash) => "${cdTenNumber(isFlash)}";
+  String cdFirstNumberString(bool isFlash) => "${cdFirstNumber(isFlash)}";
+  Color cdTenColor(Color color, bool isFlash,) => (this > 9 && isFlash) ? color: signalGrayColor;
+  Color cdFirstColor(Color color, bool isFlash) => (isFlash) ? color: signalGrayColor;
 
-  Color cdNumColor(Color color, bool isFlash, bool is10) =>
-      (((is10 && this > 9) || !is10) && isFlash) ? color: signalGrayColor;
+  //Size
+  double cdTenLeftPaddingRate(int counter, bool isFlash) => cdTenNumber(isFlash).isOne() * cdNumPaddingRate[counter];
+  double cdFirstLeftPaddingRate(int counter, bool isFlash) => cdFirstNumber(isFlash).isOne() * cdNumPaddingRate[counter];
 
   //this is counter
   String trafficSignalImageString(bool isGreen, isYellow, isArrow, opaque) =>

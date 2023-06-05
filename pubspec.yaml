@@ -29,12 +29,16 @@ dependencies:
   # Admob
   google_mobile_ads: ^2.4.0
   app_tracking_transparency: ^2.0.3
+  # Device locale
+  devicelocale: ^0.6.0
   # Localize
   flutter_localizations:
     sdk: flutter
-  intl: ^0.17.0
+  intl: ^0.18.0
   #env
   flutter_dotenv: ^5.0.2
+  # Connectivity
+  connectivity_plus: ^4.0.1
   #Revenue Cat
   purchases_flutter: ^4.11.1
   #MVVM
