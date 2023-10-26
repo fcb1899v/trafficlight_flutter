@@ -10,12 +10,12 @@ import 'package:settings_ui/settings_ui.dart';
 import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
-import 'viewmodel.dart';
+import 'plan_viewmodel.dart';
 import 'main.dart';
 import 'admob_banner.dart';
 
 class MySettingsPage extends HookConsumerWidget {
-  const MySettingsPage({Key? key}) : super(key: key);
+  const MySettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,116 +85,112 @@ class MySettingsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: settingsAppBar(context, context.settingsTitle(), false),
-      body: SettingsList(sections: [
-        ///Waiting Time
-        SettingsSection(title: Text(context.timeSettings()),
-          tiles: [
-            CustomSettingsTile(
-              child: Container(
-                padding: settingsTitlePadding(false),
-                decoration: settingsTileDecoration(true, false),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    settingsTitle(context, context.waitTime(), waitTime.value),
-                    SliderTheme(
-                      data: sliderTheme(context, transpRedColor),
-                      child: Slider(
-                        value: waitTime.value.toDouble(),
-                        max: maxTime.toDouble(),
-                        min: minTime.toDouble(),
-                        divisions: maxTime - minTime + 1,
-                        onChanged: (double value) => setTime(value.toInt(), 'wait')
-                      ),
+      body: Column(children: [
+        Flexible(child:
+          SettingsList(sections: [
+            ///Waiting Time
+            SettingsSection(title: Text(context.timeSettings()),
+              tiles: [
+                CustomSettingsTile(
+                  child: Container(
+                    padding: settingsTitlePadding(false),
+                    decoration: settingsTileDecoration(true, false),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        settingsTitle(context, context.waitTime(), waitTime.value),
+                        SliderTheme(
+                          data: sliderTheme(context, transpRedColor),
+                          child: Slider(
+                            value: waitTime.value.toDouble(),
+                            max: maxTime.toDouble(),
+                            min: minTime.toDouble(),
+                            divisions: maxTime - minTime + 1,
+                            onChanged: (double value) => setTime(value.toInt(), 'wait')
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            ///Going Time
-            CustomSettingsTile(
-              child: Container(
-                padding: settingsTitlePadding(false),
-                color: (Platform.isIOS || Platform.isMacOS) ? whiteColor: transpColor,
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    settingsTitle(context, context.goTime(), goTime.value),
-                    SliderTheme(
-                      data: sliderTheme(context, transpGreenColor),
-                      child: Slider(
-                        value: goTime.value.toDouble(),
-                        max: maxTime.toDouble(),
-                        min: minTime.toDouble(),
-                        divisions: maxTime - minTime + 1,
-                        onChanged: (double value) => setTime(value.toInt(), 'go')
-                      ),
+                ///Going Time
+                CustomSettingsTile(
+                  child: Container(
+                    padding: settingsTitlePadding(false),
+                    color: (Platform.isIOS || Platform.isMacOS) ? whiteColor: transpColor,
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        settingsTitle(context, context.goTime(), goTime.value),
+                        SliderTheme(
+                          data: sliderTheme(context, transpGreenColor),
+                          child: Slider(
+                            value: goTime.value.toDouble(),
+                            max: maxTime.toDouble(),
+                            min: minTime.toDouble(),
+                            divisions: maxTime - minTime + 1,
+                            onChanged: (double value) => setTime(value.toInt(), 'go')
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            ///Flashing Time
-            CustomSettingsTile(
-              child: Container(
-                padding: settingsTitlePadding(true),
-                decoration: settingsTileDecoration(false, true),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    settingsTitle(context, context.flashTime(), flashTime.value),
-                    SliderTheme(
-                      data: sliderTheme(context, transpYellowColor),
-                      child: Slider(
-                        value: flashTime.value.toDouble(),
-                        max: maxTime.toDouble(),
-                        min: minTime.toDouble(),
-                        divisions: maxTime - minTime + 1,
-                        onChanged: (double value) => setTime(value.toInt(), 'flash')
-                      ),
+                ///Flashing Time
+                CustomSettingsTile(
+                  child: Container(
+                    padding: settingsTitlePadding(true),
+                    decoration: settingsTileDecoration(false, true),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        settingsTitle(context, context.flashTime(), flashTime.value),
+                        SliderTheme(
+                          data: sliderTheme(context, transpYellowColor),
+                          child: Slider(
+                            value: flashTime.value.toDouble(),
+                            max: maxTime.toDouble(),
+                            min: minTime.toDouble(),
+                            divisions: maxTime - minTime + 1,
+                            onChanged: (double value) => setTime(value.toInt(), 'flash')
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ]
             ),
-          ]
-        ),
-        ///Sound On/Off
-        SettingsSection(
-          title: Text(context.soundSettings()),
-          tiles: [
-            SettingsTile.switchTile(
-              leading: const Icon(Icons.music_note),
-              activeSwitchColor: transpGreenColor,
-              title: Text(context.crosswalkSound()),
-              initialValue: isSound.value,
-              onToggle: (value) async {
-                await Settings.setValue<bool>('key_sound', value, notify: true);
-                ('sound: $value').debugPrint();
-                isSound.value = value;
-              },
-            )
-          ]
-        ),
-        ///Premium Plan
-        if (!isPremiumProvider) SettingsSection(
-          title: Text(context.upgrade()),
-          tiles: [
-            SettingsTile(
-              title: Text(context.settingsPremiumTitle(premiumPrice.value, isReadError.value)),
-              leading: premiumPrice.value.settingsPremiumLeadingIcon(isReadError.value),
-              trailing: premiumPrice.value.settingsPremiumTrailingIcon(),
-              onPressed: (context) => (premiumPrice.value != "") ? context.pushUpgradePage(): null,
+            ///Sound On/Off
+            SettingsSection(
+              title: Text(context.soundSettings()),
+              tiles: [
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.music_note),
+                  activeSwitchColor: transpGreenColor,
+                  title: Text(context.crosswalkSound()),
+                  initialValue: isSound.value,
+                  onToggle: (value) async {
+                    await Settings.setValue<bool>('key_sound', value, notify: true);
+                    ('sound: $value').debugPrint();
+                    isSound.value = value;
+                  },
+                )
+              ]
             ),
-          ]
+            ///Premium Plan
+            if (!isPremiumProvider) SettingsSection(
+              title: Text(context.upgrade()),
+              tiles: [
+                SettingsTile(
+                  title: Text(context.settingsPremiumTitle(premiumPrice.value, isReadError.value)),
+                  leading: premiumPrice.value.settingsPremiumLeadingIcon(isReadError.value),
+                  trailing: premiumPrice.value.settingsPremiumTrailingIcon(),
+                  onPressed: (context) => (premiumPrice.value != "") ? context.pushUpgradePage(): null,
+                ),
+              ]
+            ),
+          ]),
         ),
         ///AdMob Banner
-        SettingsSection(
-          tiles: [
-            CustomSettingsTile(
-              child: (isPremiumProvider) ?
-                SizedBox(height: context.admobHeight()):
-                const AdBannerWidget(),
-            ),
-          ]
-        ),
+        if (!isPremiumProvider) const AdBannerWidget()
       ])
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:purchases_flutter/errors.dart';
 import 'my_homepage.dart';
 import 'settings.dart';
 import 'upgrade.dart';
@@ -28,8 +29,6 @@ extension ContextExt on BuildContext {
   String appTitle() => AppLocalizations.of(this)!.appTitle;
   String thisApp() => AppLocalizations.of(this)!.thisApp;
   String settingsTitle() => AppLocalizations.of(this)!.settingsTitle;
-  String upgradeTitle() => AppLocalizations.of(this)!.upgradeTitle;
-  String restoreTitle() => AppLocalizations.of(this)!.restoreTitle;
   String premiumPlan() => AppLocalizations.of(this)!.premiumPlan;
   String plan() => AppLocalizations.of(this)!.plan;
   String free() => AppLocalizations.of(this)!.free;
@@ -41,13 +40,25 @@ extension ContextExt on BuildContext {
   String successPurchase() => AppLocalizations.of(this)!.successPurchase;
   String successRestore() => AppLocalizations.of(this)!.successRestore;
   String successPurchaseMessage(bool isRestore) => isRestore ? successRestore(): successPurchase();
-  String error() => AppLocalizations.of(this)!.error;
-  String connectError() => AppLocalizations.of(this)!.connectError;
+  String errorPurchase() => AppLocalizations.of(this)!.errorPurchase;
+  String errorRestore() => AppLocalizations.of(this)!.errorRestore;
+  String errorPurchaseTitle(bool isRestore) => isRestore ? errorRestore(): errorPurchase();
   String readError() => AppLocalizations.of(this)!.readError;
   String failPurchase() => AppLocalizations.of(this)!.failPurchase;
-  String noPastPurchase() => AppLocalizations.of(this)!.noPastPurchase;
-  String failPurchaseMessage(bool isRestore) => isRestore ? noPastPurchase(): failPurchase();
-  String restoreCompleted() => AppLocalizations.of(this)!.restoreCompleted;
+  String failRestore() => AppLocalizations.of(this)!.failRestore;
+  String failPurchaseMessage(bool isRestore) => isRestore ? failRestore(): failPurchase();
+  String purchaseCancelledMessage() => AppLocalizations.of(this)!.purchaseCancelledMessage;
+  String paymentPendingMessage() => AppLocalizations.of(this)!.paymentPendingMessage;
+  String purchaseInvalidMessage() => AppLocalizations.of(this)!.purchaseInvalidMessage;
+  String purchaseNotAllowedMessage() => AppLocalizations.of(this)!.purchaseNotAllowedMessage;
+  String networkErrorMessage() => AppLocalizations.of(this)!.networkErrorMessage;
+  String purchaseErrorMessage(PurchasesErrorCode errorCode, bool isRestore) =>
+    (errorCode == PurchasesErrorCode.purchaseCancelledError) ? purchaseCancelledMessage():
+    (errorCode == PurchasesErrorCode.paymentPendingError) ? paymentPendingMessage():
+    (errorCode == PurchasesErrorCode.purchaseInvalidError) ? purchaseInvalidMessage():
+    (errorCode == PurchasesErrorCode.purchaseNotAllowedError) ? purchaseNotAllowedMessage():
+    (errorCode == PurchasesErrorCode.networkError) ? networkErrorMessage():
+    failPurchaseMessage(isRestore);
   String loading() => AppLocalizations.of(this)!.loading;
   String loadingError() => AppLocalizations.of(this)!.loadingError;
   String pushButton() => AppLocalizations.of(this)!.pushButton;

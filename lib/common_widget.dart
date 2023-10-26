@@ -5,6 +5,7 @@ import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'common_extension.dart';
 import 'constant.dart';
 
+///App Tracking Transparency
 Future<void> initPlugin(BuildContext context) async {
   final status = await AppTrackingTransparency.trackingAuthorizationStatus;
   if (status == TrackingStatus.notDetermined && context.mounted) {

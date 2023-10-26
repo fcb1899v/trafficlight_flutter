@@ -8,7 +8,7 @@ import 'common_extension.dart';
 import 'dart:io';
 
 class AdBannerWidget extends HookWidget {
-  const AdBannerWidget({Key? key}) : super(key: key);
+  const AdBannerWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

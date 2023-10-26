@@ -10,11 +10,11 @@ import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
 import 'main.dart';
-import 'viewmodel.dart';
+import 'plan_viewmodel.dart';
 import 'admob_banner.dart';
 
 class MyHomePage extends HookConsumerWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  const MyHomePage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
@@ -51,7 +51,7 @@ class MyHomePage extends HookConsumerWidget {
       final locale = await Devicelocale.currentLocale ?? "en-US";
       final countryCode = locale.substring(3, 5);
       counter.value = countryCode.getDefaultCounter();
-      await flutterTts.value.setLanguage(locale);
+      await flutterTts.value.setLanguage("en-US");
       await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
       await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
       await buttonPlayer.value.setSourceAsset(buttonSound);
@@ -262,7 +262,7 @@ class MyHomePage extends HookConsumerWidget {
               ]
             ),
             const Spacer(flex: 1),
-            (isPremiumProvider) ? SizedBox(height: context.admobHeight()): const AdBannerWidget(),
+            if (!isPremiumProvider) const AdBannerWidget(),
           ]),
         ],
       ),
