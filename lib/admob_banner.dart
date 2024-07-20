@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,6 +15,7 @@ class AdBannerWidget extends HookWidget {
     final adLoaded = useState(false);
     final adFailedLoading = useState(false);
     final bannerAd = useState<BannerAd?>(null);
+    final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
     String bannerUnitId() =>
@@ -25,40 +25,52 @@ class AdBannerWidget extends HookWidget {
         dotenv.get("ANDROID_BANNER_UNIT_ID");
 
     Future<void> loadAdBanner() async {
-      final connectivityResult = await Connectivity().checkConnectivity();
-      if (connectivityResult != ConnectivityResult.none) {
-        final adBanner = BannerAd(
-          adUnitId: bannerUnitId(),
-          size: AdSize.largeBanner,
-          request: const AdRequest(),
-          listener: BannerAdListener(
-            onAdLoaded: (Ad ad) {
-              'Ad: $ad loaded.'.debugPrint();
-              adLoaded.value = true;
-            },
-            onAdFailedToLoad: (ad, error) {
-              ad.dispose();
-              'Ad: $ad failed to load: $error'.debugPrint();
-              adFailedLoading.value = true;
-              Future.delayed(const Duration(seconds: 30), () {
-                if (!adLoaded.value && !adFailedLoading.value) {
-                  loadAdBanner();
-                }
-              });
-            },
-          ),
-        );
-        adBanner.load();
-        bannerAd.value = adBanner;
-      }
+      final adBanner = BannerAd(
+        adUnitId: bannerUnitId(),
+        size: AdSize.largeBanner,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (Ad ad) {
+            'Ad: $ad loaded.'.debugPrint();
+            adLoaded.value = true;
+          },
+          onAdFailedToLoad: (ad, error) {
+            ad.dispose();
+            'Ad: $ad failed to load: $error'.debugPrint();
+            adFailedLoading.value = true;
+            Future.delayed(const Duration(seconds: 30), () {
+              if (!adLoaded.value && !adFailedLoading.value) loadAdBanner();
+            });
+          },
+        ),
+      );
+      adBanner.load();
+      bannerAd.value = adBanner;
     }
 
     useEffect(() {
-      loadAdBanner();
+      ConsentInformation.instance.requestConsentInfoUpdate(ConsentRequestParameters(
+        // consentDebugSettings: ConsentDebugSettings(
+        //   debugGeography: DebugGeography.debugGeographyEea,
+        //   testIdentifiers: testIdentifiers,
+        // ),
+      ), () async {
+        if (await ConsentInformation.instance.isConsentFormAvailable()) {
+          ConsentForm.loadConsentForm((ConsentForm consentForm) async {
+            var status = await ConsentInformation.instance.getConsentStatus();
+            "status: $status".debugPrint();
+            if (status == ConsentStatus.required) {
+              consentForm.show((formError) async => await loadAdBanner());
+            } else {
+              await loadAdBanner();
+            }
+          }, (formError) {});
+        } else {
+          await loadAdBanner();
+        }
+      }, (FormError error) {});
       "bannerAd: ${bannerAd.value}".debugPrint();
-      return () {
-        bannerAd.value?.dispose(); // アンマウント時に広告を破棄する
-      };
+      return () => bannerAd.value?.dispose();      // unmount時に広告を破棄する
     }, []);
 
     return SizedBox(
@@ -68,3 +80,4 @@ class AdBannerWidget extends HookWidget {
     );
   }
 }
+

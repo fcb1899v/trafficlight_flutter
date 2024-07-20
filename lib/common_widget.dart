@@ -6,7 +6,7 @@ import 'common_extension.dart';
 import 'constant.dart';
 
 ///App Tracking Transparency
-Future<void> initPlugin(BuildContext context) async {
+Future<void> initATTPlugin(BuildContext context) async {
   final status = await AppTrackingTransparency.trackingAuthorizationStatus;
   if (status == TrackingStatus.notDetermined && context.mounted) {
       await showCupertinoDialog(context: context,
@@ -76,7 +76,7 @@ Widget titleText(BuildContext context, String title) =>
         color: whiteColor,
         decoration: TextDecoration.none
       ),
-      textScaleFactor: 1.0,
+      textScaler: const TextScaler.linear(1.0),
     );
 
 
@@ -251,7 +251,7 @@ Widget jpFrameLabel(BuildContext context, int counter, bool isPressed, isGreen) 
             fontSize: context.height() * labelFontSizeRate[counter],
             fontWeight: FontWeight.bold,
           ),
-          textScaleFactor: 1.0,
+          textScaler: const TextScaler.linear(1.0),
         ),
       ),
       Container(
@@ -266,7 +266,7 @@ Widget jpFrameLabel(BuildContext context, int counter, bool isPressed, isGreen) 
             fontSize: context.height() * labelFontSizeRate[counter],
             fontWeight: FontWeight.bold,
           ),
-          textScaleFactor: 1.0,
+          textScaler: const TextScaler.linear(1.0),
         ),
       ),
     ]);
@@ -359,7 +359,7 @@ Widget upgradeButtonImage(BuildContext context, bool isRestore) =>
 DataTable upgradeDataTable(BuildContext context) =>
     DataTable(
       headingRowHeight: context.height() * upgradeTableHeadingHeightRate,
-      headingRowColor: MaterialStateColor.resolveWith((states) => signalGrayColor),
+      headingRowColor: WidgetStateColor.resolveWith((states) => signalGrayColor),
       headingTextStyle: const TextStyle(color: whiteColor),
       dividerThickness: upgradeTableDividerWidth,
       dataRowMaxHeight: context.height() * upgradeTableHeightRate,
@@ -389,7 +389,7 @@ DataColumn dataColumnLabel(BuildContext context, String text) =>
 
 DataRow tableDataRow(BuildContext context, String title, Color color, bool isPremium) =>
     DataRow(
-      color: MaterialStateColor.resolveWith((states) => color),
+      color: WidgetStateColor.resolveWith((states) => color),
       cells: [
         DataCell(Text(title,
           style: upgradeTextStyle(context, upgradeTableFontSizeRate, signalGrayColor),

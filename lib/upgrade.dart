@@ -10,7 +10,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
-import 'plan_viewmodel.dart';
+import 'plan_provider.dart';
 import 'main.dart';
 import 'admob_banner.dart';
 

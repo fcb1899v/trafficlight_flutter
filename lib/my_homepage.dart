@@ -10,7 +10,7 @@ import 'common_extension.dart';
 import 'common_widget.dart';
 import 'constant.dart';
 import 'main.dart';
-import 'plan_viewmodel.dart';
+import 'plan_provider.dart';
 import 'admob_banner.dart';
 
 class MyHomePage extends HookConsumerWidget {
@@ -48,6 +48,19 @@ class MyHomePage extends HookConsumerWidget {
     final flutterTts = useState(FlutterTts());
 
     initSounds() async {
+      if (Platform.isIOS || Platform.isMacOS) {
+        await flutterTts.value.setSharedInstance(true);
+        await flutterTts.value.setIosAudioCategory(IosTextToSpeechAudioCategory.playback,
+            [
+              IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+              IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+              IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+              IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
+            ],
+            IosTextToSpeechAudioMode.defaultMode
+        );
+      }
+
       final locale = await Devicelocale.currentLocale ?? "en-US";
       final countryCode = locale.substring(3, 5);
       counter.value = countryCode.getDefaultCounter();
@@ -64,7 +77,7 @@ class MyHomePage extends HookConsumerWidget {
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Platform.isIOS || Platform.isMacOS) initPlugin(context);
+        if (Platform.isIOS || Platform.isMacOS) initATTPlugin(context);
         initSounds();
         initSettings();
         plan.setCurrentPlan(isPremium.value);

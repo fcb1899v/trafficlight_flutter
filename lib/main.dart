@@ -31,9 +31,7 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       title: 'LETS SIGNAL',
-      theme: ThemeData(
-        colorScheme: const ColorScheme.light(primary: greenColor),
-      ),
+      theme: ThemeData(colorScheme: const ColorScheme.light(primary: greenColor)),
       debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
       routes: {
