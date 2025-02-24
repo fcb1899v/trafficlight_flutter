@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Runner
+
+  Created by 中島正雄 on 2022/05/15.
+  
+*/
+
+CFBundleDisplayName = "操作乐趣交通信号";
+NSUserTrackingUsageDescription = "T此应用完全依赖广告收入运营，因为它是由个人开发的。如果您同意，请点击‘允许’。您将看到符合您偏好的广告。";

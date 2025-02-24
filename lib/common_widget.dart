@@ -1,33 +1,7 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'common_extension.dart';
 import 'constant.dart';
-
-///App Tracking Transparency
-Future<void> initATTPlugin(BuildContext context) async {
-  final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-  if (status == TrackingStatus.notDetermined && context.mounted) {
-      await showCupertinoDialog(context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: Text(context.appTitle()),
-            content: Text(context.thisApp()),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('OK', style: TextStyle(color: Colors.blue)),
-                onPressed: () => Navigator.pop(context),
-              )
-            ],
-          );
-        }
-      );
-    // }
-    await Future.delayed(const Duration(milliseconds: 200));
-    await AppTrackingTransparency.requestTrackingAuthorization();
-  }
-}
 
 ///App Bar
 PreferredSize myHomeAppBar(BuildContext context, int counter) =>
@@ -279,10 +253,10 @@ AppBar settingsAppBar(BuildContext context, String title, bool isPurchase) =>
       automaticallyImplyLeading: false,
       backgroundColor: signalGrayColor,
       foregroundColor: whiteColor,
-      leading: IconButton(
+      leading: (isPurchase) ? IconButton(
         icon: const Icon(Icons.arrow_back_ios),
-        onPressed: () async => (isPurchase) ? null: context.pushHomePage(),
-      ),
+        onPressed: () async => context.pushHomePage(),
+      ): null,
     );
 
 Widget settingsTitle(BuildContext context, String title, int time) =>
@@ -423,3 +397,5 @@ Widget circularProgressIndicator(BuildContext context) =>
         SizedBox(height: context.height() * upgradeCircularProgressMarginBottomRate),
       ]
     );
+
+

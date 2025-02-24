@@ -7,6 +7,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
 import 'common_extension.dart';
+import 'common_function.dart';
 import 'common_widget.dart';
 import 'constant.dart';
 import 'main.dart';
@@ -42,68 +43,95 @@ class MyHomePage extends HookConsumerWidget {
     final yellowTime = useState(yellowTime_0);
     final arrowTime = useState(arrowTime_0);
 
-    final audioPlayer = useState(AudioPlayer()..setReleaseMode(ReleaseMode.stop));
-    final buttonPlayer = useState(AudioPlayer()..setReleaseMode(ReleaseMode.stop));
     final audioSound = useState(soundRed[counter.value]);
-    final flutterTts = useState(FlutterTts());
+    final FlutterTts flutterTts = FlutterTts();
+    final audioPlayers = AudioPlayerManager();
+    final lifecycle = useAppLifecycleState();
 
-    initSounds() async {
+    initTts() async {
       if (Platform.isIOS || Platform.isMacOS) {
-        await flutterTts.value.setSharedInstance(true);
-        await flutterTts.value.setIosAudioCategory(IosTextToSpeechAudioCategory.playback,
-            [
-              IosTextToSpeechAudioCategoryOptions.allowBluetooth,
-              IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-              IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-              IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
-            ],
-            IosTextToSpeechAudioMode.defaultMode
+        await flutterTts.setSharedInstance(true);
+        await flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback,
+          [
+            IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+            IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+            IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
+          ],
+          IosTextToSpeechAudioMode.defaultMode
         );
       }
+      await flutterTts.setLanguage("en-US");
+      await flutterTts.setVolume(isSound.value ? musicVolume: 0);
+    }
 
+    initAudio() async {
+      await audioPlayers.audioPlayers[0].setVolume(isSound.value ? musicVolume: 0);
+      await audioPlayers.audioPlayers[0].setReleaseMode(ReleaseMode.loop);
+      await audioPlayers.audioPlayers[0].setSourceAsset(audioSound.value);
+      await audioPlayers.audioPlayers[0].release();
+      await audioPlayers.audioPlayers[1].setVolume(isSound.value ? buttonVolume: 0);
+      await audioPlayers.audioPlayers[1].setSourceAsset(buttonSound);
+    }
+
+    initLocale() async {
       final locale = await Devicelocale.currentLocale ?? "en-US";
       final countryCode = locale.substring(3, 5);
       counter.value = countryCode.getDefaultCounter();
-      await flutterTts.value.setLanguage("en-US");
-      await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
-      await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
-      await buttonPlayer.value.setSourceAsset(buttonSound);
-      await audioPlayer.value.setVolume(isSound.value ? musicVolume: 0);
-      await audioPlayer.value.setReleaseMode(ReleaseMode.loop);
-      await audioPlayer.value.setSourceAsset(audioSound.value);
-      await audioPlayer.value.release();
       "Locale: $locale, counter: ${counter.value}".debugPrint();
     }
 
     useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Platform.isIOS || Platform.isMacOS) initATTPlugin(context);
-        initSounds();
-        initSettings();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await initTts();
+        await initAudio();
+        await initLocale();
+        await initSettings();
         plan.setCurrentPlan(isPremium.value);
         "width: $width, height: $height".debugPrint();
         "waitTIme: ${waitTime.value}, goTime: ${goTime.value}, flashTime: ${flashTime.value}".debugPrint();
         "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
         "redSound: play: ${audioSound.value}".debugPrint();
       });
-      return () async => (isSound.value) ? null: await audioPlayer.value.stop();
+      return () async => (isSound.value) ? null: await audioPlayers.audioPlayers[0].stop();
     }, const []);
 
+    useEffect(() {
+      Future<void> handleLifecycleChange() async {
+        // ウィジェットが破棄されていたら何もしない
+        if (!context.mounted) return;
+        // アプリがバックグラウンドに移行する直前
+        if (lifecycle == AppLifecycleState.inactive || lifecycle == AppLifecycleState.paused) {
+          for (int i = 0; i < audioPlayers.audioPlayers.length; i++) {
+            final player = audioPlayers.audioPlayers[i];
+            try {
+              if (player.state == PlayerState.playing) await player.stop();
+            } catch (e) {
+              'Error handling stop for player $i: $e'.debugPrint();
+            }
+          }
+          flutterTts.stop();
+        }
+      }
+      handleLifecycleChange();
+      return null;
+    }, [lifecycle, context.mounted, audioPlayers.audioPlayers.length]);
+
     setGreenSound() async {
-      await audioPlayer.value.stop();
+      await audioPlayers.audioPlayers[0].stop();
       "redSound: stop".debugPrint();
       audioSound.value = soundGreen[counter.value];
-      await audioPlayer.value.setSourceAsset(audioSound.value);
-      if (isSound.value) await audioPlayer.value.resume();
+      await audioPlayers.audioPlayers[0].setSourceAsset(audioSound.value);
+      if (isSound.value) await audioPlayers.audioPlayers[0].resume();
       "greenSound: play: ${soundGreen[counter.value]}".debugPrint();
     }
 
     setRedSound() async {
-      await audioPlayer.value.stop();
+      await audioPlayers.audioPlayers[0].stop();
       "greenSound: stop".debugPrint();
       audioSound.value = soundRed[counter.value];
-      await audioPlayer.value.setSourceAsset(audioSound.value);
-      if (isSound.value) await audioPlayer.value.resume();
+      await audioPlayers.audioPlayers[0].setSourceAsset(audioSound.value);
+      if (isSound.value) await audioPlayers.audioPlayers[0].resume();
       "redSound: play: ${soundRed[counter.value]}".debugPrint();
     }
 
@@ -118,14 +146,17 @@ class MyHomePage extends HookConsumerWidget {
     }
 
     setAudioVolume() async {
-      await flutterTts.value.setVolume(isSound.value ? musicVolume: 0);
-      await buttonPlayer.value.setVolume(isSound.value ? buttonVolume: 0);
-      await audioPlayer.value.setVolume(isSound.value ? musicVolume: 0);
+      await flutterTts.setVolume(isSound.value ? musicVolume: 0);
+      await audioPlayers.audioPlayers[0].setVolume(isSound.value ? musicVolume: 0);
+      await audioPlayers.audioPlayers[1].setVolume(isSound.value ? buttonVolume: 0);
     }
 
     pushButtonEffect() async {
-      if (counter.value == 0 && !isGreen.value) await flutterTts.value.speak("wait");
-      await buttonPlayer.value.resume();
+      if (counter.value == 0 && !isGreen.value) {
+        await flutterTts.stop();
+        await flutterTts.speak("wait");
+      }
+      await audioPlayers.audioPlayers[1].resume();
       "button: $buttonSound".debugPrint();
       await Vibration.vibrate(duration: vibTime, amplitude: vibAmp);
     }
@@ -212,9 +243,9 @@ class MyHomePage extends HookConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings, color: whiteColor, size: 32),
             onPressed: () async => {
-              await audioPlayer.value.stop(),
-              await buttonPlayer.value.stop(),
-              context.pushSettingsPage(),
+              await audioPlayers.audioPlayers[0].stop(),
+              await audioPlayers.audioPlayers[1].stop(),
+              if (context.mounted) context.pushSettingsPage(),
             }
           ),
         ],

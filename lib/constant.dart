@@ -1,3 +1,5 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 ///Signal Number
@@ -7,6 +9,10 @@ const int signalNumber = 7;
 const String appTitle = "LETS SIGNAL";
 const String appTitleImage = "assets/images/letsSignal.png";
 const double appBarHeight = 56;
+
+///App Check
+final androidProvider = kDebugMode ? AndroidProvider.debug: AndroidProvider.playIntegrity;
+final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.deviceCheck;
 
 ///Time
 const int maxTime = 30;       //seconds
@@ -42,7 +48,6 @@ const Color transpYellowColor = Color.fromRGBO(250, 210, 90, 0.8);      //#fad25
 const Color transpGreenColor = Color.fromRGBO(87, 191, 163, 0.8);       //#57BFA3
 const Color transpRedColor = Color.fromRGBO(200, 77, 62, 0.8);          //#C84D3E
 
-
 const List<Color> backGroundColor = [
   transpGrayColor,
   transpGrayColor,
@@ -59,6 +64,7 @@ const String audioFile = "audios/sound_";
 const String noneSound = "audios/sound_none.mp3";
 const double musicVolume = 1;
 const double buttonVolume = 1;
+const int audioPlayerNumber = 2;
 // Green
 const List<String> soundGreen = [
   "${audioFile}us_g.mp3",

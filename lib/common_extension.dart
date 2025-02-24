@@ -23,7 +23,7 @@ extension ContextExt on BuildContext {
   double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
   //Admob
   double admobHeight() => (height() < 750) ? 50: (height() < 1000) ? 50 + (height() - 750) / 5: 100;
-  double admobWidth() => width() - 100;
+  double admobWidth() => width();
 
   ///Localization
   String appTitle() => AppLocalizations.of(this)!.appTitle;

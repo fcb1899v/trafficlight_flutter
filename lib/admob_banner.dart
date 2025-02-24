@@ -15,7 +15,7 @@ class AdBannerWidget extends HookWidget {
     final adLoaded = useState(false);
     final adFailedLoading = useState(false);
     final bannerAd = useState<BannerAd?>(null);
-    final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
+    // final testIdentifiers = ['2793ca2a-5956-45a2-96c0-16fafddc1a15'];
 
     // バナー広告ID
     String bannerUnitId() =>

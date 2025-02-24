@@ -102,7 +102,7 @@ class MyUpgradePage extends HookConsumerWidget {
         }
       } on PlatformException catch (e) {
         final errorCode = PurchasesErrorHelper.getErrorCode(e);
-        final errorMessage = context.purchaseErrorMessage(errorCode, false);
+        final errorMessage = (context.mounted) ? context.purchaseErrorMessage(errorCode, false): "";
         "Purchase Error: $errorCode: $errorMessage".debugPrint();
         errorDialog(errorMessage, false);
       }
@@ -119,11 +119,9 @@ class MyUpgradePage extends HookConsumerWidget {
         "isPremium: ${isPremium.value}".debugPrint();
       } on PlatformException catch (e) {
         final errorCode = PurchasesErrorHelper.getErrorCode(e);
-        final errorMessage = context.purchaseErrorMessage(errorCode, false);
+        final errorMessage = (context.mounted) ? context.purchaseErrorMessage(errorCode, false): "";
         "Purchase Error: $errorCode: $errorMessage".debugPrint();
-        if (context.mounted) {
-          errorDialog(errorMessage, false);
-        }
+        errorDialog(errorMessage, false);
       }
     }
 
@@ -137,11 +135,9 @@ class MyUpgradePage extends HookConsumerWidget {
         "isPremium: ${isPremium.value}, isCars: $isCars, isNoAds: $isNoAds".debugPrint();
       } on PlatformException catch (e) {
         final errorCode = PurchasesErrorHelper.getErrorCode(e);
-        final errorMessage = context.purchaseErrorMessage(errorCode, true);
+        final errorMessage = (context.mounted) ? context.purchaseErrorMessage(errorCode, true): "";
         "Restore Error: $errorCode: $errorMessage".debugPrint();
-        if (context.mounted) {
-          errorDialog(errorMessage, true);
-        }
+        errorDialog(errorMessage, true);
       }
     }
 
@@ -151,9 +147,7 @@ class MyUpgradePage extends HookConsumerWidget {
       "isPremiumProvider: $isPremiumProvider".debugPrint();
       isPurchasing.value = false;
       "isPurchasing: ${isPurchasing.value}".debugPrint();
-      if (context.mounted) {
-        successDialog(isRestore);
-      }
+      successDialog(isRestore);
     }
 
     ///Buy Button
