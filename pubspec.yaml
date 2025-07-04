@@ -38,7 +38,7 @@ dependencies:
   # Localize
   flutter_localizations:
     sdk: flutter
-  intl: ^0.19.0
+  intl: ^0.20.2
   #env
   flutter_dotenv: ^5.2.1
   # Revenue Cat
