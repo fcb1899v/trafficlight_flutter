@@ -78,7 +78,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The purchase was not allowed. Please check your payment method.';
 
   @override
-  String get networkErrorMessage => 'Please connect to internet.';
+  String get networkErrorMessage => 'Please connect to the internet.';
 
   @override
   String get loading => 'Loading...';
@@ -90,34 +90,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushButton => 'Push\nButton';
 
   @override
-  String get pedestrianSignal => 'Signal for\nPedestrians';
+  String get pedestrianSignal => 'Pedestrian\nSignal';
 
   @override
-  String get carSignal => 'Signal for\nCars';
+  String get carSignal => 'Car\nSignal';
 
   @override
   String get noAds => 'No Ads';
 
   @override
-  String get timeSettings => 'Settings of time';
+  String get timeSettings => 'Time Settings';
 
   @override
   String get timeUnit => ' [sec]';
 
   @override
-  String get waitTime => 'Waiting time of red light';
+  String get waitTime => 'Red Light Wait Time';
 
   @override
-  String get goTime => 'Lighting time of green light';
+  String get goTime => 'Green Light Duration';
 
   @override
-  String get flashTime => 'Flashing time of green light';
+  String get flashTime => 'Green Light Flash Time';
 
   @override
-  String get soundSettings => 'Settings of sound';
+  String get soundSettings => 'Sound Settings';
 
   @override
-  String get crosswalkSound => 'Sound of crosswalk';
+  String get crosswalkSound => 'Crosswalk Sound';
 
   @override
   String get toSettings => 'Settings';

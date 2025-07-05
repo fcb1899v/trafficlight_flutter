@@ -12,7 +12,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appTitle => '操作乐趣交通信号';
 
   @override
-  String get thisApp => '这个应用程序是一个真实的交通信号模拟器。';
+  String get thisApp => '这个应用程序是一个逼真的交通信号模拟器。';
 
   @override
   String get settingsTitle => '设置';
@@ -69,13 +69,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get paymentPendingMessage => '支付正在等待中。\n请检查商店。';
 
   @override
-  String get purchaseInvalidMessage => '支付正在等待的项目。\n请检查商店。';
+  String get purchaseInvalidMessage => '无效的购买项目。\n请检查商店。';
 
   @override
   String get purchaseNotAllowedMessage => '无法购买。\n请检查您的支付方式。';
 
   @override
-  String get networkErrorMessage => '请连接到互联网。';
+  String get networkErrorMessage => '请检查网络连接';
 
   @override
   String get loading => '正在加载...';

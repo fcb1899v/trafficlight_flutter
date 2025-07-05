@@ -18,6 +18,7 @@
 	<array>
 		<string>en</string>
 		<string>ja</string>
+		<string>zh</string>
 	</array>
 	<key>CFBundleName</key>
 	<string>crosswalksignal</string>
@@ -259,5 +260,19 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>StoreKit</key>
+	<dict>
+		<key>Configuration</key>
+		<string>Configuration</string>
+		<key>SimulatorStoreKitConfiguration</key>
+		<string>Configuration</string>
+		<key>StoreKitTesting</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

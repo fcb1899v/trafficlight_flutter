@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,25 +10,26 @@ import 'constant.dart';
 import 'plan_provider.dart';
 import 'admob_banner.dart';
 
+/// Upgrade page widget that handles premium plan purchases and restorations
+/// Uses Riverpod for state management and Flutter Hooks for local state
 class UpgradePage extends HookConsumerWidget {
   const UpgradePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
+    // Watch the plan state from the provider
     final planState = ref.watch(planProvider);
-
+    // Read the plan notifier for actions
     final plan = ref.read(planProvider.notifier);
+    // Local state for restore mode and premium price
     final isRestore = useState("premiumRestore".getSettingsValueBool(false));
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
-    // final isPremium = useState("premium".getSettingsValueBool(false));
-    // final isPurchasing = useState(false);
-
+    // Create upgrade widget instance
     final upgrade = UpgradeWidget(context,
       price: premiumPrice.value,
       isPremium: planState.isPremium,
     );
-
+    /// Initialize purchase functionality and set up promoted product listener
     initPurchase() {
       Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
         'productID: $productID'.debugPrint();
@@ -41,7 +43,7 @@ class UpgradePage extends HookConsumerWidget {
       });
       "isPremiumProvider: ${planState.isPremium}, isPremium: ${planState.isPremium}, isPremiumRestore: ${isRestore.value}".debugPrint();
     }
-
+    // Initialize settings and purchase functionality on first frame
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await Settings.init(cacheProvider: SharePreferenceCache(),);
@@ -49,165 +51,27 @@ class UpgradePage extends HookConsumerWidget {
       });
       return;
     }, const []);
+    // Effect to handle premium state changes
     useEffect(() {
       return;
     }, [planState.isPremium]);
-
-    // getOffering() async {
-    //   try {
-    //     "Getting offerings...".debugPrint();
-    //     Offerings offerings = await Purchases.getOfferings();
-    //     "Offerings: $offerings".debugPrint();
-    //     if (offerings.current != null) {
-    //       "Current offering: ${offerings.current}".debugPrint();
-    //       "Available packages: ${offerings.current!.availablePackages}".debugPrint();
-    //       final package = offerings.current?.lifetime;
-    //       "Lifetime package: $package".debugPrint();
-    //       if (package != null) {
-    //         final purchaserInfo = await Purchases.purchasePackage(package);
-    //         "Purchase result: $purchaserInfo".debugPrint();
-    //         purchaserInfo.entitlements.active["no_ads"]?.isActive;
-    //         purchaserInfo.entitlements.active["signal_for_cars"]?.isActive;
-    //       } else {
-    //         "No lifetime package available".debugPrint();
-    //         upgrade.purchaseDialog(
-    //           message: "No premium package available",
-    //           isSuccess: false,
-    //           isRestore: false,
-    //         );
-    //         isPurchasing.value = false;
-    //         "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //       }
-    //     } else {
-    //       "No current offering available".debugPrint();
-    //       upgrade.purchaseDialog(
-    //         message: "No offerings available",
-    //         isSuccess: false,
-    //         isRestore: false,
-    //       );
-    //       isPurchasing.value = false;
-    //       "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //     }
-    //   } on PlatformException catch (e) {
-    //     "PlatformException details: ${e.code}, ${e.message}, ${e.details}".debugPrint();
-    //     final errorCode = PurchasesErrorHelper.getErrorCode(e);
-    //     final errorMessage = (context.mounted) ? context.purchaseErrorMessage(errorCode, false): "";
-    //     "Purchase Error: $errorCode: $errorMessage".debugPrint();
-    //     upgrade.purchaseDialog(
-    //       message: errorMessage,
-    //       isSuccess: false,
-    //       isRestore: false,
-    //     );
-    //     isPurchasing.value = false;
-    //     "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //   } catch (e) {
-    //     "General error: $e".debugPrint();
-    //     upgrade.purchaseDialog(
-    //       message: "An unexpected error occurred: $e",
-    //       isSuccess: false,
-    //       isRestore: false,
-    //     );
-    //     isPurchasing.value = false;
-    //     "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //   }
-    // }
-
-    // getCustomerInfo() async {
-    //   try {
-    //     final CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-    //     "customerInfo: $customerInfo".debugPrint();
-    //     final bool isCars = customerInfo.entitlements.active["signal_for_cars"]!.isActive;
-    //     final bool isNoAds = customerInfo.entitlements.active["no_ads"]!.isActive;
-    //     "isCars: $isCars, isNoAds: $isNoAds".debugPrint();
-    //     isPremium.value = isCars && isNoAds;
-    //     "isPremium: ${isPremium.value}".debugPrint();
-    //   } on PlatformException catch (e) {
-    //     final errorCode = PurchasesErrorHelper.getErrorCode(e);
-    //     final errorMessage = (context.mounted) ? context.purchaseErrorMessage(errorCode, false): "";
-    //     "Purchase Error: $errorCode: $errorMessage".debugPrint();
-    //     upgrade.purchaseDialog(
-    //       message: errorMessage,
-    //       isSuccess: false,
-    //       isRestore: false,
-    //     );
-    //     isPurchasing.value = false;
-    //     "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //   }
-    // }
-
-    // getRestoreInfo() async {
-    //   try {
-    //     final restoredInfo = await Purchases.restorePurchases();
-    //     "restoredInfo: $restoredInfo".debugPrint();
-    //     final bool isCars = restoredInfo.entitlements.active["signal_for_cars"]!.isActive;
-    //     final bool isNoAds = restoredInfo.entitlements.active["no_ads"]!.isActive;
-    //     isPremium.value = isCars && isNoAds;
-    //     "isPremium: ${isPremium.value}, isCars: $isCars, isNoAds: $isNoAds".debugPrint();
-    //   } on PlatformException catch (e) {
-    //     final errorCode = PurchasesErrorHelper.getErrorCode(e);
-    //     final errorMessage = (context.mounted) ? context.purchaseErrorMessage(errorCode, true): "";
-    //     "Restore Error: $errorCode: $errorMessage".debugPrint();
-    //     upgrade.purchaseDialog(
-    //       message: errorMessage,
-    //       isSuccess: false,
-    //       isRestore: false,
-    //     );
-    //     isPurchasing.value = false;
-    //     "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //   }
-    // }
-
-    // setIsPremium(bool isRestore) async {
-    //   await Settings.setValue('key_premium', isPremium.value, notify: true);
-    //   plan.setCurrentPlan(isPremium.value);
-    //   "isPremiumProvider: $isPremiumProvider".debugPrint();
-    //   isPurchasing.value = false;
-    //   "isPurchasing: ${isPurchasing.value}".debugPrint();
-    //   upgrade.purchaseDialog(
-    //     message: "",
-    //     isSuccess: true,
-    //     isRestore: isRestore
-    //   );
-    //   isPurchasing.value = false;
-    //   "isPurchasing: ${isPurchasing.value}".debugPrint();
-    // }
-
-    ///Buy Button
+    /// Handle purchase or restore action
+    /// @param isRestore Whether this is a restore operation or new purchase
     buyUpgrade(bool isRestore) async {
       "isRestore: $isRestore".debugPrint();
-      // isPurchasing.value = true;
-      // "isPurchasing: ${isPurchasing.value}".debugPrint();
       try {
         await plan.buyUpgrade(isRestore);
         upgrade.purchaseDialog(
-          message: "",
           isSuccess: true,
-          isRestore: isRestore
-        );
-        // if (!isRestore) {
-        //   await getOffering();
-        //   await getCustomerInfo();
-        // } else {
-        //   await getRestoreInfo();
-        // }
-        // if (isPremium.value) {
-        //   await setIsPremium(isRestore);
-        // }
-        // isPurchasing.value = false;
-      } catch (e) {
-        "Button tap error: $e".debugPrint();
-        upgrade.purchaseDialog(
-          message: e.toString(),
-          isSuccess: false,
           isRestore: isRestore,
         );
-        // upgrade.purchaseDialog(
-        //   message: "An error occurred: $e",
-        //   isSuccess: false,
-        //   isRestore: isRestore,
-        // );
-        // isPurchasing.value = false;
-        // "isPurchasing: ${isPurchasing.value}".debugPrint();
+      } on PlatformException catch (e) {
+        "Button tap error: $e".debugPrint();
+        upgrade.purchaseDialog(
+          isSuccess: false,
+          isRestore: isRestore,
+          errorCode: PurchasesErrorHelper.getErrorCode(e),
+        );
       }
     }
 
@@ -231,8 +95,10 @@ class UpgradePage extends HookConsumerWidget {
             ]),
           ),
           const Spacer(flex: 2),
+          // Show ad banner only for non-premium users
           if (!planState.isPremium) const AdBannerWidget(),
         ]),
+        // Show loading indicator during purchase process
         if (planState.isPurchasing) upgrade.circularProgressIndicator(),
       ]
       ),
@@ -240,6 +106,8 @@ class UpgradePage extends HookConsumerWidget {
   }
 }
 
+/// Widget class that handles all upgrade-related UI components
+/// Manages the visual presentation of upgrade options, pricing, and purchase flow
 class UpgradeWidget {
 
   final BuildContext context;
@@ -251,12 +119,13 @@ class UpgradeWidget {
     required this.isPremium,
   });
 
+  /// Create the app bar for the upgrade page
   PreferredSize upgradeAppBar() => PreferredSize(
     preferredSize: Size.fromHeight(context.appBarHeight()),
     child: AppBar(
       title: Text(context.premiumPlan(),
         style: TextStyle(
-          fontFamily: context.titleFont(),
+          fontFamily: context.font(),
           fontSize: context.appBarFontSize(),
           fontWeight: FontWeight.bold,
           color: whiteColor,
@@ -277,30 +146,34 @@ class UpgradeWidget {
     ),
   );
 
-  ///Upgrade
+  /// Create the premium plan title text
   Text premiumTitle() => Text(context.premiumPlan(),
     style: TextStyle(
       fontSize: context.premiumTitleFontSize(),
       fontWeight: FontWeight.bold,
-      fontFamily: context.titleFont(),
+      fontFamily: context.font(),
       color: signalGrayColor,
       decoration: TextDecoration.none
     )
   );
 
+  /// Display the premium price (only shown for non-premium users)
   Widget upgradePrice() => Container(
     padding: EdgeInsets.all(context.premiumPricePadding()),
     child: (!isPremium) ? Text(price,
       style: TextStyle(
         fontSize: context.premiumPriceFontSize(),
         fontWeight: FontWeight.bold,
-        fontFamily: context.titleFont(),
+        fontFamily: context.font(),
         color: yellowColor,
         decoration: TextDecoration.none
       )
     ): null,
   );
 
+  /// Create upgrade or restore button with different styling based on action type
+  /// @param isRestore Whether this button triggers restore or purchase
+  /// @param onTap Callback function when button is tapped
   Widget upgradeButton(bool isRestore, {
     required void Function() onTap,
   }) => GestureDetector(
@@ -318,7 +191,7 @@ class UpgradeWidget {
           style: TextStyle(
             fontSize: context.upgradeButtonFontSize(),
             fontWeight: FontWeight.bold,
-            fontFamily: context.titleFont(),
+            fontFamily: context.font(),
             color: isRestore ? whiteColor: signalGrayColor,
             decoration: TextDecoration.none
           )
@@ -327,6 +200,7 @@ class UpgradeWidget {
     )
   );
 
+  /// Create comparison table showing free vs premium features
   Widget upgradeDataTable() => Container(
     margin: EdgeInsets.symmetric(vertical: context.upgradeButtonMargin()),
     child: DataTable(
@@ -350,6 +224,7 @@ class UpgradeWidget {
     )
   );
 
+  /// Create column header for the comparison table
   DataColumn dataColumnLabel(String text) => DataColumn(
     label: Expanded(
       child: Text(text,
@@ -359,6 +234,10 @@ class UpgradeWidget {
     ),
   );
 
+  /// Create table row showing feature availability
+  /// @param title Feature name
+  /// @param color Row background color
+  /// @param isPremium Whether this feature is premium-only
   DataRow tableDataRow(String title, Color color, bool isPremium) => DataRow(
     color: WidgetStateColor.resolveWith((states) => color),
     cells: [
@@ -373,14 +252,16 @@ class UpgradeWidget {
     ]
   );
 
+  /// Create consistent text style for upgrade UI elements
   TextStyle upgradeTextStyle(double fontSize, Color color) => TextStyle(
     fontSize: fontSize,
     fontWeight: FontWeight.bold,
-    fontFamily: context.titleFont(),
+    fontFamily: context.font(),
     color: color,
     decoration: TextDecoration.none
   );
 
+  /// Create data cell with centered icon
   DataCell iconDataCell(IconData icon, Color color) => DataCell(
     Center(child:
       Icon(icon,
@@ -390,6 +271,7 @@ class UpgradeWidget {
     ),
   );
 
+  /// Show loading indicator during purchase process
   Widget circularProgressIndicator() => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -398,19 +280,23 @@ class UpgradeWidget {
     ]
   );
 
+  /// Display purchase result dialog (success or error)
+  /// @param isSuccess Whether the purchase/restore was successful
+  /// @param isRestore Whether this was a restore operation
+  /// @param errorCode Error code if the operation failed
   Future<void> purchaseDialog({
-    required String message,
     required bool isSuccess,
     required bool isRestore,
+    PurchasesErrorCode? errorCode,
   }) => showCupertinoDialog(
     context: context,
     builder: (context) => CupertinoAlertDialog(
       title: Text(isSuccess ? context.premiumPlan(): context.errorPurchaseTitle(isRestore)),
-      content: Text(isSuccess ? context.successPurchaseMessage(isRestore): message),
+      content: Text(isSuccess ? context.successPurchaseMessage(isRestore): context.purchaseErrorMessage(errorCode, isRestore)),
       actions: [
         CupertinoDialogAction(
           onPressed: () => isSuccess ? context.pushHomePage():Navigator.pop(context),
-          child: const Text('OK', style: TextStyle(color: Colors.blue))
+          child: Text(context.confirmed(), style: TextStyle(color: Colors.blue))
         ),
       ],
     )

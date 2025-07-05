@@ -1,7 +1,7 @@
 name: signalbutton
 description: push button signal simulator
 publish_to: 'none'
-version: 1.2.9+29
+version: 1.2.10+30
 
 environment:
   sdk: '>=2.18.0 <4.0.0'

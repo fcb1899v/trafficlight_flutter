@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -179,9 +180,15 @@ class PlanNotifier extends StateNotifier<PlanState> {
     } catch (e) {
       "Button tap error: $e".debugPrint();
       setPurchasing(false);
+      
+      // エラーの種類に応じて適切なメッセージを生成
+      if (e is PlatformException) {
+        final errorCode = PurchasesErrorHelper.getErrorCode(e);
+        throw Exception("Purchase Error: $errorCode");
+      } else {
+        throw Exception("Purchase Error: An unexpected error occurred");
+      }
     }
   }
-
-
 }
 

@@ -12,30 +12,32 @@ import 'main.dart';
 import 'plan_provider.dart';
 import 'admob_banner.dart';
 
+/// Settings page widget that manages app configuration and premium plan access
+/// Uses Riverpod for state management and Flutter Hooks for local state
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
+    // Watch time-related state providers
     final waitTime = ref.watch(waitTimeProvider);
     final goTime = ref.watch(goTimeProvider);
     final flashTime = ref.watch(flashTimeProvider);
     final isSound = ref.watch(isSoundProvider);
-
+    // Watch premium status and local state
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     final isPremium = useState("premium".getSettingsValueBool(false));
     final isPremiumRestore = useState("premiumRestore".getSettingsValueBool(false));
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
     final isReadError = useState(false);
-
+    // Create settings widget instance
     final settings = SettingsWidget(context,
       waitTime: waitTime,
       goTime: goTime,
       flashTime: flashTime,
       isSound: isSound,
     );
-
+    /// Fetch premium price from RevenueCat offerings
     getPremiumPrice() async {
       final Offerings offerings = await Purchases.getOfferings();
       if (offerings.current != null && offerings.current!.availablePackages.isNotEmpty) {
@@ -43,7 +45,9 @@ class SettingsPage extends HookConsumerWidget {
         await Settings.setValue("key_premiumPrice", premiumPrice.value);
       }
     }
-
+    /// Update time settings and sync with provider state
+    /// @param time New time value
+    /// @param key Setting key (wait, go, flash)
     Future<void> setTime(int time, String key) async {
       await Settings.setValue('key_$key', time, notify: true);
       ('${key}Time: $time').debugPrint();
@@ -51,17 +55,19 @@ class SettingsPage extends HookConsumerWidget {
       if (key == "go") ref.read(goTimeProvider.notifier).state = time;
       if (key == "flash") ref.read(flashTimeProvider.notifier).state = time;
     }
-
+    /// Update sound setting and sync with provider state
+    /// @param value New sound setting value
     Future<void> setSound(bool value) async {
       await Settings.setValue<bool>('key_sound', value, notify: true);
       'sound: $value'.debugPrint();
       ref.read(isSoundProvider.notifier).state = value;
     }
-
+    // Initialize settings and premium functionality on first frame
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await Settings.init(cacheProvider: SharePreferenceCache(),);
         if (!isPremiumProvider) {
+          // Set up promoted product purchase listener for non-premium users
           Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
             'productID: $productID'.debugPrint();
             try {
@@ -72,6 +78,7 @@ class SettingsPage extends HookConsumerWidget {
               'Error: ${e.message}'.debugPrint();
             }
           });
+          // Fetch premium price if not already cached
           if (premiumPrice.value == "") {
             try {
               getPremiumPrice();
@@ -92,7 +99,7 @@ class SettingsPage extends HookConsumerWidget {
       body: Column(children: [
         Flexible(child:
           SettingsList(sections: [
-            ///Setting Time
+            /// Time Settings Section
             SettingsSection(
               title: Text(context.timeSettings()),
               tiles: [
@@ -101,14 +108,14 @@ class SettingsPage extends HookConsumerWidget {
                 settings.setTimeTile(key: 'flash', onChanged: (value) => setTime(value, 'flash')),
               ]
             ),
-            ///Sound On/Off
+            /// Sound Settings Section
             SettingsSection(
               title: Text(context.soundSettings()),
               tiles: [
                 settings.setSoundTile(onChanged: (value) => setSound(value)),
               ]
             ),
-            ///Premium Plan
+            /// Premium Plan Section (only shown for non-premium users)
             if (!isPremiumProvider) SettingsSection(
               title: Text(context.upgrade()),
               tiles: [
@@ -120,13 +127,15 @@ class SettingsPage extends HookConsumerWidget {
             ),
           ]),
         ),
-        ///AdMob Banner
+        /// AdMob Banner (only shown for non-premium users)
         if (!isPremiumProvider) const AdBannerWidget()
       ])
     );
   }
 }
 
+/// Widget class that handles all settings-related UI components
+/// Manages the visual presentation of time settings, sound settings, and premium plan access
 class SettingsWidget {
 
   final BuildContext context;
@@ -142,12 +151,13 @@ class SettingsWidget {
     required this.isSound,
   });
 
+  /// Create the app bar for the settings page
   PreferredSize settingsAppBar() => PreferredSize(
     preferredSize: Size.fromHeight(context.appBarHeight()),
     child: AppBar(
       title: Text(context.settingsTitle(),
         style: TextStyle(
-          fontFamily: context.titleFont(),
+          fontFamily: context.font(),
           fontSize: context.appBarFontSize(),
           fontWeight: FontWeight.bold,
           color: whiteColor,
@@ -168,7 +178,9 @@ class SettingsWidget {
     ),
   );
 
-  ///Setting Time
+  /// Create time setting tile with slider control
+  /// @param key Setting key (wait, go, flash)
+  /// @param onChanged Callback function when time value changes
   CustomSettingsTile setTimeTile({
     required String key,
     required void Function(int) onChanged,
@@ -232,7 +244,8 @@ class SettingsWidget {
     );
   }
 
-  ///Setting Sound On/Off
+  /// Create sound setting tile with switch control
+  /// @param onChanged Callback function when sound setting changes
   SettingsTile setSoundTile({
     required void Function(bool) onChanged,
   }) => SettingsTile.switchTile(
@@ -243,7 +256,9 @@ class SettingsWidget {
     onToggle: (bool value) => onChanged(value),
   );
 
-  ///Upgrade
+  /// Create premium plan tile with price display and upgrade navigation
+  /// @param premiumPrice Current premium plan price
+  /// @param isReadError Whether there was an error reading the price
   SettingsTile premiumTile({
     required String premiumPrice,
     required bool isReadError,

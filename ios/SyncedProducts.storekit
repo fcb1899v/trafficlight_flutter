@@ -1,0 +1,113 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "1ACBA299",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "1652306187",
+      "localizations" : [
+        {
+          "description" : "Add signals for cars and No advertisement",
+          "displayName" : "Upgrade to premium",
+          "locale" : "en_GB"
+        },
+        {
+          "description" : "Add signals for cars and No advertisement",
+          "displayName" : "Upgrade to Premium",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "車用交通信号の追加と広告の非表示",
+          "displayName" : "プレミアムプラン",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Add signals for cars and No advertisement",
+          "displayName" : "Upgrade to premium",
+          "locale" : "en_AU"
+        }
+      ],
+      "productID" : "signal_upgrade_premium",
+      "referenceName" : "Upgrade to Premium",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "1627839408",
+    "_developerTeamID" : "P3MMV68RR4",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 773389237.07624602,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : {
+          "index" : 1,
+          "type" : "purchase"
+        },
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
