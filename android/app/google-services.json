@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "46902441590",
+    "project_id": "push-button-app",
+    "storage_bucket": "push-button-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:46902441590:android:e4490911857becf61cd157",
+        "android_client_info": {
+          "package_name": "nakajimamasao.appstudio.signalbutton"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "46902441590-6l7ejs8t2a8mq1l3lgqvcn2hi8stn443.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqJXa6L6cGYkVNlTdwUYwWjvR3lo2U42E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "46902441590-6l7ejs8t2a8mq1l3lgqvcn2hi8stn443.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "46902441590-aid6gu1kcdhdt4d9v31407r31vsqpnh3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "nakajimamasao.appstudio.signalbutton"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

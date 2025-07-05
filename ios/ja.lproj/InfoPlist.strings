@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Runner
+
+  Created by 中島正雄 on 2022/05/15.
+  
+*/
+
+CFBundleDisplayName = "レッツ・シン・ゴー";
+NSUserTrackingUsageDescription = "このアプリは個人開発のため広告収入のみにより運営されています。ご賛同いただける方は許可をタップしてください。お好みに合った広告が表示されます。";

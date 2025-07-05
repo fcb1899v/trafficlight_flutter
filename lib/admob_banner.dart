@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'common_extension.dart';
+import 'extension.dart';
 import 'dart:io';
 
 class AdBannerWidget extends HookWidget {

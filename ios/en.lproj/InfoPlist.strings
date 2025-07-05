@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Runner
+
+  Created by 中島正雄 on 2022/05/15.
+  
+*/
+
+CFBundleDisplayName = "LETS SIGNAL";
+NSUserTrackingUsageDescription = "This app is privately developed and is supported solely by advertising revenue. If you agree, please tap 'Allow Tracking'. You will be able to see ads that match your preferences.";

@@ -10,28 +10,28 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter_android: ^4.3.2
-  webview_flutter: ^4.10.0
+  webview_flutter_android: ^4.7.0
+  webview_flutter: ^4.13.0
   # Firebase Analytics
-  firebase_core: ^3.12.0
-  firebase_analytics: ^11.4.3
-  firebase_app_check: ^0.3.2+3
+  firebase_core: ^3.15.1
+  firebase_analytics: ^11.5.2
+  firebase_app_check: ^0.3.2+9
   # App Icon
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
   # Audio Player
-  audioplayers: ^6.2.0
+  audioplayers: ^6.5.0
   # Vibration
   vibration: ^3.1.3
   # Text to Speech
-  flutter_tts: ^4.2.2
+  flutter_tts: ^4.2.3
   # Settings
   flutter_settings_screens: ^0.3.4
   settings_ui: ^2.0.2
   # SharedPreference
-  shared_preferences: ^2.5.2
+  shared_preferences: ^2.5.3
   # Admob
-  google_mobile_ads: ^5.3.1
+  google_mobile_ads: ^6.0.0
   app_tracking_transparency: ^2.0.6+1
   # Device locale
   devicelocale: ^0.8.1
@@ -42,17 +42,17 @@ dependencies:
   #env
   flutter_dotenv: ^5.2.1
   # Revenue Cat
-  purchases_flutter: ^8.5.0
+  purchases_flutter: ^8.10.5
   #MVVM
   hooks_riverpod: ^2.6.1
-  flutter_hooks: ^0.20.5
+  flutter_hooks: ^0.21.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   # App Splash
-  flutter_native_splash: ^2.4.5
+  flutter_native_splash: ^2.4.6
 
 flutter_icons:
   image_path: "assets/images/icon.png"
@@ -88,3 +88,16 @@ flutter:
     - family: beon
       fonts:
         - asset: assets/fonts/beon.ttf
+    #For English font
+    - family: roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Bold.ttf
+    #For Japanese font
+    - family: notoJP
+      fonts:
+        - asset: assets/fonts/NotoSansJP-Bold.ttf
+    #For Chinese font
+    - family: notoSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Bold.ttf
+

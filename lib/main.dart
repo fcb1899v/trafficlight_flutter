@@ -1,20 +1,31 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'common_function.dart';
-import 'constant.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'l10n/app_localizations.dart' show AppLocalizations;
+import 'extension.dart';
 import 'firebase_options.dart';
-import 'my_homepage.dart';
+import 'plan_provider.dart';
+import 'constant.dart';
+import 'homepage.dart';
 import 'settings.dart';
 import 'upgrade.dart';
+
+final waitTimeProvider = StateProvider<int>((ref) => initialWaitTime);
+final goTimeProvider = StateProvider<int>((ref) => initialGoTime);
+final flashTimeProvider = StateProvider<int>((ref) => initialFlashTime);
+final yellowTimeProvider = StateProvider<int>((ref) => initialYellowTime);
+final arrowTimeProvider = StateProvider<int>((ref) => initialArrowTime);
+final isSoundProvider = StateProvider<bool>((ref) => true);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,13 +39,42 @@ Future<void> main() async {
   )); // Status bar style
   await dotenv.load(fileName: 'assets/.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Settings.init(cacheProvider: SharePreferenceCache(),);
+  final planNotifier = PlanNotifier();
+  await planNotifier.initializePremiumStatus();
+  final savedWaitTime = "wait".getSettingsValueInt(initialWaitTime);
+  final savedGoTime = "go".getSettingsValueInt(initialGoTime);
+  final savedFlashTime = "flash".getSettingsValueInt(initialFlashTime);
+  final savedYellowTime = "yellow".getSettingsValueInt(initialYellowTime);
+  final savedArrowTime = "arrow".getSettingsValueInt(initialArrowTime);
+  final savedIsSound = "sound".getSettingsValueBool(true);
+  runApp(ProviderScope(
+    overrides: [
+      waitTimeProvider.overrideWith((ref) => savedWaitTime),
+      goTimeProvider.overrideWith((ref) => savedGoTime),
+      flashTimeProvider.overrideWith((ref) => savedFlashTime),
+      yellowTimeProvider.overrideWith((ref) => savedYellowTime),
+      arrowTimeProvider.overrideWith((ref) => savedArrowTime),
+      isSoundProvider.overrideWith((ref) => savedIsSound),
+    ],
+    child: MyApp())
+  );
+
+  // RevenueCat初期化
+  final apiKey = dotenv.get((Platform.isIOS || Platform.isMacOS) ? "REVENUE_CAT_IOS_API_KEY": "REVENUE_CAT_ANDROID_API_KEY");
+  await Purchases.setLogLevel(LogLevel.debug);
+  await Purchases.configure(PurchasesConfiguration(apiKey));
+  await Purchases.enableAdServicesAttributionTokenCollection();
+  
   await FirebaseAppCheck.instance.activate(
     androidProvider: androidProvider,
     appleProvider: appleProvider,
   );
   await MobileAds.instance.initialize();
+  
+  // ATT
   await initATTPlugin();
-  initSettings().then((_) => runApp(const ProviderScope(child: MyApp())));
+
 }
 
 class MyApp extends StatelessWidget {
@@ -47,11 +87,11 @@ class MyApp extends StatelessWidget {
       title: 'LETS SIGNAL',
       theme: ThemeData(colorScheme: const ColorScheme.light(primary: greenColor)),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(),
+      home: const HomePage(),
       routes: {
-        '/h' : (_) => const MyHomePage(),
-        '/s' : (_) => const MySettingsPage(),
-        '/u' : (_) => const MyUpgradePage(),
+        '/h' : (_) => const HomePage(),
+        '/s' : (_) => const SettingsPage(),
+        '/u' : (_) => const UpgradePage(),
       },
       navigatorObservers: <NavigatorObserver>[
         FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
@@ -61,7 +101,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> initSettings() async {
-  await Settings.init(cacheProvider: SharePreferenceCache(),);
+///App Tracking Transparency
+Future<void> initATTPlugin() async {
+  if (Platform.isIOS || Platform.isMacOS) {
+    final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+    if (status == TrackingStatus.notDetermined) {
+      await AppTrackingTransparency.requestTrackingAuthorization();
+    }
+  }
 }
-

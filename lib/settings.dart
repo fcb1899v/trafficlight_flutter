@@ -1,38 +1,40 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:settings_ui/settings_ui.dart';
-import 'common_extension.dart';
-import 'common_widget.dart';
+import 'extension.dart';
 import 'constant.dart';
-import 'plan_provider.dart';
 import 'main.dart';
+import 'plan_provider.dart';
 import 'admob_banner.dart';
 
-class MySettingsPage extends HookConsumerWidget {
-  const MySettingsPage({super.key});
+class SettingsPage extends HookConsumerWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final width = context.width();
-    final height = context.height();
-    final apiKey = dotenv.get((Platform.isIOS || Platform.isMacOS) ? "REVENUE_CAT_IOS_API_KEY": "REVENUE_CAT_ANDROID_API_KEY");
+    final waitTime = ref.watch(waitTimeProvider);
+    final goTime = ref.watch(goTimeProvider);
+    final flashTime = ref.watch(flashTimeProvider);
+    final isSound = ref.watch(isSoundProvider);
 
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     final isPremium = useState("premium".getSettingsValueBool(false));
     final isPremiumRestore = useState("premiumRestore".getSettingsValueBool(false));
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
     final isReadError = useState(false);
-    final waitTime = useState("wait".getSettingsValueInt(waitTime_0));
-    final goTime = useState("go".getSettingsValueInt(goTime_0));
-    final flashTime = useState("flash".getSettingsValueInt(flashTime_0));
-    final isSound = useState('sound'.getSettingsValueBool(true));
+
+    final settings = SettingsWidget(context,
+      waitTime: waitTime,
+      goTime: goTime,
+      flashTime: flashTime,
+      isSound: isSound,
+    );
 
     getPremiumPrice() async {
       final Offerings offerings = await Purchases.getOfferings();
@@ -42,21 +44,24 @@ class MySettingsPage extends HookConsumerWidget {
       }
     }
 
-    setTime(int time, String key) async {
+    Future<void> setTime(int time, String key) async {
       await Settings.setValue('key_$key', time, notify: true);
       ('${key}Time: $time').debugPrint();
-      if (key == "wait") waitTime.value = time;
-      if (key == "go") goTime.value = time;
-      if (key == "flash") flashTime.value = time;
+      if (key == "wait") ref.read(waitTimeProvider.notifier).state = time;
+      if (key == "go") ref.read(goTimeProvider.notifier).state = time;
+      if (key == "flash") ref.read(flashTimeProvider.notifier).state = time;
+    }
+
+    Future<void> setSound(bool value) async {
+      await Settings.setValue<bool>('key_sound', value, notify: true);
+      'sound: $value'.debugPrint();
+      ref.read(isSoundProvider.notifier).state = value;
     }
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        initSettings();
+        await Settings.init(cacheProvider: SharePreferenceCache(),);
         if (!isPremiumProvider) {
-          await Purchases.setLogLevel(LogLevel.debug);
-          await Purchases.configure(PurchasesConfiguration(apiKey));
-          await Purchases.enableAdServicesAttributionTokenCollection();
           Purchases.addReadyForPromotedProductPurchaseListener((productID, startPurchase) async {
             'productID: $productID'.debugPrint();
             try {
@@ -77,113 +82,39 @@ class MySettingsPage extends HookConsumerWidget {
           }
         }
       });
-      "width: $width, height: $height".debugPrint();
-      "waitTIme: ${waitTime.value}, goTime: ${goTime.value}, flashTime: ${flashTime.value}".debugPrint();
+      "waitTime: $waitTime, goTime: $goTime, flashTime: $flashTime, isSound: $isSound".debugPrint();
       "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}, isPremiumRestore: ${isPremiumRestore.value}".debugPrint();
-      return;
+      return null;
     }, const []);
 
     return Scaffold(
-      appBar: settingsAppBar(context, context.settingsTitle(), false),
+      appBar: settings.settingsAppBar(),
       body: Column(children: [
         Flexible(child:
           SettingsList(sections: [
-            ///Waiting Time
-            SettingsSection(title: Text(context.timeSettings()),
+            ///Setting Time
+            SettingsSection(
+              title: Text(context.timeSettings()),
               tiles: [
-                CustomSettingsTile(
-                  child: Container(
-                    padding: settingsTitlePadding(false),
-                    decoration: settingsTileDecoration(true, false),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        settingsTitle(context, context.waitTime(), waitTime.value),
-                        SliderTheme(
-                          data: sliderTheme(context, transpRedColor),
-                          child: Slider(
-                            value: waitTime.value.toDouble(),
-                            max: maxTime.toDouble(),
-                            min: minTime.toDouble(),
-                            divisions: maxTime - minTime + 1,
-                            onChanged: (double value) => setTime(value.toInt(), 'wait')
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                ///Going Time
-                CustomSettingsTile(
-                  child: Container(
-                    padding: settingsTitlePadding(false),
-                    color: (Platform.isIOS || Platform.isMacOS) ? whiteColor: transpColor,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        settingsTitle(context, context.goTime(), goTime.value),
-                        SliderTheme(
-                          data: sliderTheme(context, transpGreenColor),
-                          child: Slider(
-                            value: goTime.value.toDouble(),
-                            max: maxTime.toDouble(),
-                            min: minTime.toDouble(),
-                            divisions: maxTime - minTime + 1,
-                            onChanged: (double value) => setTime(value.toInt(), 'go')
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                ///Flashing Time
-                CustomSettingsTile(
-                  child: Container(
-                    padding: settingsTitlePadding(true),
-                    decoration: settingsTileDecoration(false, true),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        settingsTitle(context, context.flashTime(), flashTime.value),
-                        SliderTheme(
-                          data: sliderTheme(context, transpYellowColor),
-                          child: Slider(
-                            value: flashTime.value.toDouble(),
-                            max: maxTime.toDouble(),
-                            min: minTime.toDouble(),
-                            divisions: maxTime - minTime + 1,
-                            onChanged: (double value) => setTime(value.toInt(), 'flash')
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                settings.setTimeTile(key: 'wait', onChanged: (value) => setTime(value, 'wait')),
+                settings.setTimeTile(key: 'go', onChanged: (value) => setTime(value, 'go')),
+                settings.setTimeTile(key: 'flash', onChanged: (value) => setTime(value, 'flash')),
               ]
             ),
             ///Sound On/Off
             SettingsSection(
               title: Text(context.soundSettings()),
               tiles: [
-                SettingsTile.switchTile(
-                  leading: const Icon(Icons.music_note),
-                  activeSwitchColor: transpGreenColor,
-                  title: Text(context.crosswalkSound()),
-                  initialValue: isSound.value,
-                  onToggle: (value) async {
-                    await Settings.setValue<bool>('key_sound', value, notify: true);
-                    ('sound: $value').debugPrint();
-                    isSound.value = value;
-                  },
-                )
+                settings.setSoundTile(onChanged: (value) => setSound(value)),
               ]
             ),
             ///Premium Plan
             if (!isPremiumProvider) SettingsSection(
               title: Text(context.upgrade()),
               tiles: [
-                SettingsTile(
-                  title: Text(context.settingsPremiumTitle(premiumPrice.value, isReadError.value)),
-                  leading: premiumPrice.value.settingsPremiumLeadingIcon(isReadError.value),
-                  trailing: premiumPrice.value.settingsPremiumTrailingIcon(),
-                  onPressed: (context) => (premiumPrice.value != "") ? context.pushUpgradePage(): null,
+                settings.premiumTile(
+                  premiumPrice: premiumPrice.value,
+                  isReadError: isReadError.value
                 ),
               ]
             ),
@@ -194,4 +125,132 @@ class MySettingsPage extends HookConsumerWidget {
       ])
     );
   }
+}
+
+class SettingsWidget {
+
+  final BuildContext context;
+  final int waitTime;
+  final int goTime;
+  final int flashTime;
+  final bool isSound;
+
+  SettingsWidget(this.context,{
+    required this.waitTime,
+    required this.goTime,
+    required this.flashTime,
+    required this.isSound,
+  });
+
+  PreferredSize settingsAppBar() => PreferredSize(
+    preferredSize: Size.fromHeight(context.appBarHeight()),
+    child: AppBar(
+      title: Text(context.settingsTitle(),
+        style: TextStyle(
+          fontFamily: context.titleFont(),
+          fontSize: context.appBarFontSize(),
+          fontWeight: FontWeight.bold,
+          color: whiteColor,
+          decoration: TextDecoration.none
+        ),
+        textScaler: const TextScaler.linear(1.0),
+      ),
+      centerTitle: true,
+      automaticallyImplyLeading: false,
+      backgroundColor: signalGrayColor,
+      foregroundColor: whiteColor,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios),
+        onPressed: () async {
+          if (context.mounted) context.pushHomePage();
+        },
+      ),
+    ),
+  );
+
+  ///Setting Time
+  CustomSettingsTile setTimeTile({
+    required String key,
+    required void Function(int) onChanged,
+  }) {
+    final title = {'wait': context.waitTime(), 'go': context.goTime(), 'flash': context.flashTime()};
+    final time = {'wait': waitTime, 'go': goTime, 'flash': flashTime};
+    final color = {'wait': transpRedColor, 'go': transpGreenColor, 'flash': transpYellowColor};
+    final isTop = (key == 'wait');
+    final isBottom = (key == 'flash');
+    return CustomSettingsTile(
+      child: Container(
+        padding: EdgeInsets.only(
+          top: settingsTilePaddingSize,
+          bottom: isBottom ? settingsTilePaddingSize / 2: 0,
+          left: settingsTilePaddingSize,
+          right: settingsTilePaddingSize,
+        ),
+        decoration: BoxDecoration(
+          color: (Platform.isIOS || Platform.isMacOS) ? whiteColor: transpColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(isTop ? settingsTileRadiusSize: 0),
+            topRight: Radius.circular(isTop ? settingsTileRadiusSize: 0),
+            bottomLeft: Radius.circular(isBottom ? settingsTileRadiusSize: 0),
+            bottomRight: Radius.circular(isBottom ? settingsTileRadiusSize: 0),
+          ),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.watch_later_outlined, color: grayColor),
+              const SizedBox(width: 10),
+              Text(title[key]!,
+                style: const TextStyle(color: blackColor)
+              ),
+              const Spacer(),
+              Text("${time[key]!}${context.timeUnit()} ", style: const TextStyle(color: blackColor)),
+            ]),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 6,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                thumbColor: color[key]!,
+                valueIndicatorColor: color[key]!,
+                overlayColor: color[key]!.withAlpha(80),
+                activeTrackColor: color[key]!,
+                inactiveTrackColor: transpGrayColor,
+                activeTickMarkColor: color[key]!,
+                inactiveTickMarkColor: grayColor,
+              ),
+              child: Slider(
+                value: time[key]!.toDouble(),
+                max: maxTime.toDouble(),
+                min: minTime.toDouble(),
+                divisions: maxTime - minTime + 1,
+                onChanged: (double value) => onChanged(value.toInt())
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ///Setting Sound On/Off
+  SettingsTile setSoundTile({
+    required void Function(bool) onChanged,
+  }) => SettingsTile.switchTile(
+    leading: const Icon(Icons.music_note),
+    activeSwitchColor: transpGreenColor,
+    title: Text(context.crosswalkSound()),
+    initialValue: isSound,
+    onToggle: (bool value) => onChanged(value),
+  );
+
+  ///Upgrade
+  SettingsTile premiumTile({
+    required String premiumPrice,
+    required bool isReadError,
+  }) => SettingsTile(
+    title: Text(context.settingsPremiumTitle(premiumPrice, isReadError)),
+    leading: premiumPrice.settingsPremiumLeadingIcon(isReadError),
+    trailing: premiumPrice.settingsPremiumTrailingIcon(),
+    onPressed: (context) => (premiumPrice != "") ? context.pushUpgradePage(): null,
+  );
 }

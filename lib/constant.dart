@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,21 +10,20 @@ const int signalNumber = 7;
 ///App Name
 const String appTitle = "LETS SIGNAL";
 const String appTitleImage = "assets/images/letsSignal.png";
-const double appBarHeight = 56;
 
 ///App Check
 final androidProvider = kDebugMode ? AndroidProvider.debug: AndroidProvider.playIntegrity;
 final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.deviceCheck;
 
 ///Time
-const int maxTime = 30;       //seconds
-const int minTime = 4;        //seconds
-const int waitTime_0 = 8;     //seconds
-const int goTime_0 = 8;       //seconds
-const int flashTime_0 = 8;    //seconds
-const int yellowTime_0 = 3;   //seconds
-const int arrowTime_0 = 3;    //seconds
-const int deltaFlash = 500;   //milliseconds
+const int maxTime = 30;          //seconds
+const int minTime = 4;           //seconds
+const int initialWaitTime = 8;   //seconds
+const int initialGoTime = 8;     //seconds
+const int initialFlashTime = 8;  //seconds
+const int initialYellowTime = 3; //seconds
+const int initialArrowTime = 3;  //seconds
+const int deltaFlash = 500;      //milliseconds
 
 ///Vibration
 const int vibTime = 200;
@@ -99,7 +100,7 @@ const String trafficJPImageAssets = "assets/images/traffic/jp/";
 const String trafficAUImageAssets = "assets/images/traffic/au/";
 
 ///Background
-const String nextArrow = "assets/images/nextArrow.png";
+const String forwardArrow = "assets/images/forwardArrow.png";
 const String backArrow = "assets/images/backArrow.png";
 const List<String> countryFlag = [
   "${pedestrianUSImageAssets}flag_us.png",
@@ -112,7 +113,6 @@ const List<String> countryFlag = [
 ];
 
 ///Button Frame
-const double frameHeightRate = 0.40;
 const List<double> frameTopPaddingRate = [0, 0, 0, 0, 0.01, 0.02, 0];
 const List<double> frameBottomPaddingRate = [0, 0.08, 0, 0, 0.01, 0.02, 0];
 const List<double> labelTopMarginRate = [0, 0, 0, 0, 0.085, 0.10, 0];
@@ -186,7 +186,6 @@ const List<String> pushButtonOffString = [
 ];
 
 ///Pedestrian Signal
-const double signalHeightRate = 0.35;
 const List<double> pedestrianSignalPaddingRate = [0.03, 0.06, 0.03, 0.015, 0.015, 0.015, 0.015];
 const List<double> trafficSignalPaddingRate = [0.01, 0, 0.01, 0.01, 0.04, 0.04, 0.01];
 const String netImage = "${pedestrianUSImageAssets}net.png";
@@ -240,12 +239,6 @@ const List<String> cdNumFont = ["dotFont", "", "freeTfb", "", "", "", ""];
 //Countdown Meter
 const String jpCountDownOn = "${pedestrianJPImageAssets}countdown_jp_on.png";
 const String jpCountDownOff = "${pedestrianJPImageAssets}countdown_jp_off.png";
-const double countMeterTopSpaceRate =  0.035;
-const double countMeterCenterSpaceRate =  0.08;
-const double countDownRightPaddingRate = 0.003;
-const double countMeterWidthRate =  0.012;
-const double countMeterHeightRate =  0.01;
-const double countMeterSpaceRate =  0.0024;
 
 ///Traffic Signal
 //Green
@@ -301,34 +294,20 @@ const List<String> trafficSignalArrowString = [
 //stop/go flag
 const String usStopFlag = "${trafficUSImageAssets}stop_flag.png";
 const String usGoFlag = "${trafficUSImageAssets}go_flag.png";
-const double stopGoFlagHeightRate = 0.18;
 const int flagRotationTime = 1;
-
-/// Floating Action Button
-const double floatingButtonSizeRate = 0.07;
-const double floatingImageSizeRate = 0.02;
-const double floatingIconSizeRate = 0.03;
 
 ///Upgrade
 const String premiumProduct = "signal_upgrade_premium";
-const double upgradeAppBarHeight = 45;
-const double premiumTitleFontSizeRate = 0.035;
-const double premiumPriceFontSizeRate = 0.08;
-const double premiumPricePaddingRate = 0.025;
-const double upgradeButtonFontSizeRate = 0.025;
-const double upgradeTableFontSizeRate = 0.018;
-const double upgradeTableIconSizeRate = 0.03;
-const double upgradeTableHeadingHeightRate = 0.03;
-const double upgradeTableHeightRate = 0.06;
 const double upgradeTableDividerWidth = 0;
-const double upgradeButtonPaddingRate = 0.006;
-const double upgradeButtonBottomMarginRate = 0.035;
 const double upgradeButtonElevation = 10;
 const double upgradeButtonBorderWidth = 1.5;
 const double upgradeButtonBorderRadius = 5;
-const double upgradeMarginWidthRate = 0.05;
-const double upgradeCircularProgressMarginBottomRate = 0.4;
 
 ///Settings
 const double settingsTilePaddingSize = 20;
 const double settingsTileRadiusSize = 15;
+
+///RevenueCat
+String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
+  "REVENUE_CAT_IOS_API_KEY":
+  "REVENUE_CAT_ANDROID_API_KEY";
