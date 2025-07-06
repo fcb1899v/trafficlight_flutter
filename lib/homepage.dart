@@ -71,6 +71,7 @@ class HomePage extends HookConsumerWidget {
         await ttsManager.initTts();
       });
       return () async {
+        await audioManager.stopAll();
         await audioManager.playLoopSound(index: 0, asset: soundRed[counter.value], volume: musicVolume, isSound: isSound);
       };
     }, const []);

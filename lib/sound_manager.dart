@@ -12,27 +12,22 @@ class TtsManager {
 
   final FlutterTts flutterTts = FlutterTts();
 
-  String normalFont() =>
-      (context.lang() == "ja") ? "notoJP":
-      // (context.lang() == "zh") ? "notoSC":
-      // (context.lang() == "ko") ? "bmDohyeon":
-      "roboto";
   String ttsLocale() =>
-      (context.lang() == "ja") ? "ja-JP":
+      // (context.lang() == "ja") ? "ja-JP":
       // (context.lang() == "zh") ? "zh-CN":
       // (context.lang() == "ko") ? "ko-KR":
       // (context.lang() == "es") ? "es-ES":
       "en-US";
 
   String androidVoiceName() =>
-      (context.lang() == "ja") ? "ja-JP-language":
+      // (context.lang() == "ja") ? "ja-JP-language":
       // (context.lang() == "zh") ? "zh-CN-language":
       // (context.lang() == "ko") ? "ko-KR-language":
       // (context.lang() == "es") ? "es-ES-language":
       "en-US-language";
 
   String iOSVoiceName() =>
-      (context.lang() == "ja") ? "Kyoko":
+      // (context.lang() == "ja") ? "Kyoko":
       // (context.lang() == "zh") ? "婷婷":
       // (context.lang() == "ko") ? "유나":
       // (context.lang() == "es") ? "Mónica":
@@ -87,8 +82,8 @@ class TtsManager {
     }
     await flutterTts.awaitSpeakCompletion(true);
     await flutterTts.awaitSynthCompletion(true);
-    if (context.mounted) await flutterTts.setLanguage(context.lang());
-    if (context.mounted) await flutterTts.isLanguageAvailable(context.lang());
+    // if (context.mounted) await flutterTts.setLanguage(context.lang());
+    // if (context.mounted) await flutterTts.isLanguageAvailable(context.lang());
     if (context.mounted) await setTtsVoice();
     await flutterTts.setVolume(1);
     await flutterTts.setSpeechRate(0.5);
