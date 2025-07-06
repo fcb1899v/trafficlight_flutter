@@ -48,3 +48,16 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /assets/images/transparent.png
+
+# Build artifacts and generated files
+**/build/
+**/.cxx/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/build.ninja
+**/rules.ninja
+
+# iOS dependencies (CocoaPods)
+ios/Pods/
+ios/Podfile.lock
