@@ -61,3 +61,21 @@ app.*.map.json
 # iOS dependencies (CocoaPods)
 ios/Pods/
 ios/Podfile.lock
+
+# Gradle build files
+.gradle/
+android/.gradle/
+android/.kotlin/
+android/app/build/
+android/build/
+
+# Generated files
+*.so
+*.o
+*.a
+*.dylib
+*.dll
+*.apk
+*.aab
+*.ipa
+*.app
