@@ -16,8 +16,12 @@ const String appTitleImage = "assets/images/letsSignal.png";
 /// App Check Configuration
 /// Firebase App Check providers for security validation
 /// Uses debug providers in debug mode, production providers in release mode
-final androidProvider = kDebugMode ? AndroidProvider.debug: AndroidProvider.playIntegrity;
-final appleProvider = kDebugMode ? AppleProvider.debug: AppleProvider.deviceCheck;
+final AndroidAppCheckProvider androidProvider = kDebugMode
+    ? const AndroidDebugProvider()
+    : const AndroidPlayIntegrityProvider();
+final AppleAppCheckProvider appleProvider = kDebugMode
+    ? const AppleDebugProvider()
+    : const AppleDeviceCheckProvider();
 
 /// Time Configuration Constants
 /// All time values are in seconds unless otherwise specified

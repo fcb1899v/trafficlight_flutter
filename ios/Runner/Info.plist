@@ -36,6 +36,11 @@
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This app is privately developed and is supported solely by advertising revenue. If you agree, please tap 'Allow Tracking'. You will be able to see ads that match your preferences.</string>
 	<key>SKAdNetworkItems</key>
@@ -237,6 +242,36 @@
 			<string>3qcr597p9d.skadnetwork</string>
 		</dict>
 	</array>
+	<key>StoreKit</key>
+	<dict>
+		<key>Configuration</key>
+		<string>Configuration</string>
+		<key>SimulatorStoreKitConfiguration</key>
+		<string>Configuration</string>
+		<key>StoreKitTesting</key>
+		<true/>
+	</dict>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -260,19 +295,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>StoreKit</key>
-	<dict>
-		<key>Configuration</key>
-		<string>Configuration</string>
-		<key>SimulatorStoreKitConfiguration</key>
-		<string>Configuration</string>
-		<key>StoreKitTesting</key>
-		<true/>
-	</dict>
 </dict>
 </plist>

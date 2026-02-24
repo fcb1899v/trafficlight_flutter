@@ -72,6 +72,12 @@ class UpgradePage extends HookConsumerWidget {
           isRestore: isRestore,
           errorCode: PurchasesErrorHelper.getErrorCode(e),
         );
+      } catch (e) {
+        "Button tap error: $e".debugPrint();
+        upgrade.purchaseDialog(
+          isSuccess: false,
+          isRestore: isRestore,
+        );
       }
     }
 

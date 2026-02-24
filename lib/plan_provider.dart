@@ -7,9 +7,27 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'extension.dart';
 
 /// Provider for managing premium plan state across the app
-final planProvider = StateNotifierProvider<PlanNotifier, PlanState>(
-  (ref) => PlanNotifier()
-);
+final planProvider = NotifierProvider<PlanNotifier, PlanState>(PlanNotifier.new);
+
+/// Returns the initial premium status for app startup (used from main() before ProviderScope).
+/// Does not use any notifier/ref/state.
+Future<bool> getInitialPremiumStatus() async {
+  try {
+    final localPremium = "premium".getSettingsValueBool(false);
+    if (localPremium) return true;
+    final CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+    final bool isCars = customerInfo.entitlements.active["signal_for_cars"]?.isActive ?? false;
+    final bool isNoAds = customerInfo.entitlements.active["no_ads"]?.isActive ?? false;
+    final bool actualPremium = isCars && isNoAds;
+    if (actualPremium) {
+      await Settings.setValue('key_premium', actualPremium, notify: true);
+    }
+    return actualPremium;
+  } catch (e) {
+    "Error initializing premium status: $e".debugPrint();
+    return "premium".getSettingsValueBool(false);
+  }
+}
 
 /// Immutable state class for premium plan information
 @immutable
@@ -25,9 +43,14 @@ class PlanState {
   });
 }
 
-/// StateNotifier for managing premium plan state and purchase operations
-class PlanNotifier extends StateNotifier<PlanState> {
-  PlanNotifier(): super(const PlanState());
+/// Notifier for managing premium plan state and purchase operations
+class PlanNotifier extends Notifier<PlanState> {
+  final PlanState? _initial;
+
+  PlanNotifier([this._initial]);
+
+  @override
+  PlanState build() => _initial ?? const PlanState();
 
   /// Updates the current premium plan status
   void setCurrentPlan(bool isPremium) {
@@ -46,32 +69,12 @@ class PlanNotifier extends StateNotifier<PlanState> {
   }
 
   /// Initializes premium status on app startup
-  /// Checks local storage first, then validates with RevenueCat if needed
+  /// Checks local storage first, then validates with RevenueCat if needed.
+  /// Call this when the notifier is already mounted (e.g. from UI) if you need to refresh;
+  /// for main() startup use getInitialPremiumStatus() and override planProvider instead.
   Future<void> initializePremiumStatus() async {
-    try {
-      // Load premium status from local storage first
-      final localPremium = "premium".getSettingsValueBool(false);
-      setCurrentPlan(localPremium);
-      // Only check RevenueCat if local storage shows non-premium
-      // This avoids unnecessary API calls for confirmed premium users
-      if (!localPremium) {
-        // Try automatic restore
-        final CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-        final bool isCars = customerInfo.entitlements.active["signal_for_cars"]?.isActive ?? false;
-        final bool isNoAds = customerInfo.entitlements.active["no_ads"]?.isActive ?? false;
-        final bool actualPremium = isCars && isNoAds;        
-        // Update local storage and state if user actually has premium
-        if (actualPremium) {
-          await Settings.setValue('key_premium', actualPremium, notify: true);
-          setCurrentPlan(actualPremium);
-        }
-      }
-    } catch (e) {
-      "Error initializing premium status: $e".debugPrint();
-      // Fallback to local storage value on error
-      final localPremium = "premium".getSettingsValueBool(false);
-      setCurrentPlan(localPremium);
-    }
+    final initial = await getInitialPremiumStatus();
+    setCurrentPlan(initial);
   }
 
   /// Fetches available offerings and initiates purchase
@@ -90,10 +93,11 @@ class PlanNotifier extends StateNotifier<PlanState> {
         "Lifetime package: $package".debugPrint();
         // Purchase the lifetime package
         if (package != null) {
-          final purchaserInfo = await Purchases.purchasePackage(package);
-          "Purchase result: $purchaserInfo".debugPrint();
-          purchaserInfo.entitlements.active["no_ads"]?.isActive;
-          purchaserInfo.entitlements.active["signal_for_cars"]?.isActive;
+          final purchaseResult = await Purchases.purchase(PurchaseParams.package(package));
+          "Purchase result: $purchaseResult".debugPrint();
+          final customerInfo = purchaseResult.customerInfo;
+          customerInfo.entitlements.active["no_ads"]?.isActive;
+          customerInfo.entitlements.active["signal_for_cars"]?.isActive;
         } else {
           "No lifetime package available".debugPrint();
           throw Exception("No premium package available");
@@ -180,14 +184,15 @@ class PlanNotifier extends StateNotifier<PlanState> {
     } catch (e) {
       "Button tap error: $e".debugPrint();
       setPurchasing(false);
-      
-      // エラーの種類に応じて適切なメッセージを生成
+
       if (e is PlatformException) {
         final errorCode = PurchasesErrorHelper.getErrorCode(e);
+        if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+          return;
+        }
         throw Exception("Purchase Error: $errorCode");
-      } else {
-        throw Exception("Purchase Error: An unexpected error occurred");
       }
+      throw Exception("Purchase Error: An unexpected error occurred");
     }
   }
 }

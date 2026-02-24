@@ -11,6 +11,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'l10n/app_localizations.dart' show AppLocalizations;
 import 'extension.dart';
 import 'firebase_options.dart';
@@ -20,19 +21,69 @@ import 'homepage.dart';
 import 'settings.dart';
 import 'upgrade.dart';
 
+/// Notifiers for time-related settings (Riverpod 3 - StateProvider replacement)
+class WaitTimeNotifier extends Notifier<int> {
+  final int? _initial;
+  WaitTimeNotifier([this._initial]);
+  @override
+  int build() => _initial ?? initialWaitTime;
+  void setTime(int value) => state = value;
+}
+
+class GoTimeNotifier extends Notifier<int> {
+  final int? _initial;
+  GoTimeNotifier([this._initial]);
+  @override
+  int build() => _initial ?? initialGoTime;
+  void setTime(int value) => state = value;
+}
+
+class FlashTimeNotifier extends Notifier<int> {
+  final int? _initial;
+  FlashTimeNotifier([this._initial]);
+  @override
+  int build() => _initial ?? initialFlashTime;
+  void setTime(int value) => state = value;
+}
+
+class YellowTimeNotifier extends Notifier<int> {
+  final int? _initial;
+  YellowTimeNotifier([this._initial]);
+  @override
+  int build() => _initial ?? initialYellowTime;
+  void setTime(int value) => state = value;
+}
+
+class ArrowTimeNotifier extends Notifier<int> {
+  final int? _initial;
+  ArrowTimeNotifier([this._initial]);
+  @override
+  int build() => _initial ?? initialArrowTime;
+  void setTime(int value) => state = value;
+}
+
+class IsSoundNotifier extends Notifier<bool> {
+  final bool? _initial;
+  IsSoundNotifier([this._initial]);
+  @override
+  bool build() => _initial ?? true;
+  void setSound(bool value) => state = value;
+}
+
 /// State providers for time-related settings
 /// These providers manage the app's timing configuration across the entire app
-final waitTimeProvider = StateProvider<int>((ref) => initialWaitTime);
-final goTimeProvider = StateProvider<int>((ref) => initialGoTime);
-final flashTimeProvider = StateProvider<int>((ref) => initialFlashTime);
-final yellowTimeProvider = StateProvider<int>((ref) => initialYellowTime);
-final arrowTimeProvider = StateProvider<int>((ref) => initialArrowTime);
-final isSoundProvider = StateProvider<bool>((ref) => true);
+final waitTimeProvider = NotifierProvider<WaitTimeNotifier, int>(WaitTimeNotifier.new);
+final goTimeProvider = NotifierProvider<GoTimeNotifier, int>(GoTimeNotifier.new);
+final flashTimeProvider = NotifierProvider<FlashTimeNotifier, int>(FlashTimeNotifier.new);
+final yellowTimeProvider = NotifierProvider<YellowTimeNotifier, int>(YellowTimeNotifier.new);
+final arrowTimeProvider = NotifierProvider<ArrowTimeNotifier, int>(ArrowTimeNotifier.new);
+final isSoundProvider = NotifierProvider<IsSoundNotifier, bool>(IsSoundNotifier.new);
 
 /// Main application entry point
 /// Initializes all required services and configurations
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   // Set device orientation to portrait only
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Configure system UI for edge-to-edge display
@@ -54,9 +105,8 @@ Future<void> main() async {
   await Purchases.setLogLevel(LogLevel.debug);
   await Purchases.configure(PurchasesConfiguration(apiKey));
   await Purchases.enableAdServicesAttributionTokenCollection();
-  // Initialize premium status AFTER RevenueCat is configured
-  final planNotifier = PlanNotifier();
-  await planNotifier.initializePremiumStatus();
+  // Get initial premium status without using a notifier (notifier needs Riverpod)
+  final initialPremium = await getInitialPremiumStatus();
   // Load saved time settings from local storage
   final savedWaitTime = "wait".getSettingsValueInt(initialWaitTime);
   final savedGoTime = "go".getSettingsValueInt(initialGoTime);
@@ -66,8 +116,8 @@ Future<void> main() async {
   final savedIsSound = "sound".getSettingsValueBool(true);
   // Initialize Firebase App Check for security
   await FirebaseAppCheck.instance.activate(
-    androidProvider: androidProvider,
-    appleProvider: appleProvider,
+    providerAndroid: androidProvider,
+    providerApple: appleProvider,
   );
   // Initialize Google Mobile Ads
   await MobileAds.instance.initialize();
@@ -76,12 +126,13 @@ Future<void> main() async {
   // Run app with provider overrides for saved settings
   runApp(ProviderScope(
     overrides: [
-      waitTimeProvider.overrideWith((ref) => savedWaitTime),
-      goTimeProvider.overrideWith((ref) => savedGoTime),
-      flashTimeProvider.overrideWith((ref) => savedFlashTime),
-      yellowTimeProvider.overrideWith((ref) => savedYellowTime),
-      arrowTimeProvider.overrideWith((ref) => savedArrowTime),
-      isSoundProvider.overrideWith((ref) => savedIsSound),
+      planProvider.overrideWith(() => PlanNotifier(PlanState(isPremium: initialPremium))),
+      waitTimeProvider.overrideWith(() => WaitTimeNotifier(savedWaitTime)),
+      goTimeProvider.overrideWith(() => GoTimeNotifier(savedGoTime)),
+      flashTimeProvider.overrideWith(() => FlashTimeNotifier(savedFlashTime)),
+      yellowTimeProvider.overrideWith(() => YellowTimeNotifier(savedYellowTime)),
+      arrowTimeProvider.overrideWith(() => ArrowTimeNotifier(savedArrowTime)),
+      isSoundProvider.overrideWith(() => IsSoundNotifier(savedIsSound)),
     ],
     child: MyApp())
   );

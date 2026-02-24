@@ -51,16 +51,16 @@ class SettingsPage extends HookConsumerWidget {
     Future<void> setTime(int time, String key) async {
       await Settings.setValue('key_$key', time, notify: true);
       ('${key}Time: $time').debugPrint();
-      if (key == "wait") ref.read(waitTimeProvider.notifier).state = time;
-      if (key == "go") ref.read(goTimeProvider.notifier).state = time;
-      if (key == "flash") ref.read(flashTimeProvider.notifier).state = time;
+      if (key == "wait") ref.read(waitTimeProvider.notifier).setTime(time);
+      if (key == "go") ref.read(goTimeProvider.notifier).setTime(time);
+      if (key == "flash") ref.read(flashTimeProvider.notifier).setTime(time);
     }
     /// Update sound setting and sync with provider state
     /// @param value New sound setting value
     Future<void> setSound(bool value) async {
       await Settings.setValue<bool>('key_sound', value, notify: true);
       'sound: $value'.debugPrint();
-      ref.read(isSoundProvider.notifier).state = value;
+      ref.read(isSoundProvider.notifier).setSound(value);
     }
     // Initialize settings and premium functionality on first frame
     useEffect(() {

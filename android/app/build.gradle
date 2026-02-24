@@ -52,7 +52,7 @@ android {
 
     defaultConfig {
         applicationId "nakajimamasao.appstudio.signalbutton"
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -80,10 +80,10 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation platform('com.google.firebase:firebase-bom:33.16.0')
-    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation platform('com.google.firebase:firebase-bom:34.9.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx:22.5.0'
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
-    implementation 'com.google.android.play:integrity:1.4.0'
+    implementation 'com.google.android.play:integrity:1.6.0'
 }
 
 allprojects {

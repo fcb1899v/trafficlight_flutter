@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'main.dart';
@@ -66,6 +67,7 @@ class HomePage extends HookConsumerWidget {
     // Initialize settings and audio on first frame
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
+        FlutterNativeSplash.remove();
         await Settings.init(cacheProvider: SharePreferenceCache(),);
         await initState();
         await ttsManager.initTts();
