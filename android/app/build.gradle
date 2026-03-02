@@ -78,11 +78,20 @@ flutter {
     source '../..'
 }
 
+// Exclude deprecated play-services-safetynet; use Play Integrity API instead
+configurations.all {
+    exclude group: 'com.google.android.gms', module: 'play-services-safetynet'
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation platform('com.google.firebase:firebase-bom:34.9.0')
+    implementation "androidx.core:core-ktx:1.17.0"
+    implementation platform('com.google.firebase:firebase-bom:34.10.0')
     implementation 'com.google.firebase:firebase-analytics-ktx:22.5.0'
-    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    implementation("com.google.firebase:firebase-appcheck:19.0.2") {
+        exclude group: "com.google.firebase", module: "firebase-appcheck-safetynet"
+    }
+    implementation "com.google.firebase:firebase-appcheck-playintegrity:19.0.2"
     implementation 'com.google.android.play:integrity:1.6.0'
 }
 
