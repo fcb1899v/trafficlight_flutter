@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Signal Number
@@ -13,15 +11,6 @@ const int signalNumber = 7;
 const String appTitle = "LETS SIGNAL";
 const String appTitleImage = "assets/images/letsSignal.png";
 
-/// App Check Configuration
-/// Firebase App Check providers for security validation
-/// Uses debug providers in debug mode, production providers in release mode
-final AndroidAppCheckProvider androidProvider = kDebugMode
-    ? const AndroidDebugProvider()
-    : const AndroidPlayIntegrityProvider();
-final AppleAppCheckProvider appleProvider = kDebugMode
-    ? const AppleDebugProvider()
-    : const AppleDeviceCheckProvider();
 
 /// Time Configuration Constants
 /// All time values are in seconds unless otherwise specified
@@ -87,9 +76,9 @@ const List<Color> backGroundColor = [
 
 /// Sound Configuration
 /// Audio file paths and volume settings for sound effects
-const String buttonSound = "audios/pon.mp3";        // Button press sound
-const String audioFile = "audios/sound_";           // Base path for signal sounds
-const String noneSound = "audios/sound_none.mp3";   // Silent sound file
+const String buttonSound = "assets/audios/pon.mp3";        // Button press sound
+const String audioFile = "assets/audios/sound_";           // Base path for signal sounds
+const String noneSound = "assets/audios/sound_none.mp3";   // Silent sound file
 const double musicVolume = 1;                       // Background music volume (0.0-1.0)
 const double buttonVolume = 1;                      // Button sound volume (0.0-1.0)
 const int audioPlayerNumber = 2;                    // Number of audio players for simultaneous sounds
@@ -176,3 +165,23 @@ const double settingsTileRadiusSize = 15;                       // Border radius
 String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
   "REVENUE_CAT_IOS_API_KEY":      // iOS/macOS API key placeholder
   "REVENUE_CAT_ANDROID_API_KEY";  // Android API key placeholder
+
+// --- AdMob demo ad units ---
+//
+// Google publishes these and they are the same for every developer, so they are
+// constants here rather than .env entries: they are not secret, and keeping them
+// in source means a missing .env key can no longer break a debug build.
+// Production unit IDs stay in .env, because those are ours.
+// https://developers.google.com/admob/android/test-ads
+// https://developers.google.com/admob/ios/test-ads  (checked 2026-09-02)
+// The banner in this app is adaptive, and Google lists a separate demo unit for
+// adaptive banners, shared by the anchored and inline variants. The fixed size
+// units (Android 6300978111, iOS 2934735716) only ever serve the 320x50
+// creative, so every adaptive height measured against them came back at the
+// 320x50 ratio no matter what size was requested
+const String androidBannerTestId = "ca-app-pub-3940256099942544/9214589741";
+const String iosBannerTestId = "ca-app-pub-3940256099942544/2435281174";
+const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";
+const String iosRewardedTestId = "ca-app-pub-3940256099942544/1712485313";
+const String androidInterstitialTestId = "ca-app-pub-3940256099942544/1033173712";
+const String iosInterstitialTestId = "ca-app-pub-3940256099942544/4411468910";

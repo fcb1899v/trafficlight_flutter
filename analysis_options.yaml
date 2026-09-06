@@ -7,6 +7,13 @@
 
 # The following line activates a set of recommended lints for Flutter apps,
 # packages, and plugins designed to encourage good coding practices.
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    # Vendored copy of pub.dev flutter_tts; not ours to lint
+    - packages/**
 include: package:flutter_lints/flutter.yaml
 
 linter:

@@ -1,0 +1,18 @@
+# Template for android/key.properties, which is untracked. Copy this to that
+# name and fill in the values. android/app/build.gradle reads all four keys.
+#
+# Unlike assets/.env, nothing here ships inside the app, and storePassword and
+# keyPassword are real secrets: together with the keystore they let anyone
+# publish an update that Play accepts as coming from you. Keep the keystore
+# itself outside the repository, and keep a backup of both. A lost upload key
+# can be reset through Play support; a lost app signing key cannot.
+#
+# Release builds fall back to the debug signing config when this file is
+# absent, which produces an artifact Play rejects.
+
+# Absolute path to the .jks, or a path relative to android/.
+storeFile=
+
+storePassword=
+keyAlias=
+keyPassword=

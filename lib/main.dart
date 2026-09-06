@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -81,6 +78,10 @@ final isSoundProvider = NotifierProvider<IsSoundNotifier, bool>(IsSoundNotifier.
 
 /// Main application entry point
 /// Initializes all required services and configurations
+// No ATT call here. On iOS the UMP form shows Google's IDFA explainer and then
+// raises the system ATT prompt itself, so asking again from the app put a second
+// explainer in front of a user who had already answered. Removed in NEO first;
+// see 03_Developer/technical/2026-08-25_elevatorneo_att_gate_removal.md
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -114,15 +115,9 @@ Future<void> main() async {
   final savedYellowTime = "yellow".getSettingsValueInt(initialYellowTime);
   final savedArrowTime = "arrow".getSettingsValueInt(initialArrowTime);
   final savedIsSound = "sound".getSettingsValueBool(true);
-  // Initialize Firebase App Check for security
-  await FirebaseAppCheck.instance.activate(
-    providerAndroid: androidProvider,
-    providerApple: appleProvider,
-  );
   // Initialize Google Mobile Ads
   await MobileAds.instance.initialize();
   // Initialize App Tracking Transparency
-  await initATTPlugin();
   // Run app with provider overrides for saved settings
   runApp(ProviderScope(
     overrides: [
@@ -169,13 +164,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Initialize App Tracking Transparency for iOS/macOS
-/// Requests user permission for tracking if not already determined
-Future<void> initATTPlugin() async {
-  if (Platform.isIOS || Platform.isMacOS) {
-    final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-    if (status == TrackingStatus.notDetermined) {
-      await AppTrackingTransparency.requestTrackingAuthorization();
-    }
-  }
-}

@@ -245,9 +245,9 @@
 	<key>StoreKit</key>
 	<dict>
 		<key>Configuration</key>
-		<string>Configuration</string>
+		<string>SyncedProducts</string>
 		<key>SimulatorStoreKitConfiguration</key>
-		<string>Configuration</string>
+		<string>SyncedProducts</string>
 		<key>StoreKitTesting</key>
 		<true/>
 	</dict>

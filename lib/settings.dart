@@ -39,10 +39,15 @@ class SettingsPage extends HookConsumerWidget {
     );
     /// Fetch premium price from RevenueCat offerings
     getPremiumPrice() async {
-      final Offerings offerings = await Purchases.getOfferings();
-      if (offerings.current != null && offerings.current!.availablePackages.isNotEmpty) {
-        premiumPrice.value = offerings.current!.availablePackages[0].storeProduct.priceString;
-        await Settings.setValue("key_premiumPrice", premiumPrice.value);
+      try {
+        final Offerings offerings = await Purchases.getOfferings();
+        if (offerings.current != null && offerings.current!.availablePackages.isNotEmpty) {
+          premiumPrice.value = offerings.current!.availablePackages[0].storeProduct.priceString;
+          await Settings.setValue("key_premiumPrice", premiumPrice.value);
+        }
+      } catch (e) {
+        isReadError.value = true;
+        'ReadError: ${isReadError.value}, Error: $e'.debugPrint();
       }
     }
     /// Update time settings and sync with provider state
@@ -80,12 +85,7 @@ class SettingsPage extends HookConsumerWidget {
           });
           // Fetch premium price if not already cached
           if (premiumPrice.value == "") {
-            try {
-              getPremiumPrice();
-            } on PlatformException catch (e) {
-              isReadError.value = true;
-              'ReadError: ${isReadError.value}, Error: ${e.message}'.debugPrint();
-            }
+            getPremiumPrice();
           }
         }
       });

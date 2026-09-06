@@ -1,53 +1,72 @@
 name: signalbutton
 description: push button signal simulator
 publish_to: 'none'
-version: 1.2.12+33
+version: 1.2.13+34
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
-  flutter: '>=3.3.0'
+  # 3.47 is the floor, not 3.3: Android Gradle Plugin 9 rejects the Kotlin
+  # Gradle Plugin being applied on top, and Flutter forces it onto plugin
+  # modules until 3.47 adds the isBuiltInKotlinEnabled guard. Declaring 3.3
+  # let `pub get` succeed and the Android build fail later with an error
+  # that names neither.
+  sdk: '>=3.13.0 <4.0.0'
+  flutter: '>=3.47.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter_android: ^4.10.11
-  webview_flutter: ^4.13.1
+  webview_flutter_android: ^4.14.1
+  webview_flutter: ^4.14.1
   # Firebase Analytics
-  firebase_core: ^4.4.0
-  firebase_analytics: ^12.1.2
-  firebase_app_check: ^0.4.1+4
+  firebase_core: ^4.14.0
+  firebase_analytics: ^12.5.0
   # App Icon
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.9
   flutter_launcher_icons: ^0.14.4
   # Audio Player
-  audioplayers: ^6.5.1
+  just_audio: ^0.10.6
   # Vibration
-  vibration: ^3.1.7
+  vibration: ^3.2.1
   # Text to Speech
-  flutter_tts: ^4.2.5
+  # Fork of pub.dev flutter_tts 4.2.5. Upstream has no Swift Package Manager
+  # support and its last commit was 2026-01-05, so waiting for it would keep
+  # CocoaPods in the iOS build. Changes from the published 4.2.5:
+  #   ios/flutter_tts/, macos/flutter_tts/   SPM manifests, added
+  #   android/build.gradle                   branch on android.builtInKotlin so
+  #                                          AGP 9 compiles the Kotlin itself
+  #   example/, gen/, test/                  removed; not needed to build
+  # The Dart sources are unchanged. `diff -rq` against the pub-cache copy shows
+  # exactly the five entries above.
+  flutter_tts:
+    path: packages/flutter_tts
   # Settings
   flutter_settings_screens: ^0.3.4
-  settings_ui: ^2.0.2
+  settings_ui: ^3.0.1
   # SharedPreference
-  shared_preferences: ^2.5.4
+  shared_preferences: ^2.5.5
   # Admob
-  google_mobile_ads: ^7.0.0
-  app_tracking_transparency: ^2.0.6+1
+  google_mobile_ads: ^9.1.0
   # Device locale
-  devicelocale: ^0.8.2
+  devicelocale: ^0.9.1
   # Localize
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
   #env
-  flutter_dotenv: ^6.0.0
+  flutter_dotenv: ^6.0.1
   # Revenue Cat
-  purchases_flutter: ^9.12.2
+  purchases_flutter: ^10.11.0
   #MVVM
-  hooks_riverpod: ^3.2.1
+  hooks_riverpod: ^3.4.3
   flutter_hooks: ^0.21.3+1
   # App Splash (runtime use in lib/)
-  flutter_native_splash: ^2.4.7
+  flutter_native_splash: ^2.4.8
+
+# 2.6.0 ships no Package.swift while 2.5.1 does, and a single plugin without one
+# makes Flutter fall back to CocoaPods for the whole iOS build
+# (darwin_dependency_management.dart:89). Lift when SPM support returns.
+dependency_overrides:
+  path_provider_foundation: 2.5.1
 
 dev_dependencies:
   flutter_test:

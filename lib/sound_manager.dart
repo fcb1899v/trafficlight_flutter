@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'extension.dart';
 
@@ -91,13 +91,21 @@ class TtsManager {
 }
 
 /// For Audio
+///
+/// just_audio, to match the other apps in the portfolio. audioplayers pins
+/// Java 8 and applies the Kotlin Gradle Plugin unconditionally, which AGP 9
+/// rejects; just_audio branches on the AGP version instead.
+///
+/// Index 0 is the looping music, index 1 the one shot button sound. Two
+/// players keep an effect from cutting the loop, which one player would.
 class AudioManager {
 
   final List<AudioPlayer> audioPlayers;
 
   static const audioPlayerNumber = 2;
   AudioManager() : audioPlayers = List.generate(audioPlayerNumber, (_) => AudioPlayer());
-  PlayerState playerState(int index) => audioPlayers[index].state;
+
+  bool isPlaying(int index) => audioPlayers[index].playing;
   String playerTitle(int index) => "${["music sound", "button sound"][index]}Player";
 
   Future<void> playLoopSound({
@@ -108,10 +116,16 @@ class AudioManager {
   }) async {
     if (isSound) {
       final player = audioPlayers[index];
+      // Stop first: setAsset on a playing source keeps the old position
+      if (player.playing) await player.stop();
       await player.setVolume(volume);
-      await player.setReleaseMode(ReleaseMode.loop);
-      await player.play(AssetSource(asset));
-      "Loop ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
+      await player.setLoopMode(LoopMode.one);
+      await player.setAsset(asset);
+      // Not awaited: just_audio's play() completes only when playback
+      // completes or is stopped. A looping source never completes, so
+      // awaiting it here would block the caller for the whole loop
+      player.play();
+      "Loop ${playerTitle(index)}: playing=${player.playing}".debugPrint();
     } else {
       "No sound setting".debugPrint();
     }
@@ -125,10 +139,14 @@ class AudioManager {
   }) async {
     if (isSound) {
       final player = audioPlayers[index];
+      if (player.playing) await player.stop();
       await player.setVolume(volume);
-      await player.setReleaseMode(ReleaseMode.release);
-      await player.play(AssetSource(asset));
-      "Play ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
+      await player.setLoopMode(LoopMode.off);
+      await player.setAsset(asset);
+      // Not awaited: play() completes when the clip ends, and a button sound
+      // must not block the tap handler for its whole duration
+      player.play();
+      "Play ${playerTitle(index)}".debugPrint();
     } else {
       "No sound setting".debugPrint();
     }
@@ -136,16 +154,24 @@ class AudioManager {
 
   Future<void> stopSound(int index) async {
     await audioPlayers[index].stop();
-    "Stop ${playerTitle(index)}: ${audioPlayers[index].state}".debugPrint();
+    "Stop ${playerTitle(index)}: playing=${audioPlayers[index].playing}".debugPrint();
   }
 
   Future<void> stopAll() async {
     for (final player in audioPlayers) {
       try {
-        if (player.state == PlayerState.playing) {
+        if (player.playing) {
           await player.stop();
           "Stop all players".debugPrint();
         }
+      } catch (_) {}
+    }
+  }
+
+  Future<void> dispose() async {
+    for (final player in audioPlayers) {
+      try {
+        await player.dispose();
       } catch (_) {}
     }
   }
