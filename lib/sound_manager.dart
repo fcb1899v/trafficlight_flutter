@@ -90,14 +90,8 @@ class TtsManager {
   }
 }
 
-/// For Audio
-///
-/// just_audio, to match the other apps in the portfolio. audioplayers pins
-/// Java 8 and applies the Kotlin Gradle Plugin unconditionally, which AGP 9
-/// rejects; just_audio branches on the AGP version instead.
-///
-/// Index 0 is the looping music, index 1 the one shot button sound. Two
-/// players keep an effect from cutting the loop, which one player would.
+/// Audio via just_audio (audioplayers breaks under AGP 9). Index 0 is the looping
+/// music, index 1 the one shot button sound; two players keep an effect from cutting the loop
 class AudioManager {
 
   final List<AudioPlayer> audioPlayers;
@@ -121,9 +115,8 @@ class AudioManager {
       await player.setVolume(volume);
       await player.setLoopMode(LoopMode.one);
       await player.setAsset(asset);
-      // Not awaited: just_audio's play() completes only when playback
-      // completes or is stopped. A looping source never completes, so
-      // awaiting it here would block the caller for the whole loop
+      // Not awaited: play() completes only when playback ends, and a looping
+      // source never does, so awaiting would block for the whole loop
       player.play();
       "Loop ${playerTitle(index)}: playing=${player.playing}".debugPrint();
     } else {

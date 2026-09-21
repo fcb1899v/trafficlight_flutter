@@ -177,9 +177,7 @@ class UpgradeWidget {
     ): null,
   );
 
-  /// Create upgrade or restore button with different styling based on action type
-  /// @param isRestore Whether this button triggers restore or purchase
-  /// @param onTap Callback function when button is tapped
+  /// Upgrade or restore button, styled by isRestore
   Widget upgradeButton(bool isRestore, {
     required void Function() onTap,
   }) => GestureDetector(
@@ -240,10 +238,7 @@ class UpgradeWidget {
     ),
   );
 
-  /// Create table row showing feature availability
-  /// @param title Feature name
-  /// @param color Row background color
-  /// @param isPremium Whether this feature is premium-only
+  /// Table row showing whether a feature is premium-only
   DataRow tableDataRow(String title, Color color, bool isPremium) => DataRow(
     color: WidgetStateColor.resolveWith((states) => color),
     cells: [
@@ -286,10 +281,7 @@ class UpgradeWidget {
     ]
   );
 
-  /// Display purchase result dialog (success or error)
-  /// @param isSuccess Whether the purchase/restore was successful
-  /// @param isRestore Whether this was a restore operation
-  /// @param errorCode Error code if the operation failed
+  /// Purchase or restore result dialog (success or error with errorCode)
   Future<void> purchaseDialog({
     required bool isSuccess,
     required bool isRestore,

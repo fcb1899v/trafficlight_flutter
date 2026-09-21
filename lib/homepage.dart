@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:devicelocale/devicelocale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -69,6 +70,9 @@ class HomePage extends HookConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         FlutterNativeSplash.remove();
         await Settings.init(cacheProvider: SharePreferenceCache(),);
+        // Price prefetch plus its delay, not behind the country or TTS setup; it only needs
+        // Settings, where it stores the price. Configure stays in main()
+        if (context.mounted && !ref.read(planProvider).isPremium) unawaited(PremiumPrice.prefetch());
         await initState();
         await ttsManager.initTts();
       });
@@ -388,9 +392,7 @@ class HomeWidget {
     ]
   );
 
-  /// Create country navigation button
-  /// @param onPressed Callback function when button is pressed
-  /// @param isForward Whether this is forward or backward button
+  /// Country navigation button; isForward picks the forward or backward arrow
   Widget countryChangeButton({
     required void Function() onPressed,
     required bool isForward
@@ -568,9 +570,7 @@ class HomeWidget {
     ],
   );
 
-  /// Create countdown text with appropriate styling
-  /// @param text Text to display
-  /// @param color Text color
+  /// Countdown text with the given color
   Text countDownText(String text, Color color) => Text(text,
     style: TextStyle(
       color: color,

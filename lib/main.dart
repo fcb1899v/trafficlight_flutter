@@ -76,12 +76,8 @@ final yellowTimeProvider = NotifierProvider<YellowTimeNotifier, int>(YellowTimeN
 final arrowTimeProvider = NotifierProvider<ArrowTimeNotifier, int>(ArrowTimeNotifier.new);
 final isSoundProvider = NotifierProvider<IsSoundNotifier, bool>(IsSoundNotifier.new);
 
-/// Main application entry point
-/// Initializes all required services and configurations
-// No ATT call here. On iOS the UMP form shows Google's IDFA explainer and then
-// raises the system ATT prompt itself, so asking again from the app put a second
-// explainer in front of a user who had already answered. Removed in NEO first;
-// see 03_Developer/technical/2026-08-25_elevatorneo_att_gate_removal.md
+/// Main application entry point. No ATT call here: on iOS the UMP form raises
+/// the system ATT prompt itself, so asking again would show a second explainer
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);

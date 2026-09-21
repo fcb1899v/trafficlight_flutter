@@ -28,8 +28,8 @@ class SettingsPage extends HookConsumerWidget {
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     final isPremium = useState("premium".getSettingsValueBool(false));
     final isPremiumRestore = useState("premiumRestore".getSettingsValueBool(false));
-    final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
-    final isReadError = useState(false);
+    // The live store price, empty while unknown; listened to, so a late price shows the entry
+    final premiumPrice = useValueListenable(PremiumPrice.value);
     // Create settings widget instance
     final settings = SettingsWidget(context,
       waitTime: waitTime,
@@ -37,22 +37,7 @@ class SettingsPage extends HookConsumerWidget {
       flashTime: flashTime,
       isSound: isSound,
     );
-    /// Fetch premium price from RevenueCat offerings
-    getPremiumPrice() async {
-      try {
-        final Offerings offerings = await Purchases.getOfferings();
-        if (offerings.current != null && offerings.current!.availablePackages.isNotEmpty) {
-          premiumPrice.value = offerings.current!.availablePackages[0].storeProduct.priceString;
-          await Settings.setValue("key_premiumPrice", premiumPrice.value);
-        }
-      } catch (e) {
-        isReadError.value = true;
-        'ReadError: ${isReadError.value}, Error: $e'.debugPrint();
-      }
-    }
-    /// Update time settings and sync with provider state
-    /// @param time New time value
-    /// @param key Setting key (wait, go, flash)
+    /// Updates the time setting for key (wait, go, flash) and syncs provider state
     Future<void> setTime(int time, String key) async {
       await Settings.setValue('key_$key', time, notify: true);
       ('${key}Time: $time').debugPrint();
@@ -83,10 +68,8 @@ class SettingsPage extends HookConsumerWidget {
               'Error: ${e.message}'.debugPrint();
             }
           });
-          // Fetch premium price if not already cached
-          if (premiumPrice.value == "") {
-            getPremiumPrice();
-          }
+          // Always the live price: reuses the home screen's prefetch, or joins it
+          PremiumPrice.load();
         }
       });
       "waitTime: $waitTime, goTime: $goTime, flashTime: $flashTime, isSound: $isSound".debugPrint();
@@ -115,14 +98,11 @@ class SettingsPage extends HookConsumerWidget {
                 settings.setSoundTile(onChanged: (value) => setSound(value)),
               ]
             ),
-            /// Premium Plan Section (only shown for non-premium users)
-            if (!isPremiumProvider) SettingsSection(
+            /// Premium Plan Section: non-premium users, and only with a live store price
+            if (!isPremiumProvider && premiumPrice.isNotEmpty) SettingsSection(
               title: Text(context.upgrade()),
               tiles: [
-                settings.premiumTile(
-                  premiumPrice: premiumPrice.value,
-                  isReadError: isReadError.value
-                ),
+                settings.premiumTile(),
               ]
             ),
           ]),
@@ -178,9 +158,7 @@ class SettingsWidget {
     ),
   );
 
-  /// Create time setting tile with slider control
-  /// @param key Setting key (wait, go, flash)
-  /// @param onChanged Callback function when time value changes
+  /// Time setting tile with a slider for key (wait, go, flash)
   CustomSettingsTile setTimeTile({
     required String key,
     required void Function(int) onChanged,
@@ -256,16 +234,11 @@ class SettingsWidget {
     onToggle: (bool value) => onChanged(value),
   );
 
-  /// Create premium plan tile with price display and upgrade navigation
-  /// @param premiumPrice Current premium plan price
-  /// @param isReadError Whether there was an error reading the price
-  SettingsTile premiumTile({
-    required String premiumPrice,
-    required bool isReadError,
-  }) => SettingsTile(
-    title: Text(context.settingsPremiumTitle(premiumPrice, isReadError)),
-    leading: premiumPrice.settingsPremiumLeadingIcon(isReadError),
-    trailing: premiumPrice.settingsPremiumTrailingIcon(),
-    onPressed: (context) => (premiumPrice != "") ? context.pushUpgradePage(): null,
+  /// Premium plan tile with upgrade navigation; drawn only once a live price is known
+  SettingsTile premiumTile() => SettingsTile(
+    title: Text(context.premiumPlan()),
+    leading: const Icon(Icons.shopping_cart_outlined),
+    trailing: const Icon(Icons.arrow_forward_ios),
+    onPressed: (context) => context.pushUpgradePage(),
   );
 }

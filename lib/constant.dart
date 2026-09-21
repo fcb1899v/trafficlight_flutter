@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 /// Signal Number
 /// Total number of different signal configurations available in the app
 const int signalNumber = 7;
+/// Wait after the home screen's launch work (splash removed) before fetching the price
+const Duration pricePrefetchDelay = Duration(seconds: 3);
 
 /// App Name and Branding
 /// Application title and logo image path
@@ -61,9 +63,7 @@ const Color transpYellowColor = Color.fromRGBO(250, 210, 90, 0.8);      // Trans
 const Color transpGreenColor = Color.fromRGBO(87, 191, 163, 0.8);       // Transparent green (#57BFA3)
 const Color transpRedColor = Color.fromRGBO(200, 77, 62, 0.8);          // Transparent red (#C84D3E)
 
-/// Background Color Array
-/// Background colors for different signal configurations (0-6)
-/// Each index corresponds to a specific country's signal style
+/// Background colors per signal configuration (0-6, one per country style)
 const List<Color> backGroundColor = [
   transpGrayColor,   // US (index 0)
   transpGrayColor,   // US (index 1)
@@ -83,9 +83,7 @@ const double musicVolume = 1;                       // Background music volume (
 const double buttonVolume = 1;                      // Button sound volume (0.0-1.0)
 const int audioPlayerNumber = 2;                    // Number of audio players for simultaneous sounds
 
-/// Green Signal Sound Files
-/// Audio files for green light signals by country (US, UK, JP, AU)
-/// "none" indicates no sound for that signal
+/// Green signal sound files by country (US, UK, JP, AU); "none" means no sound
 List<String> soundGreen = [
   "us_g",    // US green signal sound
   "none",    // US (no sound)
@@ -96,9 +94,7 @@ List<String> soundGreen = [
   "us_g"     // AU green signal sound (uses US sound)
 ].map((t) => "$audioFile$t.mp3").toList();
 
-/// Red Signal Sound Files
-/// Audio files for red light signals by country
-/// Most countries use "none" for red signals
+/// Red signal sound files by country; most use "none"
 List<String> soundRed = [
   "us_r",    // US red signal sound
   "none",    // US (no sound)
@@ -119,9 +115,7 @@ const String trafficAssets = "assets/images/traffic/";        // Traffic signal 
 const String forwardArrow = "assets/images/forwardArrow.png";  // Next signal arrow
 const String backArrow = "assets/images/backArrow.png";        // Previous signal arrow
 
-/// Country Flag Images
-/// Flag images for each country's signal style
-/// Order: US, US, UK, UK, JP, JP, AU
+/// Flag images per signal style. Order: US, US, UK, UK, JP, JP, AU
 List<String> countryFlag = [
   "us", "us",  // US flags (2 variants)
   "uk", "uk",  // UK flags (2 variants)
@@ -159,26 +153,13 @@ const double upgradeButtonBorderRadius = 5;                     // Border radius
 const double settingsTilePaddingSize = 20;                      // Padding size for settings tiles
 const double settingsTileRadiusSize = 15;                       // Border radius for settings tiles
 
-/// RevenueCat Configuration
-/// API key selection based on platform (iOS/Android)
-/// These keys should be replaced with actual RevenueCat API keys
+/// RevenueCat API key selected by platform (iOS/Android)
 String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
   "REVENUE_CAT_IOS_API_KEY":      // iOS/macOS API key placeholder
   "REVENUE_CAT_ANDROID_API_KEY";  // Android API key placeholder
 
-// --- AdMob demo ad units ---
-//
-// Google publishes these and they are the same for every developer, so they are
-// constants here rather than .env entries: they are not secret, and keeping them
-// in source means a missing .env key can no longer break a debug build.
-// Production unit IDs stay in .env, because those are ours.
-// https://developers.google.com/admob/android/test-ads
-// https://developers.google.com/admob/ios/test-ads  (checked 2026-09-02)
-// The banner in this app is adaptive, and Google lists a separate demo unit for
-// adaptive banners, shared by the anchored and inline variants. The fixed size
-// units (Android 6300978111, iOS 2934735716) only ever serve the 320x50
-// creative, so every adaptive height measured against them came back at the
-// 320x50 ratio no matter what size was requested
+// Google's public demo units, kept in source rather than .env so a missing key cannot
+// break a debug build. Adaptive banners have their own unit; fixed size ones only serve 320x50
 const String androidBannerTestId = "ca-app-pub-3940256099942544/9214589741";
 const String iosBannerTestId = "ca-app-pub-3940256099942544/2435281174";
 const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";

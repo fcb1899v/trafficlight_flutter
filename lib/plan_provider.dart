@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'constant.dart';
 import 'extension.dart';
 
 /// Provider for managing premium plan state across the app
@@ -26,6 +27,58 @@ Future<bool> getInitialPremiumStatus() async {
   } catch (e) {
     "Error initializing premium status: $e".debugPrint();
     return "premium".getSettingsValueBool(false);
+  }
+}
+
+/// The live store price, empty while unknown. The upgrade entry is drawn only from it,
+/// never from the price stored by an earlier launch, which may no longer be what is charged
+class PremiumPrice {
+  static final ValueNotifier<String> value = ValueNotifier("");
+  /// The fetch in flight, joined by a second caller instead of starting another
+  static Future<String?>? _pricing;
+  /// The one prefetch per process, however often the home screen is rebuilt
+  static Future<String?>? _prefetch;
+
+  /// Fetches the price once, a few seconds after launch work, so settings open with it
+  static Future<String?> prefetch() => _prefetch ??= Future.delayed(pricePrefetchDelay, load);
+
+  /// The known price, else the fetch in flight, else a new fetch
+  static Future<String?> load() async => value.value.isNotEmpty
+    ? value.value
+    : await (_pricing ??= _fetch().whenComplete(() => _pricing = null));
+
+  /// The store lookup behind load(). Tests replace it so a screen's own fetch cannot race their pumps
+  @visibleForTesting
+  static Future<String?> Function() source = _storePrice;
+
+  /// Forgets the price and any fetch, so each test starts from a fresh launch
+  @visibleForTesting
+  static void reset() {
+    value.value = "";
+    _pricing = null;
+    _prefetch = null;
+    source = _storePrice;
+  }
+
+  /// The package getOffering buys: the displayed price comes from it, so what is shown is charged
+  static Package? package(Offerings offerings) => offerings.current?.lifetime;
+
+  static Future<String?> _storePrice() async =>
+    package(await Purchases.getOfferings())?.storeProduct.priceString;
+
+  static Future<String?> _fetch() async {
+    try {
+      final price = await source();
+      "premium price: $price".debugPrint();
+      // UpgradePage reads the stored price; the settings entry point is gated on it
+      if (price != null) await Settings.setValue("key_premiumPrice", price);
+      value.value = price ?? "";
+      return price;
+    } catch (e) {
+      "premium price unavailable: $e".debugPrint();
+      value.value = "";
+      return null;
+    }
   }
 }
 
@@ -68,9 +121,7 @@ class PlanNotifier extends Notifier<PlanState> {
     );
   }
 
-  /// Initializes premium status on app startup
-  /// Checks local storage first, then validates with RevenueCat if needed.
-  /// Call this when the notifier is already mounted (e.g. from UI) if you need to refresh;
+  /// Refreshes premium status (local storage first, then RevenueCat) on a mounted notifier;
   /// for main() startup use getInitialPremiumStatus() and override planProvider instead.
   Future<void> initializePremiumStatus() async {
     final initial = await getInitialPremiumStatus();
@@ -88,8 +139,8 @@ class PlanNotifier extends Notifier<PlanState> {
       if (offerings.current != null) {
         "Current offering: ${offerings.current}".debugPrint();
         "Available packages: ${offerings.current!.availablePackages}".debugPrint();
-        // Get the lifetime package
-        final package = offerings.current?.lifetime;
+        // The lifetime package, the same one the displayed price came from
+        final package = PremiumPrice.package(offerings);
         "Lifetime package: $package".debugPrint();
         // Purchase the lifetime package
         if (package != null) {

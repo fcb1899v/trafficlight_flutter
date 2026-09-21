@@ -24,9 +24,7 @@ extension ContextExt on BuildContext {
     (lang() == "zh") ? "notoSC":
     "beon";
 
-  /// Device Size and Layout Information
-  /// Methods for accessing screen dimensions and safe areas
-  // Common size methods
+  /// Device size and layout: screen dimensions and safe areas
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
   double topPadding() => MediaQuery.of(this).padding.top;
@@ -63,7 +61,6 @@ extension ContextExt on BuildContext {
   
   /// Error and Status Messages
   /// Various error messages and status indicators
-  String readError() => AppLocalizations.of(this)!.readError;
   String failPurchase() => AppLocalizations.of(this)!.failPurchase;
   String failRestore() => AppLocalizations.of(this)!.failRestore;
   String failPurchaseMessage(bool isRestore) => isRestore ? failRestore(): failPurchase();
@@ -86,7 +83,6 @@ extension ContextExt on BuildContext {
   
   /// UI Element Labels
   /// Localized strings for various UI elements
-  String loading() => AppLocalizations.of(this)!.loading;
   String loadingError() => AppLocalizations.of(this)!.loadingError;
   String pushButton() => AppLocalizations.of(this)!.pushButton;
   String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
@@ -109,9 +105,6 @@ extension ContextExt on BuildContext {
   /// Utility Methods
   /// Helper methods for common operations
   String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
-  String settingsPremiumTitle(String premiumPrice, bool isReadError) =>
-      (premiumPrice != "") ? premiumPlan():
-      (isReadError) ? readError(): loading();
 
   /// Navigation Methods
   /// Convenient navigation to different app screens
@@ -151,9 +144,7 @@ extension ContextExt on BuildContext {
   double floatingIconSize() => height() * 0.03;
   double floatingMarginBottom() => admobHeight() + floatingButtonSize() / 2;
 
-  /// Signal-Specific Layout Arrays
-  /// Arrays containing layout parameters for each signal configuration (0-6)
-  /// Each array index corresponds to a specific country's signal style
+  /// Signal-specific layout arrays, one entry per signal configuration (0-6)
   List<double> buttonHeight() => [0.13, 0.11, 0.05, 0.04, 0.115, 0.08, 0.15].map((r) => height() * r).toList();
   List<double> buttonTopMargin() => [0.225, 0.29, 0.328, 0.325, 0.143, 0.17, 0.22].map((r) => height() * r).toList();
   List<double> frameTopPadding() => [0, 0, 0, 0, 0.01, 0.02, 0].map((r) => height() * r).toList();
@@ -203,9 +194,8 @@ extension StringExt on String {
     }
   }
 
-  /// Settings Access Methods
-  /// Convenient methods for accessing app settings with default values
-  /// The string is used as the key prefix (e.g., "wait" becomes "key_wait")
+  /// Settings access with default values; the string is the key prefix
+  /// (e.g. "wait" becomes "key_wait")
   int getSettingsValueInt(int defaultValue) =>
     Settings.getValue<int>("key_$this", defaultValue: defaultValue) ?? defaultValue;
 
@@ -226,9 +216,7 @@ extension StringExt on String {
   /// Signal Image Path Generation
   /// Methods for generating image paths for different signal states and countries
   
-  /// Button Frame Images
-  /// Returns list of button frame images for each signal state (wait, red, green, off)
-  /// Each index corresponds to a country's signal style (0-6)
+  /// Button frame images per signal state (wait, red, green, off), indexed by style (0-6)
   List<String> buttonFrame() => [
     "us/frame_us_new",                                                    // US new style
     "us/frame_us_old",                                                    // US old style
@@ -239,9 +227,7 @@ extension StringExt on String {
     "au/frame_au_${(this == "wait") ? "on" : "off"}",                     // Australia style
   ].map((t) => "$pedestrianAssets$t.png").toList();
 
-  /// Push Button Images
-  /// Returns list of push button images for on/off states
-  /// Each index corresponds to a country's signal style (0-6)
+  /// Push button images for on/off states, indexed by style (0-6)
   List<String> pushButtonImage() => [
     "us/button_us_new_${(this == 'on') ? 'on': 'off'}",  // US new style
     "us/button_us_old",                                  // US old style
@@ -252,9 +238,7 @@ extension StringExt on String {
     "au/button_au",                                      // Australia style
   ].map((t) => "$pedestrianAssets$t.png").toList();
 
-  /// Pedestrian Signal Images
-  /// Returns list of pedestrian signal images for different states (flash, red, green, off)
-  /// Each index corresponds to a country's signal style (0-6)
+  /// Pedestrian signal images per state (flash, red, green, off), indexed by style (0-6)
   List<String> pedestrianSignal() => [
     "us/signal_us_new2_${(this == 'green') ? 'g': (this == 'off') ? 'off': 'r'}",  // US new style
     "us/signal_us_old_${(this == 'green') ? 'g': (this == 'off') ? 'off': 'r'}",    // US old style
@@ -265,9 +249,7 @@ extension StringExt on String {
     "uk/signal_uk_old_${(this == 'red') ? 'r': (this == 'off') ? 'off': 'g'}",      // Australia (uses UK old)
   ].map((t) => "$pedestrianAssets$t.png").toList();
 
-  /// Traffic Signal Images
-  /// Returns list of traffic signal images for different states (yellow, red, green, off, arrow)
-  /// Each index corresponds to a country's signal style (0-6)
+  /// Traffic signal images per state (yellow, red, green, off, arrow), indexed by style (0-6)
   List<String> trafficSignal() => [
     "us/signal_us_new_${(this == "green") ? "g": (this == "yellow" || this == "off") ? "y": "r"}",  // US new style
     "us/signal_us_old_${(this == "yellow") ? "y": (this == "red" || this == "arrow") ? "r": "g"}",  // US old style
@@ -277,25 +259,13 @@ extension StringExt on String {
     "jp/signal_jp_old_${(this == "green") ? "g": (this == "red") ? "r": (this == "arrow") ? "arrow": "y"}",  // Japan old style
     "au/signal_au_${(this == "green") ? "g": (this == "yellow" || this == "off") ? "y": "r"}",      // Australia style
   ].map((t) => "$trafficAssets$t.png").toList();
-
-  /// Settings Screen Icons
-  /// Returns appropriate icons for premium settings based on state
-  Icon settingsPremiumLeadingIcon(bool isReadError) =>
-      (this != "") ? const Icon(Icons.shopping_cart_outlined):  // Has price - shopping cart
-      (isReadError) ? const Icon(Icons.error):                   // Error state - error icon
-      const Icon(Icons.downloading);                             // Loading state - download icon
-
-  Icon? settingsPremiumTrailingIcon() =>
-      (this != "") ? const Icon(Icons.arrow_forward_ios): null;  // Has price - forward arrow
 }
 
 /// Extension on int for countdown and number operations
 /// Provides methods for countdown display and number formatting
 extension IntExt on int {
 
-  /// Countdown Meter Color Array
-  /// Returns array of boolean values representing countdown meter segments
-  /// Based on remaining time as percentage of total green time
+  /// Countdown meter segments as booleans, from remaining time as a share of green time
   List<bool> countMeterColor(int greenTime) =>
       (this / greenTime > 0.875) ? [true, true, true, true, true, true, true, true]:      // 87.5% - 100%
       (this / greenTime > 0.750) ? [false, true, true, true, true, true, true, true]:     // 75% - 87.5%
