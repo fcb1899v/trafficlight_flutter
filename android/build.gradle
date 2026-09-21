@@ -6,8 +6,8 @@ allprojects {
 }
 
 rootProject.buildDir = '../build'
-// Lint our own sources only. Inside allprojects these flags also linted every
-// plugin in ~/.pub-cache, producing warnings we cannot act on.
+// Lint our own sources only.
+// In allprojects these flags also linted every plugin, whose warnings we cannot act on.
 subprojects {
     if (name == "app") {
         tasks.withType(JavaCompile).configureEach {

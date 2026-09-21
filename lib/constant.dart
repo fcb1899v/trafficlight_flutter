@@ -158,8 +158,8 @@ String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?
   "REVENUE_CAT_IOS_API_KEY":      // iOS/macOS API key placeholder
   "REVENUE_CAT_ANDROID_API_KEY";  // Android API key placeholder
 
-// Google's public demo units, kept in source rather than .env so a missing key cannot
-// break a debug build. Adaptive banners have their own unit; fixed size ones only serve 320x50
+// Google's public demo units, kept in source rather than .env so a missing key cannot break a debug build.
+// Adaptive banners have their own unit; fixed size ones only serve 320x50.
 const String androidBannerTestId = "ca-app-pub-3940256099942544/9214589741";
 const String iosBannerTestId = "ca-app-pub-3940256099942544/2435281174";
 const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";

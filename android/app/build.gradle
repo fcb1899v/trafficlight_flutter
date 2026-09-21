@@ -33,8 +33,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
 
-    // compileSdk and targetSdk are written out, not taken from flutter.*, which
-    // still defaults both to 36 and would move this app back a level.
+    // compileSdk and targetSdk are written out, not taken from flutter.*.
+    // The flutter.* default is still 36 and would move this app back a level.
     compileSdkVersion 37
     ndkVersion flutter.ndkVersion   // 28.2.13676358 in Flutter 3.47.2
     namespace "nakajimamasao.appstudio.signalbutton"

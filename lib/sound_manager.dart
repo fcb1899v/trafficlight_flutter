@@ -115,8 +115,7 @@ class AudioManager {
       await player.setVolume(volume);
       await player.setLoopMode(LoopMode.one);
       await player.setAsset(asset);
-      // Not awaited: play() completes only when playback ends, and a looping
-      // source never does, so awaiting would block for the whole loop
+      // Not awaited: play() completes only when playback ends, and a looping source never ends.
       player.play();
       "Loop ${playerTitle(index)}: playing=${player.playing}".debugPrint();
     } else {
@@ -136,8 +135,7 @@ class AudioManager {
       await player.setVolume(volume);
       await player.setLoopMode(LoopMode.off);
       await player.setAsset(asset);
-      // Not awaited: play() completes when the clip ends, and a button sound
-      // must not block the tap handler for its whole duration
+      // Not awaited: play() completes when the clip ends, and a tap handler must not block for that long.
       player.play();
       "Play ${playerTitle(index)}".debugPrint();
     } else {

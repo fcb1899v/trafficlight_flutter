@@ -1,5 +1,5 @@
-// The settings "Upgrade" entry is drawn only from a live store price: no "Loading..." row,
-// and it appears as soon as the price arrives. The store lookup is replaced for the test.
+// The settings "Upgrade" entry is drawn only from a live store price, with no "Loading..." row.
+// It appears as soon as the price arrives.
 
 import 'dart:async';
 import 'package:flutter/material.dart';
