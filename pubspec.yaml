@@ -18,8 +18,8 @@ dependencies:
   webview_flutter_android: ^4.14.1
   webview_flutter: ^4.14.1
   # Firebase Analytics
-  firebase_core: ^4.14.0
-  firebase_analytics: ^12.5.0
+  firebase_core: 4.14.0
+  firebase_analytics: 12.5.0
   # App Icon
   cupertino_icons: ^1.0.9
   flutter_launcher_icons: ^0.14.4
