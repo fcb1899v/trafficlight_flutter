@@ -55,9 +55,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorRestore => 'Restore error';
 
   @override
-  String get readError => 'Read Error';
-
-  @override
   String get failPurchase => 'Not available for purchase.';
 
   @override
@@ -80,9 +77,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkErrorMessage => 'Please connect to the internet.';
-
-  @override
-  String get loading => 'Loading...';
 
   @override
   String get loadingError => 'Loading error';

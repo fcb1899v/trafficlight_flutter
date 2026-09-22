@@ -55,9 +55,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get errorRestore => '復元エラー';
 
   @override
-  String get readError => '読み込みエラー';
-
-  @override
   String get failPurchase => '購入できませんでした。';
 
   @override
@@ -77,9 +74,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get networkErrorMessage => 'インターネットに接続してください。';
-
-  @override
-  String get loading => '読み込み中・・・';
 
   @override
   String get loadingError => '読み込み失敗';

@@ -55,9 +55,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorRestore => '恢复错误';
 
   @override
-  String get readError => '读取错误';
-
-  @override
   String get failPurchase => '无法购买。';
 
   @override
@@ -77,9 +74,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get networkErrorMessage => '请检查网络连接';
-
-  @override
-  String get loading => '正在加载...';
 
   @override
   String get loadingError => '加载失败';

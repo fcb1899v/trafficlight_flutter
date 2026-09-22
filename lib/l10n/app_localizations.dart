@@ -190,12 +190,6 @@ abstract class AppLocalizations {
   /// **'Restore error'**
   String get errorRestore;
 
-  /// No description provided for @readError.
-  ///
-  /// In en, this message translates to:
-  /// **'Read Error'**
-  String get readError;
-
   /// No description provided for @failPurchase.
   ///
   /// In en, this message translates to:
@@ -237,12 +231,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please connect to the internet.'**
   String get networkErrorMessage;
-
-  /// No description provided for @loading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading...'**
-  String get loading;
 
   /// No description provided for @loadingError.
   ///
