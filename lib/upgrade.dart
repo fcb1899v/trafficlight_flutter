@@ -58,6 +58,9 @@ class UpgradePage extends HookConsumerWidget {
     /// Handle purchase or restore action
     /// @param isRestore Whether this is a restore operation or new purchase
     buyUpgrade(bool isRestore) async {
+      // Read live, not the watched planState above: a fast second tap must see
+      // the flag this call itself is about to set, not the pre-tap snapshot.
+      if (ref.read(planProvider).isPurchasing) return;
       "isRestore: $isRestore".debugPrint();
       try {
         await plan.buyUpgrade(isRestore);
