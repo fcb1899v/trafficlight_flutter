@@ -183,6 +183,7 @@ class HomePage extends HookConsumerWidget {
 
     /// Main button press action sequence
     /// Handles the complete signal cycle from button press to red signal
+    // A waitTime below yellowTime+arrowTime doesn't shorten the cycle: the negative delay just completes instantly, so yellow+arrow still run in full.
     Future<void> pushButtonActions() async {
       // Trigger button press effects
       await pushButtonEffect();

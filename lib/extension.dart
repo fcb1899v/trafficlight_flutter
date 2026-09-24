@@ -8,104 +8,13 @@ import 'settings.dart';
 import 'upgrade.dart';
 import 'constant.dart';
 
-/// Extension on BuildContext for common UI operations and localization
-/// Provides convenient methods for accessing device information, navigation, and localized strings
+part 'l10n_extension.dart';
+part 'size_extension.dart';
+
+/// Extension on BuildContext for navigation
+/// (localization -> L10nContextExt in l10n_extension.dart)
+/// (sizing -> SizeExt in size_extension.dart)
 extension ContextExt on BuildContext {
-
-  /// Locale and Language Configuration
-  /// Methods for accessing device locale and language-specific settings
-  Locale locale() => Localizations.localeOf(this);
-  String lang() => locale().languageCode;
-  
-  /// Returns appropriate font family based on language
-  /// Japanese: Noto Sans JP, Chinese: Noto Sans SC, Others: Beon
-  String font() =>
-    (lang() == "ja") ? "notoJP":
-    (lang() == "zh") ? "notoSC":
-    "beon";
-
-  /// Device size and layout: screen dimensions and safe areas
-  double width() => MediaQuery.of(this).size.width;
-  double height() => MediaQuery.of(this).size.height;
-  double topPadding() => MediaQuery.of(this).padding.top;
-  
-  // Settings screen specific sizing
-  double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
-  
-  // AdMob banner sizing based on screen height
-  double admobHeight() => (height() < 750) ? 50: (height() < 1000) ? 50 + (height() - 750) / 5: 100;
-  double admobWidth() => width();
-
-  /// Localization Methods
-  /// Convenient access to localized strings throughout the app
-  String appTitle() => AppLocalizations.of(this)!.appTitle;
-  String thisApp() => AppLocalizations.of(this)!.thisApp;
-  String settingsTitle() => AppLocalizations.of(this)!.settingsTitle;
-  String premiumPlan() => AppLocalizations.of(this)!.premiumPlan;
-  String plan() => AppLocalizations.of(this)!.plan;
-  String free() => AppLocalizations.of(this)!.free;
-  String premium() => AppLocalizations.of(this)!.premium;
-  String upgrade() => AppLocalizations.of(this)!.upgrade;
-  String toUpgrade() => AppLocalizations.of(this)!.toUpgrade;
-  String restore() => AppLocalizations.of(this)!.restore;
-  String toRestore() => AppLocalizations.of(this)!.toRestore;
-  
-  /// Purchase and Restore Messages
-  /// Success and error messages for in-app purchase operations
-  String successPurchase() => AppLocalizations.of(this)!.successPurchase;
-  String successRestore() => AppLocalizations.of(this)!.successRestore;
-  String successPurchaseMessage(bool isRestore) => isRestore ? successRestore(): successPurchase();
-  String errorPurchase() => AppLocalizations.of(this)!.errorPurchase;
-  String errorRestore() => AppLocalizations.of(this)!.errorRestore;
-  String errorPurchaseTitle(bool isRestore) => isRestore ? errorRestore(): errorPurchase();
-  
-  /// Error and Status Messages
-  /// Various error messages and status indicators
-  String failPurchase() => AppLocalizations.of(this)!.failPurchase;
-  String failRestore() => AppLocalizations.of(this)!.failRestore;
-  String failPurchaseMessage(bool isRestore) => isRestore ? failRestore(): failPurchase();
-  String purchaseCancelledMessage() => AppLocalizations.of(this)!.purchaseCancelledMessage;
-  String paymentPendingMessage() => AppLocalizations.of(this)!.paymentPendingMessage;
-  String purchaseInvalidMessage() => AppLocalizations.of(this)!.purchaseInvalidMessage;
-  String purchaseNotAllowedMessage() => AppLocalizations.of(this)!.purchaseNotAllowedMessage;
-  String networkErrorMessage() => AppLocalizations.of(this)!.networkErrorMessage;
-  
-  /// Purchase Error Message Handler
-  /// Returns appropriate error message based on RevenueCat error code
-  String purchaseErrorMessage(PurchasesErrorCode? errorCode, bool isRestore) =>
-    (errorCode == null) ? failPurchaseMessage(isRestore):
-    (errorCode == PurchasesErrorCode.purchaseCancelledError) ? purchaseCancelledMessage():
-    (errorCode == PurchasesErrorCode.paymentPendingError) ? paymentPendingMessage():
-    (errorCode == PurchasesErrorCode.purchaseInvalidError) ? purchaseInvalidMessage():
-    (errorCode == PurchasesErrorCode.purchaseNotAllowedError) ? purchaseNotAllowedMessage():
-    (errorCode == PurchasesErrorCode.networkError) ? networkErrorMessage():
-    failPurchaseMessage(isRestore);
-  
-  /// UI Element Labels
-  /// Localized strings for various UI elements
-  String loadingError() => AppLocalizations.of(this)!.loadingError;
-  String pushButton() => AppLocalizations.of(this)!.pushButton;
-  String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
-  String carSignal() => AppLocalizations.of(this)!.carSignal;
-  String noAds() => AppLocalizations.of(this)!.noAds;
-  String timeSettings() => AppLocalizations.of(this)!.timeSettings;
-  String timeUnit() => AppLocalizations.of(this)!.timeUnit;
-  String waitTime() => AppLocalizations.of(this)!.waitTime;
-  String goTime() => AppLocalizations.of(this)!.goTime;
-  String flashTime() => AppLocalizations.of(this)!.flashTime;
-  String soundSettings() => AppLocalizations.of(this)!.soundSettings;
-  String crosswalkSound() => AppLocalizations.of(this)!.crosswalkSound;
-  String toSettings() => AppLocalizations.of(this)!.toSettings;
-  String toOn() => AppLocalizations.of(this)!.toOn;
-  String toOff() => AppLocalizations.of(this)!.toOff;
-  String toNew() => AppLocalizations.of(this)!.toNew;
-  String toOld() => AppLocalizations.of(this)!.toOld;
-  String confirmed() => AppLocalizations.of(this)!.confirmed;
-  
-  /// Utility Methods
-  /// Helper methods for common operations
-  String oldOrNew(bool isNew) => (isNew) ? toOld(): toNew();
-
   /// Navigation Methods
   /// Convenient navigation to different app screens
   void pushHomePage() =>
@@ -114,73 +23,8 @@ extension ContextExt on BuildContext {
       Navigator.push(this, MaterialPageRoute(builder: (context) => const SettingsPage()));
   void pushUpgradePage() =>
       Navigator.push(this, MaterialPageRoute(builder: (context) => const UpgradePage()));
-
-  /// Common UI Sizing
-  /// Responsive sizing for common UI elements based on screen height
-  double appBarHeight() => height() * 0.06;
-  double appBarFontSize() => height() * (font() == "beon" ? 0.036: 0.03);
-  double appBarIconSize() => height() * 0.036;
-
-  /// Signal Display Sizing
-  /// Responsive sizing for traffic signal elements
-  double flagSize() => height() * 0.33;
-  double frameHeight() => height() * 0.40;
-  double signalHeight() => height() * 0.35;
-  double usOldSignalFlagHeight() => height() * 0.18;
-  
-  /// Countdown Meter Sizing
-  /// Sizing for countdown display elements
-  double countMeterTopSpace() => height() * 0.035;
-  double countMeterCenterSpace() => height() * 0.08;
-  double countDownRightPadding() => height() * 0.003;
-  double countMeterWidth() => height() * 0.012;
-  double countMeterHeight() => height() * 0.01;
-  double countMeterSpace() => height() * 0.0024;
-  
-  /// Floating Action Button Sizing
-  /// Sizing for floating action buttons and related elements
-  double floatingButtonSize() => height() * 0.07;
-  double floatingImageSize() => height() * 0.02;
-  double floatingIconSize() => height() * 0.03;
-  double floatingMarginBottom() => admobHeight() + floatingButtonSize() / 2;
-
-  /// Signal-specific layout arrays, one entry per signal configuration (0-6)
-  List<double> buttonHeight() => [0.13, 0.11, 0.05, 0.04, 0.115, 0.08, 0.15].map((r) => height() * r).toList();
-  List<double> buttonTopMargin() => [0.225, 0.29, 0.328, 0.325, 0.143, 0.17, 0.22].map((r) => height() * r).toList();
-  List<double> frameTopPadding() => [0, 0, 0, 0, 0.01, 0.02, 0].map((r) => height() * r).toList();
-  List<double> frameBottomPadding() => [0, 0.08, 0, 0, 0.01, 0.02, 0].map((r) => height() * r).toList();
-  List<double> labelTopMargin() => [0, 0, 0, 0, 0.085, 0.10, 0].map((r) => height() * r).toList();
-  List<double> labelMiddleMargin() => [0, 0, 0, 0, 0.14, 0.135, 0].map((r) => height() * r).toList();
-  List<double> labelHeight() => [0, 0, 0, 0, 0.045, 0.045, 0].map((r) => height() * r).toList();
-  List<double> labelWidth() => [0, 0, 0, 0, 0.2, 0.2, 0].map((r) => height() * r).toList();
-  List<double> labelFontSize() => [0, 0, 0, 0, 0.025, 0.025, 0].map((r) => height() * r).toList();
-  List<double> pedestrianSignalPadding() => [0.03, 0.06, 0.03, 0.015, 0.015, 0.015, 0.015].map((r) => height() * r).toList();
-  List<double> trafficSignalPadding() => [0.01, 0, 0.01, 0.01, 0.04, 0.04, 0.01].map((r) => height() * r).toList();
-  
-  /// Countdown Number Positioning
-  /// Positioning arrays for countdown display elements
-  List<double> cdNumTopSpace() => [0.07, 0, 0.185, 0, 0, 0, 0].map((r) => height() * r).toList();
-  List<double> cdNumLeftSpace() => [0.14, 0, 0.157, 0, 0, 0, 0].map((r) => height() * r).toList();
-  List<double> cdNumPadding() => [0.03, 0, 0.018, 0, 0, 0, 0].map((r) => height() * r).toList();
-  List<double> cdNumFontSize() => [0.115, 0, 0.055, 0, 0, 0, 0].map((r) => height() * r).toList();
-  List<double> cdTenLeftPadding(int countdown, bool isFlash) => [0.03, 0, 0.018, 0, 0, 0, 0].map((r) => height() * countdown.cdTenNumber(isFlash).isOne() * r).toList();
-  List<double> cdFirstLeftPadding(int countdown, bool isFlash) => [0.03, 0, 0.018, 0, 0, 0, 0].map((r) => height() * countdown.cdFirstNumber(isFlash).isOne() * r).toList();
-  
-  /// Upgrade Screen Sizing
-  /// Responsive sizing for premium upgrade screen elements
-  double premiumTitleFontSize() => height() * 0.035;
-  double premiumPriceFontSize() => height() * 0.08;
-  double premiumPricePadding() => height() * 0.025;
-  double upgradeButtonFontSize() => height() * 0.025;
-  double upgradeTableFontSize() => height() * 0.018;
-  double upgradeTableIconSize() => height() * 0.03;
-  double upgradeTableHeadingHeight() => height() * 0.03;
-  double upgradeTableHeight() => height() * 0.06;
-  double upgradeButtonPadding() => height() * 0.006;
-  double upgradeButtonMargin() => height() * 0.05;
-  double upgradeMarginWidth() => height() * 0.05;
-  double upgradeCircularProgressMarginBottom() => height() * 0.4;
 }
+
 
 /// Extension on String for utility operations and settings management
 /// Provides methods for debug printing, settings access, and image path generation

@@ -115,6 +115,8 @@ lib/
 ├── admob_banner.dart      # Banner advertisement management
 ├── constant.dart          # Constant definitions
 ├── extension.dart         # Extension functions
+├── l10n_extension.dart    # Localization helpers (part of extension.dart)
+├── size_extension.dart    # Responsive sizing helpers (part of extension.dart)
 ├── firebase_options.dart  # Written by flutterfire configure, not in git
 └── l10n/                  # Localization
     ├── app_en.arb
