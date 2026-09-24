@@ -17,6 +17,7 @@ const String appTitleImage = "assets/images/letsSignal.png";
 /// Time Configuration Constants
 /// All time values are in seconds unless otherwise specified
 const int maxTime = 30;          // Maximum allowed time for any signal phase (seconds)
+// Not enforced as a floor against yellowTime+arrowTime in pushButtonActions (homepage.dart).
 const int minTime = 4;           // Minimum allowed time for any signal phase (seconds)
 const int initialWaitTime = 8;   // Default red light duration (seconds)
 const int initialGoTime = 8;     // Default green light duration (seconds)
@@ -166,3 +167,8 @@ const String androidRewardedTestId = "ca-app-pub-3940256099942544/5224354917";
 const String iosRewardedTestId = "ca-app-pub-3940256099942544/1712485313";
 const String androidInterstitialTestId = "ca-app-pub-3940256099942544/1033173712";
 const String iosInterstitialTestId = "ca-app-pub-3940256099942544/4411468910";
+
+/// Banner retry: capped attempts with exponential backoff.
+const int bannerMaxRetry = 5;
+const int bannerRetryBaseSec = 30;
+const int bannerRetryMaxSec = 300;
