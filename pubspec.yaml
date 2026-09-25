@@ -84,6 +84,8 @@ flutter_native_splash:
   color: "373635"
 
 flutter:
+  config:
+    enable-swift-package-manager: true
   generate: true
   uses-material-design: true
   assets:
