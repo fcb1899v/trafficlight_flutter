@@ -40,7 +40,7 @@ dependencies:
     path: packages/flutter_tts
   # Settings
   flutter_settings_screens: ^0.3.4
-  settings_ui: ^3.0.1
+  settings_ui: ^4.0.0
   # SharedPreference
   shared_preferences: ^2.5.5
   # Admob
@@ -54,18 +54,14 @@ dependencies:
   #env
   flutter_dotenv: ^6.0.1
   # Revenue Cat
-  purchases_flutter: ^10.11.0
+  purchases_flutter: ^10.13.2
   #MVVM
   hooks_riverpod: ^3.4.3
   flutter_hooks: ^0.21.3+1
   # App Splash (runtime use in lib/)
   flutter_native_splash: ^2.4.8
-
-# 2.6.0 ships no Package.swift while 2.5.1 does, and a single plugin without one
-# makes Flutter fall back to CocoaPods for the whole iOS build
-# (darwin_dependency_management.dart:89). Lift when SPM support returns.
-dependency_overrides:
-  path_provider_foundation: 2.5.1
+  # Country flag SVG rendering
+  flutter_svg: ^2.2.4
 
 dev_dependencies:
   flutter_test:

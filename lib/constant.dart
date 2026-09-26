@@ -122,7 +122,7 @@ List<String> countryFlag = [
   "uk", "uk",  // UK flags (2 variants)
   "jp", "jp",  // JP flags (2 variants)
   "au",        // AU flag (1 variant)
-].map((t) => "$pedestrianAssets$t/flag_$t.png").toList();
+].map((t) => "$pedestrianAssets$t/flag_$t.svg").toList();
 
 /// Pedestrian Signal Images
 /// Special images for pedestrian-specific signals

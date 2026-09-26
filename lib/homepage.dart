@@ -5,6 +5,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'extension.dart';
 import 'constant.dart';
 import 'main.dart';
@@ -361,7 +362,7 @@ class HomeWidget {
     decoration: const BoxDecoration(color: redColor, shape: BoxShape.circle),
   ): SizedBox(
     height: context.flagSize(),
-    child: Image.asset(countryFlag[counter]),
+    child: SvgPicture.asset(countryFlag[counter]),
   );
 
   /// Create dark background overlay
