@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:devicelocale/devicelocale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -313,8 +312,9 @@ class HomeWidget {
 
   /// Create the app bar for the home page
   /// @param onPressed Callback function for settings button
+  /// The upgrade page reuses this bar without the settings gear (onPressed null)
   PreferredSize homeAppBar({
-    required void Function() onPressed
+    required void Function()? onPressed
   }) => PreferredSize(
     preferredSize: Size.fromHeight(context.appBarHeight()),
     child: AppBar(
@@ -328,11 +328,12 @@ class HomeWidget {
         ),
         textScaler: const TextScaler.linear(1.0),
       ),
+      toolbarHeight: context.appBarHeight(),
       backgroundColor: signalGrayColor,
       centerTitle: true,
       automaticallyImplyLeading: false,
       actions: [
-        IconButton(
+        if (onPressed != null) IconButton(
           icon: Icon(Icons.settings,
             color: whiteColor,
             size: context.appBarIconSize()
@@ -609,15 +610,5 @@ class HomeWidget {
     duration: const Duration(seconds: flagRotationTime),
     child: Image(image: AssetImage(isGo ? usGoFlag: usStopFlag)),
   );
-}
-
-/// Get default country counter based on device locale
-/// @return Country counter index for signal style
-Future<int> getCountryCounter() async {
-  final locale = await Devicelocale.currentLocale ?? "en-US";
-  final countryCode = locale.substring(3, 5);
-  final counter = countryCode.getDefaultCounter();
-  "Locale: $locale, counter: $counter".debugPrint();
-  return counter;
 }
 

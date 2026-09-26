@@ -91,6 +91,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noAds => '広告非表示';
 
   @override
+  String get carSignalAvailable => '車用信号も使えます';
+
+  @override
+  String get removeAllAds => '全ての広告が消えます';
+
+  @override
+  String get toPurchase => '購入する';
+
+  @override
   String get timeSettings => '時間の設定';
 
   @override

@@ -144,10 +144,8 @@ const int flagRotationTime = 1;                                 // Flag rotation
 /// Upgrade/In-App Purchase Configuration
 /// Settings for premium upgrade functionality
 const String premiumProduct = "signal_upgrade_premium";         // Product ID for premium upgrade
-const double upgradeTableDividerWidth = 0;                      // Width of table dividers in upgrade screen
-const double upgradeButtonElevation = 10;                       // Shadow elevation for upgrade buttons
-const double upgradeButtonBorderWidth = 1.5;                    // Border width for upgrade buttons
-const double upgradeButtonBorderRadius = 5;                     // Border radius for upgrade buttons
+const Color premiumOverlayColor = Color.fromRGBO(0, 0, 0, 0.7);  // Dims the car-signal screen behind the purchase message
+const Color premiumPlateColor = Color.fromRGBO(0, 0, 0, 0.35);  // Benefit plate fill: the dimmed car signal behind it stays visible
 
 /// Settings Screen Configuration
 /// UI settings for the settings screen

@@ -145,12 +145,14 @@ class SettingsWidget {
         ),
         textScaler: const TextScaler.linear(1.0),
       ),
+      toolbarHeight: context.appBarHeight(),
+      leadingWidth: context.appBarLeadingWidth(),
       centerTitle: true,
       automaticallyImplyLeading: false,
       backgroundColor: signalGrayColor,
       foregroundColor: whiteColor,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios),
+        icon: Icon(Icons.arrow_back_ios, size: context.appBarIconSize()),
         onPressed: () async {
           if (context.mounted) context.pushHomePage();
         },

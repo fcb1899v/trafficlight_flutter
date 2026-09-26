@@ -66,6 +66,9 @@ extension L10nContextExt on BuildContext {
   String pedestrianSignal() => AppLocalizations.of(this)!.pedestrianSignal;
   String carSignal() => AppLocalizations.of(this)!.carSignal;
   String noAds() => AppLocalizations.of(this)!.noAds;
+  String carSignalAvailable() => AppLocalizations.of(this)!.carSignalAvailable;
+  String removeAllAds() => AppLocalizations.of(this)!.removeAllAds;
+  String toPurchase() => AppLocalizations.of(this)!.toPurchase;
   String timeSettings() => AppLocalizations.of(this)!.timeSettings;
   String timeUnit() => AppLocalizations.of(this)!.timeUnit;
   String waitTime() => AppLocalizations.of(this)!.waitTime;

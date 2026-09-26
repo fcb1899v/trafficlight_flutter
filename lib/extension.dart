@@ -1,3 +1,4 @@
+import 'package:devicelocale/devicelocale.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -10,6 +11,16 @@ import 'constant.dart';
 
 part 'l10n_extension.dart';
 part 'size_extension.dart';
+
+/// Get default country counter based on device locale
+/// Shared by HomePage (signal style) and UpgradePage (localized buy button)
+Future<int> getCountryCounter() async {
+  final locale = await Devicelocale.currentLocale ?? "en-US";
+  final countryCode = locale.substring(3, 5);
+  final counter = countryCode.getDefaultCounter();
+  "Locale: $locale, counter: $counter".debugPrint();
+  return counter;
+}
 
 /// Extension on BuildContext for navigation
 /// (localization -> L10nContextExt in l10n_extension.dart)

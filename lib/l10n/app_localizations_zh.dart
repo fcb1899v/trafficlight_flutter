@@ -91,6 +91,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noAds => '无广告';
 
   @override
+  String get carSignalAvailable => '解锁车辆信号灯';
+
+  @override
+  String get removeAllAds => '移除所有广告';
+
+  @override
+  String get toPurchase => '购买';
+
+  @override
   String get timeSettings => '时间设置';
 
   @override

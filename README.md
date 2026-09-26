@@ -22,7 +22,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 - **Google Mobile Ads**: Banner ads
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Authentic signal sounds and haptic feedback
-- **Premium Features**: Ad-free experience with RevenueCat integration
+- **Premium Features**: Car signals and an ad-free experience with RevenueCat integration. The upgrade page dims the car-signal home screen and keeps only the real push button (the buy action) and the ad lit, with a "Buy" cue that blinks five times and stops (static when the OS reduces motion)
 - **Customizable Settings**: Adjustable signal timing and audio preferences
 
 ## 🚀 Technology Stack
@@ -131,7 +131,12 @@ packages/
 └── flutter_tts/           # Local fork of flutter_tts 4.2.5
 
 test/
-└── settings_upgrade_entry_test.dart  # Settings upgrade entry, driven by the store price
+├── settings_upgrade_entry_test.dart  # Settings upgrade entry, driven by the store price
+├── upgrade_back_test.dart            # Upgrade page back button: centred on the top bar, at least a 48x48 tap target
+└── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
+
+integration_test/
+└── upgrade_page_test.dart  # Opens the upgrade page from settings on a device and returns with the back button
 
 assets/
 ├── images/                # Image resources

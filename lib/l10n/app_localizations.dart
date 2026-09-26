@@ -262,6 +262,24 @@ abstract class AppLocalizations {
   /// **'No Ads'**
   String get noAds;
 
+  /// No description provided for @carSignalAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock car signals'**
+  String get carSignalAvailable;
+
+  /// No description provided for @removeAllAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all ads'**
+  String get removeAllAds;
+
+  /// No description provided for @toPurchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get toPurchase;
+
   /// No description provided for @timeSettings.
   ///
   /// In en, this message translates to:

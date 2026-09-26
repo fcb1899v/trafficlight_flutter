@@ -94,6 +94,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAds => 'No Ads';
 
   @override
+  String get carSignalAvailable => 'Unlock car signals';
+
+  @override
+  String get removeAllAds => 'Remove all ads';
+
+  @override
+  String get toPurchase => 'Buy';
+
+  @override
   String get timeSettings => 'Time Settings';
 
   @override
