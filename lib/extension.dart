@@ -32,8 +32,16 @@ extension ContextExt on BuildContext {
       Navigator.pushReplacement(this, MaterialPageRoute(builder: (BuildContext context) =>  const HomePage()));
   void pushSettingsPage() =>
       Navigator.push(this, MaterialPageRoute(builder: (context) => const SettingsPage()));
-  void pushUpgradePage() =>
-      Navigator.push(this, MaterialPageRoute(builder: (context) => const UpgradePage()));
+  /// Fades in over the current screen. The back "<" itself is unchanged (see test/upgrade_back_test.dart)
+  Future<void> pushUpgradePage({UpgradeSource source = UpgradeSource.settings}) =>
+      Navigator.push(this, PageRouteBuilder(
+        pageBuilder: (_, _, _) => UpgradePage(source: source),
+        transitionsBuilder: (_, animation, _, child) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 300),
+      ));
 }
 
 

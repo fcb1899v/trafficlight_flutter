@@ -9,10 +9,10 @@ extension L10nContextExt on BuildContext {
 
   /// Returns appropriate font family based on language
   /// Japanese: Noto Sans JP, Chinese: Noto Sans SC, Others: Beon
-  String font() =>
+  String font(String defaultFont) =>
     (lang() == "ja") ? "notoJP":
     (lang() == "zh") ? "notoSC":
-    "beon";
+    defaultFont;
 
   /// Localization Methods
   /// Convenient access to localized strings throughout the app
@@ -69,6 +69,9 @@ extension L10nContextExt on BuildContext {
   String carSignalAvailable() => AppLocalizations.of(this)!.carSignalAvailable;
   String removeAllAds() => AppLocalizations.of(this)!.removeAllAds;
   String toPurchase() => AppLocalizations.of(this)!.toPurchase;
+  String carSignalTrialBanner() => AppLocalizations.of(this)!.carSignalTrialBanner;
+  String carSignalTrialButtonLabel() => AppLocalizations.of(this)!.carSignalTrialButtonLabel;
+  String carSignalTrialTag() => AppLocalizations.of(this)!.carSignalTrialTag;
   String timeSettings() => AppLocalizations.of(this)!.timeSettings;
   String timeUnit() => AppLocalizations.of(this)!.timeUnit;
   String waitTime() => AppLocalizations.of(this)!.waitTime;

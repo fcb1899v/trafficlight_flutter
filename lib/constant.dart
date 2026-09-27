@@ -26,6 +26,12 @@ const int initialYellowTime = 3; // Default yellow light duration (seconds)
 const int initialArrowTime = 3;  // Default arrow signal duration (seconds)
 const int deltaFlash = 500;      // Flash interval for blinking signals (milliseconds)
 
+/// Car-signal trial for unpurchased users.
+/// trialAutoPressDelay is the wait before the push button presses itself.
+/// maxTrialPaywallCloseCount is how many closes of the trial's paywall turn the "Try" ribbon into a padlock.
+const Duration trialAutoPressDelay = Duration(seconds: 5);
+const int maxTrialPaywallCloseCount = 2;
+
 /// Vibration Configuration
 /// Haptic feedback settings for button interactions
 const int vibTime = 200;         // Vibration duration (milliseconds)
@@ -146,6 +152,16 @@ const int flagRotationTime = 1;                                 // Flag rotation
 const String premiumProduct = "signal_upgrade_premium";         // Product ID for premium upgrade
 const Color premiumOverlayColor = Color.fromRGBO(0, 0, 0, 0.7);  // Dims the car-signal screen behind the purchase message
 const Color premiumPlateColor = Color.fromRGBO(0, 0, 0, 0.35);  // Benefit plate fill: the dimmed car signal behind it stays visible
+
+/// Mode button marks for unpurchased users.
+/// Yellow always sits on a dark edge, since yellow alone on the light home background is unreadable.
+const Color trialTagColor = yellowColor;             // "Try" ribbon fill
+const Color trialTagTextColor = signalGrayColor;     // "Try" word on the ribbon, as on the price pill
+const Color trialTagEdgeColor = signalGrayColor;     // Dark edge around the ribbon
+const Color modeIconDimColor = Color(0xFF4A4A4A);    // Signal art while the "Try" button cannot be pressed
+const String padlockStarYellow = "assets/images/icons/padlock_star_yellow.svg";   // Padlock over the art once the trial is used up
+const String padlockStarOutline = "assets/images/icons/padlock_star_outline.svg"; // Black outline and star drawn behind it
+const double padlockOutlineScale = 359.52 / 329.52;  // Outline SVG height over the padlock SVG height (15-unit margin each side)
 
 /// Settings Screen Configuration
 /// UI settings for the settings screen

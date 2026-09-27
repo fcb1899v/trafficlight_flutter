@@ -100,6 +100,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get toPurchase => '購入する';
 
   @override
+  String get carSignalTrialBanner => '車用信号 お試し中';
+
+  @override
+  String get carSignalTrialButtonLabel => '車用信号を試す';
+
+  @override
+  String get carSignalTrialTag => 'お試し';
+
+  @override
   String get timeSettings => '時間の設定';
 
   @override

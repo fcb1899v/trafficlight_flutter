@@ -23,6 +23,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Authentic signal sounds and haptic feedback
 - **Premium Features**: Car signals and an ad-free experience with RevenueCat integration. The upgrade page dims the car-signal home screen and keeps only the real push button (the buy action) and the ad lit, with a "Buy" cue that blinks five times and stops (static when the OS reduces motion)
+- **Car-Signal Trial**: Unpurchased users with a known store price see a yellow "Try" ribbon across the mode button's top-right corner. Tapping it runs one car-signal cycle on fixed timing (free to switch between the pedestrian and car display throughout), then opens the purchase page. After two closes of that page, a yellow padlock replaces the ribbon: the first tap swings it, and the second opens the purchase page. The button sizes to tune are together in `lib/size_extension.dart`
 - **Customizable Settings**: Adjustable signal timing and audio preferences
 
 ## 🚀 Technology Stack
@@ -113,6 +114,7 @@ lib/
 ├── plan_provider.dart     # Premium state management
 ├── sound_manager.dart     # Audio management
 ├── admob_banner.dart      # Banner advertisement management
+├── analytics.dart         # Firebase Analytics wrapper, replaceable in tests
 ├── constant.dart          # Constant definitions
 ├── extension.dart         # Extension functions
 ├── l10n_extension.dart    # Localization helpers (part of extension.dart)
@@ -133,10 +135,17 @@ packages/
 test/
 ├── settings_upgrade_entry_test.dart  # Settings upgrade entry, driven by the store price
 ├── upgrade_back_test.dart            # Upgrade page back button: centred on the top bar, at least a 48x48 tap target
-└── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
+├── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
+├── upgrade_source_test.dart          # Purchase-page analytics event names and close counting, by open source (trial vs. settings)
+├── mode_button_test.dart             # Mode button: art by displayed signal, the Try ribbon, dimmed art while it cannot be pressed, the padlock, tap targets
+├── mode_button_icon_preview_test.dart # Golden PNG of the mode button's five real-size states: purchaser (pedestrian and car art), Try ribbon, dimmed ribbon, padlock
+├── trial_banner_blink_test.dart      # The trying banner blinks continuously with the purchase page's Buy cue's cycle and curve, never stopping
+└── trial_banner_size_test.dart       # The trying banner stays inside the screen and clears the signal/push-button gap, at both device sizes and every language
 
 integration_test/
-└── upgrade_page_test.dart  # Opens the upgrade page from settings on a device and returns with the back button
+├── upgrade_page_test.dart  # Opens the upgrade page from settings on a device and returns with the back button
+├── car_trial_test.dart     # The mode button on a device: Try ribbon, dimmed art during a cycle, switching signals before and during a trial's cycle, the trying banner over the signal/push-button seam, the paywall, padlock (two taps open the page), purchaser
+└── button_corner_test.dart # The three round buttons' continuous (iOS-icon-like) corner, measured as drawn on the device
 
 assets/
 ├── images/                # Image resources
@@ -187,7 +196,7 @@ flutter analyze   # expected: No issues found!
 
 ### Run Tests
 ```bash
-flutter test      # expected: All tests passed! (3 tests)
+flutter test      # expected: All tests passed! (32 tests)
 ```
 
 ### Build

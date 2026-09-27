@@ -137,7 +137,7 @@ class SettingsWidget {
     child: AppBar(
       title: Text(context.settingsTitle(),
         style: TextStyle(
-          fontFamily: context.font(),
+          fontFamily: context.font("beon"),
           fontSize: context.appBarFontSize(),
           fontWeight: FontWeight.bold,
           color: whiteColor,

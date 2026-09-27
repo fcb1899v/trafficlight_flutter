@@ -103,6 +103,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toPurchase => 'Buy';
 
   @override
+  String get carSignalTrialBanner => 'Trying the car signal';
+
+  @override
+  String get carSignalTrialButtonLabel => 'Try the car signal';
+
+  @override
+  String get carSignalTrialTag => 'Try';
+
+  @override
   String get timeSettings => 'Time Settings';
 
   @override

@@ -280,6 +280,24 @@ abstract class AppLocalizations {
   /// **'Buy'**
   String get toPurchase;
 
+  /// No description provided for @carSignalTrialBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Trying the car signal'**
+  String get carSignalTrialBanner;
+
+  /// No description provided for @carSignalTrialButtonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the car signal'**
+  String get carSignalTrialButtonLabel;
+
+  /// No description provided for @carSignalTrialTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Try'**
+  String get carSignalTrialTag;
+
   /// No description provided for @timeSettings.
   ///
   /// In en, this message translates to:

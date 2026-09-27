@@ -100,6 +100,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toPurchase => '购买';
 
   @override
+  String get carSignalTrialBanner => '正在试用车辆信号灯';
+
+  @override
+  String get carSignalTrialButtonLabel => '试用车辆信号灯';
+
+  @override
+  String get carSignalTrialTag => '试用';
+
+  @override
   String get timeSettings => '时间设置';
 
   @override

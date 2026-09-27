@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -12,6 +13,8 @@ import 'main.dart';
 import 'plan_provider.dart';
 import 'admob_banner.dart';
 import 'sound_manager.dart';
+import 'analytics.dart';
+import 'upgrade.dart';
 
 /// Main home page widget that displays the traffic signal simulation
 /// Handles signal state management, user interactions, and audio/visual feedback
@@ -24,12 +27,12 @@ class HomePage extends HookConsumerWidget {
     final plan = ref.read(planProvider.notifier);
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     final isPremium = useState("premium".getSettingsValueBool(false));
-    // Watch time-related state providers
-    final waitTime = ref.watch(waitTimeProvider);
-    final goTime = ref.watch(goTimeProvider);
-    final flashTime = ref.watch(flashTimeProvider);
-    final yellowTime = ref.watch(yellowTimeProvider);
-    final arrowTime = ref.watch(arrowTimeProvider);
+    // Watch time-related state providers (the user's saved settings)
+    final savedWaitTime = ref.watch(waitTimeProvider);
+    final savedGoTime = ref.watch(goTimeProvider);
+    final savedFlashTime = ref.watch(flashTimeProvider);
+    final savedYellowTime = ref.watch(yellowTimeProvider);
+    final savedArrowTime = ref.watch(arrowTimeProvider);
     final isSound = ref.watch(isSoundProvider);
     // Local state for signal simulation
     final signalColor = useState([false, false, false]); //isGreen, isYellow, isArrow
@@ -40,6 +43,41 @@ class HomePage extends HookConsumerWidget {
     final isPedestrian = useState(true);
     final countDown = useState(0);
     final lifecycle = useAppLifecycleState();
+    // Car-signal trial for unpurchased users: trialActive is true from the tap until the paywall or an abort
+    final premiumPrice = useValueListenable(PremiumPrice.value);
+    final trialCloseCount = useState("trialPaywallCloseCount".getSettingsValueInt(0));
+    final trialActive = useState(false);
+    // Stays true until the trial's cycle ends, even after an abort, so that cycle keeps its fixed times
+    final useCycleDefaults = useState(false);
+    final trialToggleCount = useRef(0);
+    final trialPressType = useRef("none");
+    final autoPressTimer = useRef<Timer?>(null);
+    // Swings the padlock when it is tapped
+    final padlockSwing = useAnimationController(duration: const Duration(milliseconds: 600));
+    // True once the padlock has been tapped, so the next tap opens the purchase page
+    final isLockTapped = useRef(false);
+    // Blinks the trial banner, at the same cycle and curve as the purchase page's "Buy" cue, but without its 5-cycle stop
+    final bannerBlink = useAnimationController(duration: cueBlinkCycle);
+    final reduceMotion = premiumReduceMotion(context);
+    useEffect(() {
+      if (trialActive.value && !reduceMotion) {
+        bannerBlink.repeat();
+      } else {
+        bannerBlink.stop();
+        bannerBlink.value = 0;
+      }
+      return null;
+    }, [trialActive.value, reduceMotion]);
+    // The trial's cycle runs on the default times; any other cycle on the user's own settings
+    final waitTime = useCycleDefaults.value ? initialWaitTime: savedWaitTime;
+    final goTime = useCycleDefaults.value ? initialGoTime: savedGoTime;
+    final flashTime = useCycleDefaults.value ? initialFlashTime: savedFlashTime;
+    final yellowTime = useCycleDefaults.value ? initialYellowTime: savedYellowTime;
+    final arrowTime = useCycleDefaults.value ? initialArrowTime: savedArrowTime;
+    // Unpurchased users get the mode button only once the store price is known
+    final hasFreeModeButton = !isPremiumProvider && premiumPrice.isNotEmpty;
+    // It carries the "Try" ribbon until the trial's paywall has been closed often enough, then a padlock
+    final canShowTrialButton = hasFreeModeButton && trialCloseCount.value < maxTrialPaywallCloseCount;
     // Initialize audio and TTS managers
     final ttsManager = useMemoized(() => TtsManager(context: context));
     final audioManager = useMemoized(() => AudioManager());
@@ -89,6 +127,33 @@ class HomePage extends HookConsumerWidget {
           audioManager.stopAll();
           ttsManager.stopTts();
         }
+      }
+      return null;
+    }, [lifecycle]);
+
+    // Cancels a pending auto-press if the page is disposed mid-wait
+    useEffect(() => () => autoPressTimer.value?.cancel(), const []);
+
+    // car_trial_entry_view: once per launch, the first time the "Try" ribbon shows (never for the padlock)
+    useEffect(() {
+      if (canShowTrialButton && !SignalAnalytics.trialEntryViewLogged) {
+        SignalAnalytics.trialEntryViewLogged = true;
+        SignalAnalytics.log('car_trial_entry_view');
+      }
+      return null;
+    }, [canShowTrialButton]);
+
+    // Going to the background (`paused`, not `inactive` from Control Centre) aborts the trial.
+    // A running cycle still finishes, just without the banner or the paywall.
+    useEffect(() {
+      // The padlock needs two taps again
+      if (lifecycle == AppLifecycleState.paused) isLockTapped.value = false;
+      if (lifecycle == AppLifecycleState.paused && trialActive.value) {
+        SignalAnalytics.log('car_trial_end_aborted',
+          {'toggle_count': trialToggleCount.value, 'press_type': isPressed.value ? trialPressType.value: 'none'});
+        autoPressTimer.value?.cancel();
+        trialActive.value = false;
+        isPedestrian.value = true;
       }
       return null;
     }, [lifecycle]);
@@ -172,12 +237,25 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    /// Set signal to red state and reset button
+    /// Set signal to red state and reset button.
+    /// A trial cycle that was not aborted opens the paywall here, silently, and the red sound resumes only once it closes.
     setRedState() async {
+      final endsTrial = trialActive.value;
       signalColor.value = [false, false, false];
       isFlash.value = false;
       isPressed.value = false;
+      useCycleDefaults.value = false;
+      trialActive.value = false;
       "redState: ${signalColor.value}, isFlash: ${isFlash.value}, isPressed: ${isPressed.value}".debugPrint();
+      if (endsTrial) {
+        await audioManager.stopAll();
+        await SignalAnalytics.log('car_trial_end_paywall',
+          {'toggle_count': trialToggleCount.value, 'press_type': trialPressType.value});
+        isPedestrian.value = true;
+        if (context.mounted) await context.pushUpgradePage(source: UpgradeSource.trial);
+        if (!context.mounted) return;
+        trialCloseCount.value = "trialPaywallCloseCount".getSettingsValueInt(0);
+      }
       await setRedSound();
     }
 
@@ -214,9 +292,38 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    /// Starts the car-signal trial: switches to the car display and shows the "trying" banner.
+    /// The user has up to trialAutoPressDelay to press before the push button presses itself.
+    void startCarTrial() {
+      trialActive.value = true;
+      useCycleDefaults.value = true;
+      trialToggleCount.value = 0;
+      trialPressType.value = "none";
+      isPedestrian.value = false;
+      SignalAnalytics.log('car_trial_start');
+      autoPressTimer.value = Timer(trialAutoPressDelay, () {
+        if (trialActive.value && !isPressed.value) {
+          trialPressType.value = "auto";
+          pushButtonActions();
+        }
+      });
+    }
+
+    /// The push button's own tap handler.
+    /// While the trial waits for a press, a manual tap cancels the pending auto-press before anything awaits.
+    /// So the two can never both fire for the same cycle.
+    void onPushButtonTap() {
+      if (trialActive.value && !isPressed.value) {
+        autoPressTimer.value?.cancel();
+        trialPressType.value = "manual";
+      }
+      pushButtonActions();
+    }
+
     /// Toggle between pedestrian and traffic signal modes
     void changeIsPedestrian() {
       isPedestrian.value = !isPedestrian.value;
+      if (trialActive.value) trialToggleCount.value = trialToggleCount.value + 1;
       "isPedestrian: {isPedestrian.value}".debugPrint();
     }
 
@@ -235,8 +342,28 @@ class HomePage extends HookConsumerWidget {
       if (context.mounted) context.pushSettingsPage();
     }
 
+    /// Swings the padlock on every tap; a tap after an earlier one, once its swing ends, opens the purchase page.
+    /// Opening the page, or going to the background, sets isLockTapped back to false.
+    Future<void> tapPadlock() async {
+      final opens = isLockTapped.value;
+      isLockTapped.value = true;
+      if (!premiumReduceMotion(context)) await padlockSwing.forward(from: 0).orCancel.catchError((_) {});
+      if (!opens || !context.mounted) return;
+      isLockTapped.value = false;
+      await audioManager.stopAll();
+      if (context.mounted) await context.pushUpgradePage(source: UpgradeSource.lock);
+      if (context.mounted) (signalColor.value[0]) ? setGreenSound(): setRedSound();
+    }
+
+    // The "Try" button cannot start a trial while any pedestrian cycle is running
+    final cycleRunning = isPressed.value || isFlash.value;
+
     return Scaffold(
-      appBar: home.homeAppBar(onPressed: () async => await toSettings()),
+      // The gear stays visible but disabled while the trial runs
+      appBar: home.homeAppBar(
+        onPressed: () async => await toSettings(),
+        enabled: !trialActive.value,
+      ),
       body: Stack(alignment: Alignment.center,
         children: [
           home.backGroundImage(),
@@ -251,7 +378,7 @@ class HomePage extends HookConsumerWidget {
             Stack(alignment: Alignment.topCenter,
               children: [
                 home.pushButtonFrame(),
-                home.pushButton(onTap: () => pushButtonActions()),
+                home.pushButton(onTap: () => onPushButtonTap()),
                 home.jpFrameLabel()
               ]
             ),
@@ -259,15 +386,40 @@ class HomePage extends HookConsumerWidget {
             // Show ad banner only for non-premium users
             if (!isPremiumProvider) const AdBannerWidget(),
           ]),
+          // "Trying the car signal" banner, in both modes, laid over the seam between the signal and the push button.
+          // Last in the Stack so it is drawn on top; IgnorePointer lets taps reach the push button beneath it.
+          if (trialActive.value) Positioned(
+            top: context.trialBannerCenterY(),
+            left: 0, right: 0,
+            child: IgnorePointer(child: FractionalTranslation(
+              translation: const Offset(0, -0.5),
+              child: Center(child: FadeTransition(opacity: cueOpacity(bannerBlink), child: home.carTrialBanner())),
+            )),
+          ),
         ],
       ),
       floatingActionButton: Container(
         margin: EdgeInsets.only(bottom: context.floatingMarginBottom()),
         child: Column(children: [
           const Spacer(flex: 3),
-          // Show mode toggle button only for premium users
-          if (isPremiumProvider) home.changeIsPedestrianButton(
-            onPressed: () => changeIsPedestrian()
+          // One black button for everyone; unpurchased users see the "Try" ribbon, then the padlock, while no trial runs
+          if (isPremiumProvider || trialActive.value) home.changeIsPedestrianButton(
+            isPedestrian: isPedestrian.value,
+            onPressed: () => changeIsPedestrian(),
+          )
+          else if (canShowTrialButton) home.changeIsPedestrianButton(
+            isPedestrian: isPedestrian.value,
+            enabled: !cycleRunning,
+            onPressed: () => startCarTrial(),
+            isTag: true,
+            semanticsLabel: context.carSignalTrialButtonLabel(),
+          )
+          else if (hasFreeModeButton) home.changeIsPedestrianButton(
+            isPedestrian: isPedestrian.value,
+            onPressed: () => tapPadlock(),
+            isPadlock: true,
+            padlockSwing: padlockSwing,
+            semanticsLabel: context.carSignalAvailable(),
           ),
           const Spacer(flex: 2),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -312,16 +464,17 @@ class HomeWidget {
   });
 
   /// Create the app bar for the home page
-  /// @param onPressed Callback function for settings button
-  /// The upgrade page reuses this bar without the settings gear (onPressed null)
+  /// @param onPressed Callback function for settings button; null hides it entirely
+  /// @param enabled false keeps the gear visible but disabled and dimmed while the car-signal trial runs; it has no effect when onPressed is null
   PreferredSize homeAppBar({
-    required void Function()? onPressed
+    required void Function()? onPressed,
+    bool enabled = true,
   }) => PreferredSize(
     preferredSize: Size.fromHeight(context.appBarHeight()),
     child: AppBar(
       title: Text(context.appTitle(),
         style: TextStyle(
-          fontFamily: context.font(),
+          fontFamily: context.font("beon"),
           fontSize: context.appBarFontSize(),
           fontWeight: FontWeight.bold,
           color: whiteColor,
@@ -334,12 +487,15 @@ class HomeWidget {
       centerTitle: true,
       automaticallyImplyLeading: false,
       actions: [
-        if (onPressed != null) IconButton(
-          icon: Icon(Icons.settings,
-            color: whiteColor,
-            size: context.appBarIconSize()
+        if (onPressed != null) Opacity(
+          opacity: enabled ? 1: 0.4,
+          child: IconButton(
+            icon: Icon(Icons.settings,
+              color: whiteColor,
+              size: context.appBarIconSize()
+            ),
+            onPressed: enabled ? onPressed: null,
           ),
-          onPressed: onPressed,
         ),
       ],
     )
@@ -372,27 +528,138 @@ class HomeWidget {
       color: backGroundColor[counter]
   );
 
-  /// Create mode toggle button (pedestrian/traffic signal)
-  /// @param onPressed Callback function when button is pressed
+  /// Mode button between the pedestrian and car signals: the same black box and white signal art for every user.
+  /// The art shows the signal a tap switches to.
+  /// [isTag] hangs the yellow swallowtail "Try" ribbon diagonally across the top-right corner (unpurchased users).
+  /// While that button cannot be pressed (a pedestrian cycle is running), only the art dims; the ribbon stays yellow.
+  /// [isPadlock] lays the yellow star padlock, outlined in black, over the centre of the art; it is never disabled.
   Widget changeIsPedestrianButton({
-    required void Function() onPressed
-  }) => Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      SizedBox(
-        width: context.floatingButtonSize(),
-        height: context.floatingButtonSize(),
-        child: FloatingActionButton(
-          backgroundColor: blackColor,
-          heroTag:'mode',
-          onPressed: onPressed,
-          child: Icon(Icons.cached,
-            color: whiteColor,
-            size: context.floatingIconSize()
+    required bool isPedestrian,
+    required void Function() onPressed,
+    bool enabled = true,
+    bool isTag = false,
+    bool isPadlock = false,
+    Animation<double>? padlockSwing,
+    String? semanticsLabel,
+  }) {
+    final size = context.floatingButtonSize();
+    // Only the height is set: the width follows the tall SVG's own shape
+    Widget art = SvgPicture.asset(
+      isPedestrian ? 'assets/images/icons/traffic_signal_white.svg': 'assets/images/icons/pedestrian_signal_white.svg',
+      height: context.modeIconHeight(),
+      colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),
+    );
+    // Behind the padlock only, the art shows through it at 80% opacity, never fully hidden
+    if (isPadlock) art = Opacity(opacity: 0.8, child: art);
+    Widget? padlock;
+    if (isPadlock) {
+      final lockHeight = context.modePadlockHeight();
+      // The black copy behind, a little larger, keeps the yellow padlock apart from the white art and fills its star
+      padlock = Stack(key: const Key('trialPadlock'), alignment: Alignment.center, children: [
+        SvgPicture.asset(padlockStarOutline, height: lockHeight * padlockOutlineScale),
+        SvgPicture.asset(padlockStarYellow, height: lockHeight),
+      ]);
+      if (padlockSwing != null) {
+        padlock = AnimatedBuilder(
+          animation: padlockSwing,
+          builder: (_, child) => Transform.rotate(
+            alignment: Alignment.topCenter,
+            angle: sin(padlockSwing.value * pi * 6) * 0.3 * (1 - padlockSwing.value),
+            child: child,
           ),
-        )
-      )
-    ]
+          child: padlock,
+        );
+      }
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Semantics(
+          label: semanticsLabel,
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Stack(clipBehavior: Clip.none, children: [
+              Positioned.fill(child: FloatingActionButton(
+                key: const Key('modeButton'),
+                backgroundColor: blackColor,
+                heroTag: 'mode',
+                shape: floatingButtonShape(),
+                onPressed: enabled ? onPressed: null,
+                child: (padlock == null) ? art: Stack(alignment: Alignment.center, children: [art, padlock]),
+              )),
+              // Drawn over the button and past its edges; taps fall through to the button beneath
+              if (isTag) Positioned.fill(child: IgnorePointer(child: trialRibbon())),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Yellow swallowtail ribbon across the mode button's top-right corner, at 45 degrees, with the "Try" word in bold.
+  /// Its size and place come from trialRibbonFontSize(), trialRibbonThickness() and trialRibbonCenter().
+  Widget trialRibbon() {
+    final size = context.floatingButtonSize();
+    final font = context.trialRibbonFontSize();
+    final thickness = context.trialRibbonThickness();
+    final centre = context.trialRibbonCenter();
+    final wordLength = font * 3.3;
+    final mid = Offset(size - centre / sqrt2, centre / sqrt2);
+    return Stack(key: const Key('trialRibbon'), clipBehavior: Clip.none, children: [
+      Positioned.fill(child: CustomPaint(painter: _TrialRibbonPainter(
+        centre: mid,
+        length: wordLength + thickness * 0.6 + font * 0.3,
+        thickness: thickness,
+        edgeWidth: context.trialRibbonEdgeWidth(),
+      ))),
+      Positioned(
+        left: mid.dx - wordLength * 0.6,
+        top: mid.dy - font * 0.7,
+        width: wordLength * 1.2,
+        height: font * 1.4,
+        child: Transform.rotate(angle: pi / 4, child: Center(child: Text(context.carSignalTrialTag(),
+          maxLines: 1,
+          softWrap: false,
+          style: TextStyle(
+            color: trialTagTextColor,
+            // English reads better in "roboto" than in "beon"; ja/zh keep their usual font.
+            fontFamily: context.font("roboto"),
+            fontSize: font,
+            fontWeight: FontWeight.bold,
+            height: 1.0,
+          ),
+          textScaler: const TextScaler.linear(1.0),
+        ))),
+      ),
+    ]);
+  }
+
+  /// Shape of the three buttons: an iOS-app-icon-like continuous corner, sized by floatingButtonRadius()
+  OutlinedBorder floatingButtonShape({BorderSide side = BorderSide.none}) => RoundedSuperellipseBorder(
+    borderRadius: BorderRadius.circular(context.floatingButtonRadius()),
+    side: side,
+  );
+
+  /// "Trying the car signal" banner, shown in both modes while the trial runs
+  Widget carTrialBanner() => Container(
+    key: const Key('carTrialBanner'),
+    padding: EdgeInsets.symmetric(horizontal: context.floatingIconSize(), vertical: context.trialBannerPaddingV()),
+    decoration: BoxDecoration(
+      color: blackColor.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(context.floatingIconSize()),
+    ),
+    child: Text(context.carSignalTrialBanner(),
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      style: TextStyle(
+        color: whiteColor,
+        fontFamily: context.font("beon"),
+        fontSize: context.trialBannerFontSize(),
+        fontWeight: FontWeight.bold,
+      ),
+      textScaler: const TextScaler.linear(1.0),
+    ),
   );
 
   /// Country navigation button; isForward picks the forward or backward arrow
@@ -407,6 +674,7 @@ class HomeWidget {
       foregroundColor: whiteColor,
       backgroundColor: blackColor,
       heroTag: isForward ? 'forward': 'back',
+      shape: floatingButtonShape(),
       onPressed: onPressed,
       child: SizedBox(
         height: context.floatingImageSize(),
@@ -611,5 +879,32 @@ class HomeWidget {
     duration: const Duration(seconds: flagRotationTime),
     child: Image(image: AssetImage(isGo ? usGoFlag: usStopFlag)),
   );
+}
+
+/// The "Try" ribbon's band: a 45-degree strip with a V notch cut into both ends, filled yellow with a dark edge
+class _TrialRibbonPainter extends CustomPainter {
+  _TrialRibbonPainter({required this.centre, required this.length, required this.thickness, required this.edgeWidth});
+
+  final Offset centre;
+  final double length, thickness, edgeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const along = Offset(1 / sqrt2, 1 / sqrt2);   // down the band, from its top-left end to its bottom-right end
+    const across = Offset(1 / sqrt2, -1 / sqrt2); // across the band, toward the corner
+    final start = centre - along * (length / 2), end = centre + along * (length / 2);
+    final side = across * (thickness / 2), notch = along * (thickness * 0.3);
+    final band = Path()..addPolygon([start + side, end + side, end - notch, end - side, start - side, start + notch], true);
+    canvas.drawPath(band, Paint()..color = trialTagColor);
+    canvas.drawPath(band, Paint()
+      ..color = trialTagEdgeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = edgeWidth
+      ..strokeJoin = StrokeJoin.round);
+  }
+
+  @override
+  bool shouldRepaint(_TrialRibbonPainter old) =>
+    old.centre != centre || old.length != length || old.thickness != thickness || old.edgeWidth != edgeWidth;
 }
 
