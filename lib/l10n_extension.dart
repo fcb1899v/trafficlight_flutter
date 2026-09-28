@@ -68,6 +68,7 @@ extension L10nContextExt on BuildContext {
   String noAds() => AppLocalizations.of(this)!.noAds;
   String carSignalAvailable() => AppLocalizations.of(this)!.carSignalAvailable;
   String removeAllAds() => AppLocalizations.of(this)!.removeAllAds;
+  String premiumCardPrice(String price) => AppLocalizations.of(this)!.premiumCardPrice(price);
   String toPurchase() => AppLocalizations.of(this)!.toPurchase;
   String carSignalTrialBanner() => AppLocalizations.of(this)!.carSignalTrialBanner;
   String carSignalTrialButtonLabel() => AppLocalizations.of(this)!.carSignalTrialButtonLabel;

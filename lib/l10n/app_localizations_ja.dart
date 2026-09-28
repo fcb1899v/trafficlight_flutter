@@ -146,4 +146,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get confirmed => '確認';
+
+  @override
+  String premiumCardPrice(String price) {
+    return '$price 買い切り';
+  }
 }

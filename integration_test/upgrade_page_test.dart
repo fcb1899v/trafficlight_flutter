@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:signalbutton/main.dart' as app;
+import 'package:signalbutton/admob_banner.dart';
+import 'package:signalbutton/constant.dart';
 import 'package:signalbutton/upgrade.dart';
 
 /// Pumps frames until [finder] matches, without waiting for the home screen's
@@ -14,17 +16,41 @@ Future<void> pumpUntilFound(WidgetTester tester, Finder finder, {Duration timeou
   }
 }
 
-/// Opens the upgrade page the way a user does: home, settings gear, the premium tile.
-/// Needs a live store price, since settings only shows the tile once the price is known.
+/// Opens the upgrade page the way a user does: home, settings gear, the premium card.
+/// Needs a live store price, since settings only shows the card once the price is known.
+/// Optional UI language for screenshots, e.g. --dart-define=SCREENSHOT_LOCALE=ja; the device setting is left alone
+const screenshotLocale = String.fromEnvironment("SCREENSHOT_LOCALE");
+
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets("the upgrade page opens from settings and holds for a screenshot", (tester) async {
+    if (screenshotLocale.isNotEmpty) {
+      binding.platformDispatcher.localesTestValue = [Locale(screenshotLocale)];
+      addTearDown(binding.platformDispatcher.clearLocalesTestValue);
+    }
     await app.main();
     await pumpUntilFound(tester, find.byIcon(Icons.settings));
     await tester.tap(find.byIcon(Icons.settings));
-    await pumpUntilFound(tester, find.byIcon(Icons.shopping_cart_outlined));
-    await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
+    // The card's forward arrow; the whole card is one tap target
+    await pumpUntilFound(tester, find.byIcon(Icons.arrow_forward_ios));
+    // Let the card grow in; with a screenshot locale, hold settings so the shell can take a screenshot
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+    // Layout in the device's real fonts: the sound switch must stay clear of the ad slot
+    final switchBottom = tester.getRect(find.byWidgetPredicate(
+      (w) => ['Switch', 'CupertinoSettingsSwitch'].contains(w.runtimeType.toString()))).bottom;
+    final adTop = tester.getRect(find.byType(AdBannerWidget)).top;
+    final cardHeight = tester.getRect(find.byWidgetPredicate((w) => w is Material && w.color == greenColor)).height;
+    debugPrint("SETTINGS_LAYOUT card $cardHeight, switch bottom $switchBottom, ad top $adTop");
+    debugPrint("SETTINGS_PAGE_OPEN");
+    if (screenshotLocale.isNotEmpty) {
+      for (var i = 0; i < 60; i++) {
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+    }
+    await tester.tap(find.byIcon(Icons.arrow_forward_ios));
     await pumpUntilFound(tester, find.byType(UpgradePage));
     // Hold the page open so simulator screenshots can be taken from the shell
     debugPrint("UPGRADE_PAGE_OPEN");
@@ -39,6 +65,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
     }
     expect(find.byType(UpgradePage), findsNothing);
-    expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_forward_ios), findsOneWidget);
   });
 }

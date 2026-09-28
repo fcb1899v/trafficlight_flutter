@@ -24,7 +24,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 - **Audio & Vibration Feedback**: Authentic signal sounds and haptic feedback
 - **Premium Features**: Car signals and an ad-free experience with RevenueCat integration. The upgrade page dims the car-signal home screen and keeps only the real push button (the buy action) and the ad lit, with a "Buy" cue that blinks five times and stops (static when the OS reduces motion)
 - **Car-Signal Trial**: Unpurchased users with a known store price see a yellow "Try" ribbon across the mode button's top-right corner. Tapping it runs one car-signal cycle on fixed timing (free to switch between the pedestrian and car display throughout), then opens the purchase page. After two closes of that page, a yellow padlock replaces the ribbon: the first tap swings it, and the second opens the purchase page. The button sizes to tune are together in `lib/size_extension.dart`
-- **Customizable Settings**: Adjustable signal timing and audio preferences
+- **Customizable Settings**: Adjustable signal timing and audio preferences. Unpurchased users with a known store price see a green premium card at the top of settings (colour signal icon, title, price pill, two benefits and a forward arrow); the whole card opens the purchase page. Its sizes are the `settingsPremiumCard*` group in `lib/size_extension.dart`
 
 ## 🚀 Technology Stack
 
@@ -133,9 +133,11 @@ packages/
 └── flutter_tts/           # Local fork of flutter_tts 4.2.5
 
 test/
-├── settings_upgrade_entry_test.dart  # Settings upgrade entry, driven by the store price
+├── settings_upgrade_entry_test.dart  # Settings premium card, driven by the store price
+├── settings_premium_card_layout_test.dart # Settings premium card: height, benefit-to-arrow gap, the sound switch 15pt clear of the ad (iPhone 874pt/667pt, Android 412x915; 360x640-700 report only; card height on 874pt/667pt), and no card or ad for purchasers
 ├── upgrade_back_test.dart            # Upgrade page back button: centred on the top bar, at least a 48x48 tap target
 ├── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
+├── upgrade_ad_premium_gate_test.dart # Purchase page: no banner for purchasers, with the same layout as non-purchasers
 ├── upgrade_source_test.dart          # Purchase-page analytics event names and close counting, by open source (trial vs. settings)
 ├── mode_button_test.dart             # Mode button: art by displayed signal, the Try ribbon, dimmed art while it cannot be pressed, the padlock, tap targets
 ├── mode_button_icon_preview_test.dart # Golden PNG of the mode button's five real-size states: purchaser (pedestrian and car art), Try ribbon, dimmed ribbon, padlock
@@ -143,7 +145,7 @@ test/
 └── trial_banner_size_test.dart       # The trying banner stays inside the screen and clears the signal/push-button gap, at both device sizes and every language
 
 integration_test/
-├── upgrade_page_test.dart  # Opens the upgrade page from settings on a device and returns with the back button
+├── upgrade_page_test.dart  # Opens the upgrade page from the settings premium card on a device and returns with the back button; prints the settings layout in the device's real fonts; --dart-define=SCREENSHOT_LOCALE=ja picks the UI language and holds settings for a screenshot
 ├── car_trial_test.dart     # The mode button on a device: Try ribbon, dimmed art during a cycle, switching signals before and during a trial's cycle, the trying banner over the signal/push-button seam, the paywall, padlock (two taps open the page), purchaser
 └── button_corner_test.dart # The three round buttons' continuous (iOS-icon-like) corner, measured as drawn on the device
 

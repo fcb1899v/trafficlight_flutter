@@ -1,5 +1,5 @@
-// The settings "Upgrade" entry is drawn only from a live store price, with no "Loading..." row.
-// It appears as soon as the price arrives.
+// The settings premium card is drawn only from a live store price, with no "Loading..." row.
+// It appears as soon as the price arrives, with that price in its pill.
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -21,9 +21,12 @@ Future<void> pumpSettings(WidgetTester tester) async {
     ),
   ));
   await tester.pump(const Duration(seconds: 5));
+  // Let the card's AnimatedSize finish growing
+  await tester.pump(const Duration(seconds: 1));
 }
 
 final upgradeEntry = find.text("Premium Plan");
+final pricePill = find.text("¥300 one-time");
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +51,9 @@ void main() {
     PremiumPrice.source = () async => "¥300";
     await pumpSettings(tester);
     expect(upgradeEntry, findsOneWidget);
+    expect(pricePill, findsOneWidget);
+    // The old section heading is gone: the card names itself
+    expect(find.text("Upgrade"), findsNothing);
   });
 
   testWidgets("a price arriving while settings are open brings the entry in", (tester) async {
@@ -57,6 +63,8 @@ void main() {
     expect(upgradeEntry, findsNothing);
     store.complete("¥300");
     await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 1));
     expect(upgradeEntry, findsOneWidget);
+    expect(pricePill, findsOneWidget);
   });
 }

@@ -146,4 +146,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirmed => '确认';
+
+  @override
+  String premiumCardPrice(String price) {
+    return '$price 一次性购买';
+  }
 }

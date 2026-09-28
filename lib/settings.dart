@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'extension.dart';
 import 'constant.dart';
@@ -82,6 +83,23 @@ class SettingsPage extends HookConsumerWidget {
       body: Column(children: [
         Flexible(child:
           SettingsList(sections: [
+            /// Premium plan card: non-premium users, and only with a live store price.
+            /// Always mounted so a late price animates in instead of pushing the list down at once.
+            CustomSettingsSection(
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+                alignment: Alignment.topCenter,
+                child: (!isPremiumProvider && premiumPrice.isNotEmpty) ? Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: context.settingsPremiumCardOuterSide(),
+                    end: context.settingsPremiumCardOuterSide(),
+                    top: context.settingsPremiumCardOuterTop(),
+                  ),
+                  child: settings.premiumCard(price: premiumPrice),
+                ): const SizedBox.shrink(),
+              ),
+            ),
             /// Time Settings Section
             SettingsSection(
               title: Text(context.timeSettings()),
@@ -96,13 +114,6 @@ class SettingsPage extends HookConsumerWidget {
               title: Text(context.soundSettings()),
               tiles: [
                 settings.setSoundTile(onChanged: (value) => setSound(value)),
-              ]
-            ),
-            /// Premium Plan Section: non-premium users, and only with a live store price
-            if (!isPremiumProvider && premiumPrice.isNotEmpty) SettingsSection(
-              title: Text(context.upgrade()),
-              tiles: [
-                settings.premiumTile(),
               ]
             ),
           ]),
@@ -236,11 +247,82 @@ class SettingsWidget {
     onToggle: (bool value) => onChanged(value),
   );
 
-  /// Premium plan tile with upgrade navigation; drawn only once a live price is known
-  SettingsTile premiumTile() => SettingsTile(
-    title: Text(context.premiumPlan()),
-    leading: const Icon(Icons.shopping_cart_outlined),
-    trailing: const Icon(Icons.arrow_forward_ios),
-    onPressed: (context) => context.pushUpgradePage(),
-  );
+  /// Premium plan card that opens the upgrade page; drawn only once a live price is known.
+  /// Header: colour signal icon, title and price pill; below it the two benefits with a forward arrow.
+  Widget premiumCard({required String price}) {
+    TextStyle style(double size, Color color) => TextStyle(
+      fontFamily: context.font("beon"),
+      fontSize: size,
+      fontWeight: FontWeight.bold,
+      color: color,
+    );
+    Widget text(String value, TextStyle textStyle) =>
+      Text(value, style: textStyle, maxLines: 1, textScaler: const TextScaler.linear(1.0));
+    Widget benefit(String value) => Row(children: [
+      Icon(Icons.check, size: context.settingsPremiumCardCheckSize(), color: signalGrayColor),
+      SizedBox(width: context.settingsPremiumCardCheckGap()),
+      Flexible(child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerStart,
+        child: text(value, style(context.settingsPremiumCardBenefitFontSize(), signalGrayColor)),
+      )),
+    ]);
+    final header = Row(children: [
+      SvgPicture.asset(settingsPremiumCardIcon,
+        height: context.settingsPremiumCardIconHeight(),
+        excludeFromSemantics: true,
+      ),
+      SizedBox(width: context.settingsPremiumCardIconGap()),
+      Expanded(child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: text(context.premiumPlan(), style(context.settingsPremiumCardTitleFontSize(), signalGrayColor)),
+        ),
+      )),
+      SizedBox(width: context.settingsPremiumCardTitlePillGap()),
+      Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: context.settingsPremiumCardPricePillPaddingH(),
+          vertical: context.settingsPremiumCardPricePillPaddingV(),
+        ),
+        decoration: const ShapeDecoration(color: signalGrayColor, shape: StadiumBorder()),
+        child: text(context.premiumCardPrice(price), style(context.settingsPremiumCardPriceFontSize(), yellowColor)),
+      ),
+    ]);
+    final benefits = Row(children: [
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        benefit(context.carSignalAvailable()),
+        SizedBox(height: context.settingsPremiumCardLineGap()),
+        benefit(context.removeAllAds()),
+      ])),
+      SizedBox(width: context.settingsPremiumCardTitlePillGap()),
+      Icon(Icons.arrow_forward_ios, size: context.settingsPremiumCardArrowSize(), color: signalGrayColor),
+    ]);
+    return Semantics(
+      button: true,
+      child: Material(
+        color: greenColor,
+        borderRadius: BorderRadius.circular(context.settingsPremiumCardRadius()),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.pushUpgradePage(),
+          splashColor: blackColor.withValues(alpha: 0.12),
+          highlightColor: blackColor.withValues(alpha: 0.06),
+          splashFactory: InkRipple.splashFactory,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.settingsPremiumCardPaddingH(),
+              vertical: context.settingsPremiumCardPaddingV(),
+            ),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              header,
+              SizedBox(height: context.settingsPremiumCardGap()),
+              benefits,
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 }

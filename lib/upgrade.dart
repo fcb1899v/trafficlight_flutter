@@ -233,7 +233,8 @@ class UpgradePage extends HookConsumerWidget {
               preview.pushButton(onTap: () => buyUpgrade(false)),
             ]),
             const Spacer(flex: 1),
-            const AdBannerWidget(),
+            // Purchasers never see an ad; the empty slot keeps the Spacer split identical
+            planState.isPremium ? SizedBox(height: context.admobHeight()): const AdBannerWidget(),
           ]),
         ),
         // Title, benefit plate and price, centred between the top bar and the cue or button

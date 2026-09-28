@@ -45,5 +45,6 @@
   "toOff": "オフ",
   "toNew": "新式",
   "toOld": "旧式",
-  "confirmed": "確認"
+  "confirmed": "確認",
+  "premiumCardPrice": "{price} 買い切り"
 }

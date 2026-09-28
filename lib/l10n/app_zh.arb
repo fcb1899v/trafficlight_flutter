@@ -45,5 +45,6 @@
   "toOff": "关",
   "toNew": "新式",
   "toOld": "旧式",
-  "confirmed": "确认"
+  "confirmed": "确认",
+  "premiumCardPrice": "{price} 一次性购买"
 }

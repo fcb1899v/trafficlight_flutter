@@ -44,5 +44,11 @@
   "toOff": "Off",
   "toNew": "New",
   "toOld": "Old",
-  "confirmed": "OK"
+  "confirmed": "OK",
+  "premiumCardPrice": "{price} one-time",
+  "@premiumCardPrice": {
+    "placeholders": {
+      "price": {"type": "String"}
+    }
+  }
 }

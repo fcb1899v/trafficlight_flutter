@@ -375,6 +375,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OK'**
   String get confirmed;
+
+  /// No description provided for @premiumCardPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} one-time'**
+  String premiumCardPrice(String price);
 }
 
 class _AppLocalizationsDelegate

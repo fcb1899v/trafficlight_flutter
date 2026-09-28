@@ -12,6 +12,29 @@ extension SizeExt on BuildContext {
   /// Settings screen specific sizing
   double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
 
+  /// Settings premium card: header row sized by width, benefit rows by height.
+  /// The outer margins are fixed to match settings_ui's own tile edges (iOS 20/14, Android 16/16).
+  /// The platform comes from Theme, the same source settings_ui uses to pick its style.
+  bool _isIosSettingsStyle() => Theme.of(this).platform == TargetPlatform.iOS;
+  double settingsPremiumCardOuterSide() => _isIosSettingsStyle() ? 20: 16;
+  double settingsPremiumCardOuterTop() => _isIosSettingsStyle() ? 14: 16;
+  double settingsPremiumCardPaddingV() => height() * 0.018;
+  double settingsPremiumCardPaddingH() => width() * 0.05;
+  double settingsPremiumCardRadius() => height() * 0.017;
+  double settingsPremiumCardIconHeight() => width() * 0.075;
+  double settingsPremiumCardIconGap() => width() * 0.025;
+  double settingsPremiumCardTitleFontSize() => width() * 0.048;
+  double settingsPremiumCardTitlePillGap() => width() * 0.025;
+  double settingsPremiumCardPriceFontSize() => width() * 0.036;
+  double settingsPremiumCardPricePillPaddingH() => width() * 0.03;
+  double settingsPremiumCardPricePillPaddingV() => width() * 0.008;
+  double settingsPremiumCardGap() => height() * 0.012;
+  double settingsPremiumCardBenefitFontSize() => height() * 0.020;
+  double settingsPremiumCardCheckSize() => height() * 0.022;
+  double settingsPremiumCardCheckGap() => height() * 0.006;
+  double settingsPremiumCardLineGap() => height() * 0.006;
+  double settingsPremiumCardArrowSize() => height() * 0.028;
+
   /// AdMob banner sizing
   double admobHeight() => (height() < 750) ? 50: (height() < 1000) ? 50 + (height() - 750) / 5: 100;
   double admobWidth() => width();
