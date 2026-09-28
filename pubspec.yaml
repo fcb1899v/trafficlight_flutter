@@ -88,6 +88,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/icons/
     - assets/images/pedestrian/us/
     - assets/images/pedestrian/jp/
     - assets/images/pedestrian/uk/

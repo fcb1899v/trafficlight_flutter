@@ -11,10 +11,11 @@ import 'constant.dart';
 import 'plan_provider.dart';
 import 'homepage.dart';
 import 'admob_banner.dart';
+import 'analytics.dart';
 
-// The purchase page shows new-signal styles only; the shared indices are
-// US new=0, US old=1, UK new=2, UK old=3, JP new=4, JP old=5, AU=6.
-const List<int> _premiumSignalCounters = [0, 2, 4, 6];
+/// Where the purchase page was opened from: the trial's end, the settings entry, or the home screen's padlock.
+/// Every action on this page sends an analytics event named after it (for example paywall_view_lock).
+enum UpgradeSource { trial, settings, lock }
 
 /// Maps any of the 7 shared signal-style indices to its new-style
 /// equivalent (old styles fold onto the new style of the same country).
@@ -57,7 +58,10 @@ Animation<double> cueOpacity(Animation<double> blink) => blink.drive(TweenSequen
 /// Upgrade page widget that handles premium plan purchases and restorations
 /// Uses Riverpod for state management and Flutter Hooks for local state
 class UpgradePage extends HookConsumerWidget {
-  const UpgradePage({super.key});
+  const UpgradePage({super.key, this.source = UpgradeSource.settings});
+
+  /// Where this page was opened from (trial vs. the settings entry)
+  final UpgradeSource source;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -96,6 +100,9 @@ class UpgradePage extends HookConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await Settings.init(cacheProvider: SharePreferenceCache(),);
         initPurchase();
+        // Once per page instance, named by where it was opened from.
+        // Sent before the locale lookup below, which a platform without it would leave hanging.
+        SignalAnalytics.log('paywall_view_${source.name}');
         counter.value = _toNewSignalCounter(await getCountryCounter());
       });
       return;
@@ -109,6 +116,11 @@ class UpgradePage extends HookConsumerWidget {
       "isRestore: $isRestore".debugPrint();
       try {
         await plan.buyUpgrade(isRestore);
+        // getRestoreInfo() returns normally even when nothing was restored, so the dialog can say "success" with no entitlement.
+        // The event is sent only when premium was really granted.
+        if (ref.read(planProvider).isPremium) {
+          SignalAnalytics.log(isRestore ? 'premium_restore_${source.name}': 'premium_purchase_${source.name}');
+        }
         upgrade.purchaseDialog(
           isSuccess: true,
           isRestore: isRestore,
@@ -144,13 +156,29 @@ class UpgradePage extends HookConsumerWidget {
     );
     final bodyTop = context.topPadding() + context.appBarHeight();
 
-    return Material(
+    /// Only closes of a trial-opened page are counted; closes of a settings- or padlock-opened page are not.
+    /// Fires once for both the "<" back button and Android's back gesture, since both pop this page's route.
+    /// A successful purchase/restore instead replaces the route (pushHomePage), so it never reaches this callback.
+    onPop(bool didPop, Object? result) {
+      if (!didPop) return;
+      if (source == UpgradeSource.trial) {
+        final closeCount = "trialPaywallCloseCount".getSettingsValueInt(0) + 1;
+        Settings.setValue('key_trialPaywallCloseCount', closeCount);
+        SignalAnalytics.log('paywall_close_trial', {'close_count': closeCount});
+      } else {
+        SignalAnalytics.log('paywall_close_${source.name}');
+      }
+    }
+
+    return PopScope(
+      onPopInvokedWithResult: onPop,
+      child: Material(
       color: blackColor,
       child: Stack(children: [
         // Layer 1: the car-signal home screen, same layout as HomePage
         Scaffold(
-          // The home bar without its settings gear; the back button above the overlay leaves
-          appBar: preview.homeAppBar(onPressed: null),
+          // Settings gear shown for layout parity with the home screen, but inert here
+          appBar: preview.homeAppBar(onPressed: () {}, enabled: false),
           body: Stack(alignment: Alignment.center, children: [
             preview.backGroundImage(),
             preview.darkBackground(),
@@ -174,13 +202,9 @@ class UpgradePage extends HookConsumerWidget {
               const Spacer(flex: 3),
               const Spacer(flex: 2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                // Previews the other countries' car signals, new styles only
+                // Shown for layout parity with the home screen, but inert here
                 children: [false, true].map((isForward) => preview.countryChangeButton(
-                  onPressed: () {
-                    final i = _premiumSignalCounters.indexOf(counter.value);
-                    counter.value = _premiumSignalCounters[
-                      (i + (isForward ? 1: -1)) % _premiumSignalCounters.length];
-                  },
+                  onPressed: () {},
                   isForward: isForward,
                 )).toList(),
               ),
@@ -228,8 +252,7 @@ class UpgradePage extends HookConsumerWidget {
         ),
         // Restore, in the bottom-left corner between the left FAB and the ad
         Positioned(
-          left: context.premiumRestoreInset(),
-          top: context.premiumRestoreTop(),
+          bottom: context.premiumRestoreBottom(),
           child: upgrade.premiumRestore(onRestore: () => buyUpgrade(true)),
         ),
         // Back to settings, lit above the overlay at the top bar's left end
@@ -237,6 +260,7 @@ class UpgradePage extends HookConsumerWidget {
         // Show loading indicator during purchase process
         if (planState.isPurchasing) Center(child: upgrade.circularProgressIndicator()),
       ]),
+      ),
     );
   }
 }
@@ -286,7 +310,7 @@ class UpgradeWidget {
   TextStyle premiumTextStyle(double fontSize, Color color, {bool isBold = true, bool hasShadow = false}) => TextStyle(
     fontSize: fontSize,
     fontWeight: (isBold) ? FontWeight.bold: FontWeight.normal,
-    fontFamily: context.font(),
+    fontFamily: context.font("beon"),
     color: color,
     decoration: TextDecoration.none,
     shadows: (hasShadow) ? [Shadow(
@@ -356,7 +380,6 @@ class UpgradeWidget {
   );
 
   /// Arrow plus "Buy", pointing at the push button from below (JP) or above (elsewhere).
-  /// Only the text shrinks to stay clear of the right country-switch FAB.
   Widget premiumCue({
     required void Function() onBuy,
     required Animation<double> blink,
@@ -374,14 +397,9 @@ class UpgradeWidget {
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           (context.premiumCueBelow(counter)) ? arrow: RotatedBox(quarterTurns: 2, child: arrow),
           SizedBox(width: context.premiumCueArrowGap()),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: context.premiumCueTextMaxWidth()),
-            child: FittedBox(fit: BoxFit.scaleDown,
-              child: Text(context.toPurchase(),
-                style: premiumTextStyle(context.premiumCaptionFontSize(), whiteColor, hasShadow: true),
-                textScaler: _fixedScale,
-              ),
-            ),
+          Text(context.toPurchase(),
+            style: premiumTextStyle(context.premiumCaptionFontSize(), whiteColor, hasShadow: true),
+            textScaler: _fixedScale,
           ),
         ]),
       ),
@@ -389,25 +407,14 @@ class UpgradeWidget {
   }
 
   /// Restore, a quiet underlined link in the bottom-left corner
-  Widget premiumRestore({required void Function() onRestore}) => SizedBox(
-    width: context.premiumRestoreMaxWidth(),
-    height: context.premiumRestoreHeight(),
-    child: TextButton(
-      onPressed: onRestore,
-      style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(context.toRestore(),
-            style: premiumTextStyle(context.premiumRestoreFontSize(), whiteColor, isBold: false).copyWith(
-              decoration: TextDecoration.underline,
-              decorationColor: whiteColor,
-            ),
-            textScaler: _fixedScale,
-          ),
-        ),
+  Widget premiumRestore({required void Function() onRestore}) => TextButton(
+    onPressed: onRestore,
+    child: Text(context.toRestore(),
+      style: premiumTextStyle(context.premiumRestoreFontSize(), whiteColor, isBold: false).copyWith(
+        decoration: TextDecoration.underline,
+        decorationColor: whiteColor,
       ),
+      textScaler: _fixedScale,
     ),
   );
 
