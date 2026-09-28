@@ -58,8 +58,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
     }
     expect(tester.takeException(), isNull);
-    // The page shows no settings gear, and its back button returns to settings
-    expect(find.descendant(of: find.byType(UpgradePage), matching: find.byIcon(Icons.settings)), findsNothing);
+    // The background home replica keeps its gear for layout parity, but it must be inert
+    final gear = find.descendant(of: find.byType(UpgradePage), matching: find.widgetWithIcon(IconButton, Icons.settings));
+    expect(tester.widget<IconButton>(gear).onPressed, isNull);
+    // The back button returns to settings
     await tester.tap(find.descendant(of: find.byType(UpgradePage), matching: find.byIcon(Icons.arrow_back_ios)));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 250));
