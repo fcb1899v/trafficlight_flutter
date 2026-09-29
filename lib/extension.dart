@@ -155,7 +155,7 @@ extension IntExt on int {
       [false, false, false, false, false, false, false, false];                            // 0% or less
 
   /// Default flag key for a manually chosen signal style index (0-6)
-  /// NZ/SG only show up from locale detection, never from manual style paging
+  /// NZ/SG/CA only show up from locale detection, never from manual style paging
   String defaultFlagKey() =>
       (this == 2 || this == 3) ? "uk":
       (this == 4 || this == 5) ? "jp":

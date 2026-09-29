@@ -142,3 +142,6 @@ ios/firebase_app_id_file.json
 *.provisionprofile
 *.jks
 *.keystore
+
+# Golden test failure diffs: auto-generated, safe to discard.
+test/failures/
