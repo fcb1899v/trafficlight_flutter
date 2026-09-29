@@ -37,6 +37,8 @@ class HomePage extends HookConsumerWidget {
     // Local state for signal simulation
     final signalColor = useState([false, false, false]); //isGreen, isYellow, isArrow
     final counter = useState(0);
+    // Which flag to show; separate from counter so AU/NZ/SG can share signal style 6
+    final flagKey = useState("us");
     final isPressed = useState(false);
     final isFlash = useState(false);
     final opaque = useState(false);
@@ -84,6 +86,7 @@ class HomePage extends HookConsumerWidget {
     // Create home widget instance
     final home = HomeWidget(context,
       counter: counter.value,
+      flagKey: flagKey.value,
       signalColor: signalColor.value,
       isFlash: isFlash.value,
       opaque: opaque.value,
@@ -99,7 +102,9 @@ class HomePage extends HookConsumerWidget {
     Future<void> initState() async {
       plan.setCurrentPlan(isPremium.value);
       "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
-      counter.value = await getCountryCounter();
+      final (detectedCounter, detectedFlagKey) = await getCountryCounter();
+      counter.value = detectedCounter;
+      flagKey.value = detectedFlagKey;
       "waitTime: $waitTime, goTime: $goTime, flashTime: $flashTime, yellowTime: $yellowTime, arrowTime: $arrowTime, isSound: $isSound".debugPrint();
     }
 
@@ -195,6 +200,8 @@ class HomePage extends HookConsumerWidget {
     nextOrBackCounter(bool isNext) {
       "${(isNext) ? "next": "back"}Counter".debugPrint();
       counter.value = (counter.value + ((isNext) ? 1: -1)) % signalNumber;
+      // Manual paging never shows NZ/SG; reset to the new style's own default flag
+      flagKey.value = counter.value.defaultFlagKey();
       "counter: ${counter.value}".debugPrint();
     }
 
@@ -440,6 +447,7 @@ class HomeWidget {
 
   final BuildContext context;
   final int counter;
+  final String flagKey;
   final List<bool> signalColor;
   final bool isFlash;
   final bool opaque;
@@ -452,6 +460,7 @@ class HomeWidget {
 
   HomeWidget(this.context, {
     required this.counter,
+    this.flagKey = "us",
     required this.signalColor,
     required this.isFlash,
     required this.opaque,
@@ -511,14 +520,14 @@ class HomeWidget {
     SizedBox(height: context.admobHeight())
   ]);
 
-  /// Display country flag image based on current counter
+  /// Display country flag image based on the detected/selected flag key
   Widget countryFlagImage() => (counter == 4 || counter == 5) ? Container(
     width: context.flagSize(),
     height:  context.flagSize(),
     decoration: const BoxDecoration(color: redColor, shape: BoxShape.circle),
   ): SizedBox(
     height: context.flagSize(),
-    child: SvgPicture.asset(countryFlag[counter]),
+    child: SvgPicture.asset(countryFlag[flagKey]!),
   );
 
   /// Create dark background overlay
@@ -528,7 +537,7 @@ class HomeWidget {
       color: backGroundColor[counter]
   );
 
-  /// Mode button between the pedestrian and car signals: the same black box and white signal art for every user.
+  /// Mode button between the pedestrian and car signals: the same light box and black signal art for every user.
   /// The art shows the signal a tap switches to.
   /// [isTag] hangs the yellow swallowtail "Try" ribbon diagonally across the top-right corner (unpurchased users).
   /// While that button cannot be pressed (a pedestrian cycle is running), only the art dims; the ribbon stays yellow.
@@ -543,18 +552,24 @@ class HomeWidget {
     String? semanticsLabel,
   }) {
     final size = context.floatingButtonSize();
-    // Only the height is set: the width follows the tall SVG's own shape
-    Widget art = SvgPicture.asset(
-      isPedestrian ? 'assets/images/icons/traffic_signal_white.svg': 'assets/images/icons/pedestrian_signal_white.svg',
-      height: context.modeIconHeight(),
-      colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),
-    );
+    final iconHeight = context.modeIconHeight();
+    final frameAsset = isPedestrian ? 'assets/images/icons/traffic_signal_white.svg': 'assets/images/icons/pedestrian_signal_white.svg';
+    final lampsAsset = isPedestrian ? 'assets/images/icons/traffic_signal_lamps.svg': 'assets/images/icons/pedestrian_signal_lamps.svg';
+    // Only the height is set: the width follows the tall SVG's own shape.
+    // Lamp colours sit behind the frame's holes and hide while disabled, so the hole shapes alone still tell car and pedestrian apart when dimmed.
+    Widget art = Stack(alignment: Alignment.center, children: [
+      if (enabled) SvgPicture.asset(lampsAsset, height: iconHeight),
+      SvgPicture.asset(frameAsset,
+        height: iconHeight,
+        colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),
+      ),
+    ]);
     // Behind the padlock only, the art shows through it at 80% opacity, never fully hidden
     if (isPadlock) art = Opacity(opacity: 0.8, child: art);
     Widget? padlock;
     if (isPadlock) {
       final lockHeight = context.modePadlockHeight();
-      // The black copy behind, a little larger, keeps the yellow padlock apart from the white art and fills its star
+      // The black copy behind, a little larger, keeps the yellow padlock apart from the art behind it and fills its star
       padlock = Stack(key: const Key('trialPadlock'), alignment: Alignment.center, children: [
         SvgPicture.asset(padlockStarOutline, height: lockHeight * padlockOutlineScale),
         SvgPicture.asset(padlockStarYellow, height: lockHeight),
@@ -582,9 +597,9 @@ class HomeWidget {
             child: Stack(clipBehavior: Clip.none, children: [
               Positioned.fill(child: FloatingActionButton(
                 key: const Key('modeButton'),
-                backgroundColor: blackColor,
+                backgroundColor: lightGrayColor,
                 heroTag: 'mode',
-                shape: floatingButtonShape(),
+                shape: floatingButtonShape(side: BorderSide(color: blackColor, width: context.modeButtonBorderWidth())),
                 onPressed: enabled ? onPressed: null,
                 child: (padlock == null) ? art: Stack(alignment: Alignment.center, children: [art, padlock]),
               )),
@@ -671,14 +686,17 @@ class HomeWidget {
     width: context.floatingButtonSize(),
     height: context.floatingButtonSize(),
     child: FloatingActionButton(
-      foregroundColor: whiteColor,
-      backgroundColor: blackColor,
+      backgroundColor: lightGrayColor,
       heroTag: isForward ? 'forward': 'back',
-      shape: floatingButtonShape(),
+      shape: floatingButtonShape(side: BorderSide(color: blackColor, width: context.modeButtonBorderWidth())),
       onPressed: onPressed,
       child: SizedBox(
         height: context.floatingImageSize(),
-        child: Image.asset(isForward ? forwardArrow: backArrow),
+        // The PNG is a white shape on transparent; recolor it black to match the inverted button.
+        child: ColorFiltered(
+          colorFilter: const ColorFilter.mode(blackColor, BlendMode.srcIn),
+          child: Image.asset(isForward ? forwardArrow: backArrow),
+        ),
       )
     ),
   );

@@ -42,19 +42,16 @@ const int vibAmp = 128;          // Vibration amplitude (0-255)
 const Color blackColor = Colors.black;
 const Color whiteColor = Colors.white;
 const Color grayColor = Colors.grey;
+
 const Color transpColor = Colors.transparent;
 
 /// Custom Signal Colors
 /// Traffic signal specific colors with RGB values
 const Color signalGrayColor = Color.fromRGBO(35, 35, 35, 1);    // Dark gray for signal housing (#232323)
-const Color transpGrayColor = Color.fromRGBO(200, 200, 200, 0.9); // Semi-transparent gray
-const Color transpBlackColor = Color.fromRGBO(0, 0, 0, 0.9);    // Semi-transparent black
-const Color transpWhiteColor = Color.fromRGBO(255, 255, 255, 0.9); // Semi-transparent white
-
-/// UI Element Colors
-/// Colors for buttons, edges, and interface elements
-const Color edgeColor1 = Color.fromRGBO(180, 180, 180, 1);      // Light gray for edges (#b4b4b4)
-const Color edgeColor2 = Color.fromRGBO(230, 230, 230, 1);      // Lighter gray for highlights (#e6e6e6)
+const Color lightGrayColor = Color.fromRGBO(220, 220, 220, 1);
+const Color transpGrayColor = Color.fromRGBO(200, 200, 200, 0.8); // Semi-transparent gray
+const Color transpBlackColor = Color.fromRGBO(0, 0, 0, 0.8);    // Semi-transparent black
+const Color transpWhiteColor = Color.fromRGBO(255, 255, 255, 0.8); // Semi-transparent white
 
 /// Traffic Signal Colors
 /// Standard traffic light colors with custom RGB values
@@ -122,13 +119,11 @@ const String trafficAssets = "assets/images/traffic/";        // Traffic signal 
 const String forwardArrow = "assets/images/forwardArrow.png";  // Next signal arrow
 const String backArrow = "assets/images/backArrow.png";        // Previous signal arrow
 
-/// Flag images per signal style. Order: US, US, UK, UK, JP, JP, AU
-List<String> countryFlag = [
-  "us", "us",  // US flags (2 variants)
-  "uk", "uk",  // UK flags (2 variants)
-  "jp", "jp",  // JP flags (2 variants)
-  "au",        // AU flag (1 variant)
-].map((t) => "$pedestrianAssets$t/flag_$t.svg").toList();
+/// Flag images keyed by actual country, not signal style.
+/// AU/NZ/SG all share signal style index 6 but keep separate flags.
+Map<String, String> countryFlag = {
+  for (final t in ["us", "uk", "jp", "au", "nz", "sg"]) t: "$pedestrianAssets$t/flag_$t.svg",
+};
 
 /// Pedestrian Signal Images
 /// Special images for pedestrian-specific signals

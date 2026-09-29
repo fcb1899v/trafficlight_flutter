@@ -295,7 +295,7 @@ abstract class AppLocalizations {
   /// No description provided for @carSignalTrialTag.
   ///
   /// In en, this message translates to:
-  /// **'Try'**
+  /// **'TRY'**
   String get carSignalTrialTag;
 
   /// No description provided for @timeSettings.

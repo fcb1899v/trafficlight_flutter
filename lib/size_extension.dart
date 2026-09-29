@@ -68,9 +68,11 @@ extension SizeExt on BuildContext {
   double floatingMarginBottom() => admobHeight() + floatingButtonSize() / 2;
   double modeIconHeight() => floatingButtonSize() * 0.75;
   double modePadlockHeight() => floatingButtonSize() * 0.60;
+  double modeButtonBorderWidth() => floatingButtonSize() * 0.03;
 
   /// Trial Ribbon Responsive Sizing
-  double trialRibbonFontSize() => floatingButtonSize() * 0.161;
+  /// Latin glyphs sit smaller than CJK glyphs at the same font size, so en gets a size boost.
+  double trialRibbonFontSize() => floatingButtonSize() * ((lang() == "ja" || lang() == "zh") ? 0.16 : 0.20);
   double trialRibbonThickness() => trialRibbonFontSize() * 1.3;
   double trialRibbonCenter() => floatingButtonSize() * 0.198;
   double trialRibbonEdgeWidth() => premiumPlateBorderWidth();
