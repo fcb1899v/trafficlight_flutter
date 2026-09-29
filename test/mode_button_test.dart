@@ -1,4 +1,4 @@
-// The home screen's mode button: a black box whose white art shows the signal a tap switches to.
+// The home screen's mode button: a light box whose black art shows the signal a tap switches to.
 // Unpurchased users see a yellow "Try" ribbon on its corner, or a yellow padlock over its art once the trial is used up.
 
 import 'package:flutter/material.dart';
@@ -12,16 +12,16 @@ import 'package:signalbutton/l10n/app_localizations.dart';
 Finder svgIcon(String assetName) => find.byWidgetPredicate((w) =>
   w is SvgPicture && w.bytesLoader is SvgAssetLoader && (w.bytesLoader as SvgAssetLoader).assetName == assetName);
 
-final trafficWhite = svgIcon('assets/images/icons/traffic_signal_white.svg');
-final walkWhite = svgIcon('assets/images/icons/pedestrian_signal_white.svg');
+final trafficFrame = svgIcon('assets/images/icons/traffic_signal_frame.svg');
+final walkFrame = svgIcon('assets/images/icons/pedestrian_signal_frame.svg');
 final padlock = svgIcon(padlockStarYellow);
 
-/// The art's colour filter, null when it is drawn in its own white
-ColorFilter? artFilter(WidgetTester tester) => tester.widget<SvgPicture>(trafficWhite).colorFilter;
+/// The frame's colour filter, null when it is drawn in its own black
+ColorFilter? artFilter(WidgetTester tester) => tester.widget<SvgPicture>(trafficFrame).colorFilter;
 
 /// The art's opacity: 1.0 unless an Opacity ancestor (only present behind the padlock) says otherwise
 double artOpacity(WidgetTester tester) {
-  final ancestor = find.ancestor(of: trafficWhite, matching: find.byType(Opacity));
+  final ancestor = find.ancestor(of: trafficFrame, matching: find.byType(Opacity));
   return ancestor.evaluate().isEmpty ? 1.0 : tester.widget<Opacity>(ancestor).opacity;
 }
 
@@ -55,19 +55,19 @@ Future<void> pumpModeButton(WidgetTester tester, Widget Function(HomeWidget home
 }
 
 void main() {
-  testWidgets("on the black base, the icon is the white SVG for the signal a tap switches to", (tester) async {
+  testWidgets("on the light base, the icon is the black SVG for the signal a tap switches to", (tester) async {
     await pumpModeButton(tester, (home) => home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}));
-    expect(trafficWhite, findsOneWidget);
+    expect(trafficFrame, findsOneWidget);
     expect(artOpacity(tester), 1.0);
     await pumpModeButton(tester, (home) => home.changeIsPedestrianButton(isPedestrian: false, onPressed: () {}));
-    expect(walkWhite, findsOneWidget);
+    expect(walkFrame, findsOneWidget);
   });
 
-  testWidgets("the Try button keeps the white art and wears the ribbon with its word; a tap on the ribbon reaches the button", (tester) async {
+  testWidgets("the Try button keeps the black art and wears the ribbon with its word; a tap on the ribbon reaches the button", (tester) async {
     var taps = 0;
     await pumpModeButton(tester, (home) => home.changeIsPedestrianButton(
       isPedestrian: true, onPressed: () => taps++, isTag: true));
-    expect(trafficWhite, findsOneWidget);
+    expect(trafficFrame, findsOneWidget);
     expect(artFilter(tester), isNull);
     expect(find.byKey(const Key('trialRibbon')), findsOneWidget);
     expect(find.text("お試し"), findsOneWidget);

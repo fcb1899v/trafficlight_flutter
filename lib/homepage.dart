@@ -447,7 +447,7 @@ class HomeWidget {
 
   final BuildContext context;
   final int counter;
-  final String flagKey;
+  final String? flagKey;
   final List<bool> signalColor;
   final bool isFlash;
   final bool opaque;
@@ -460,7 +460,7 @@ class HomeWidget {
 
   HomeWidget(this.context, {
     required this.counter,
-    this.flagKey = "us",
+    this.flagKey,
     required this.signalColor,
     required this.isFlash,
     required this.opaque,
@@ -527,7 +527,7 @@ class HomeWidget {
     decoration: const BoxDecoration(color: redColor, shape: BoxShape.circle),
   ): SizedBox(
     height: context.flagSize(),
-    child: SvgPicture.asset(countryFlag[flagKey]!),
+    child: SvgPicture.asset(countryFlag[flagKey ?? counter.defaultFlagKey()]!),
   );
 
   /// Create dark background overlay
@@ -553,12 +553,12 @@ class HomeWidget {
   }) {
     final size = context.floatingButtonSize();
     final iconHeight = context.modeIconHeight();
-    final frameAsset = isPedestrian ? 'assets/images/icons/traffic_signal_white.svg': 'assets/images/icons/pedestrian_signal_white.svg';
+    final frameAsset = isPedestrian ? 'assets/images/icons/traffic_signal_frame.svg': 'assets/images/icons/pedestrian_signal_frame.svg';
     final lampsAsset = isPedestrian ? 'assets/images/icons/traffic_signal_lamps.svg': 'assets/images/icons/pedestrian_signal_lamps.svg';
     // Only the height is set: the width follows the tall SVG's own shape.
-    // Lamp colours sit behind the frame's holes and hide while disabled, so the hole shapes alone still tell car and pedestrian apart when dimmed.
+    // Lamp colours sit behind the frame's holes and hide while disabled or padlocked, so no colour leaks through the padlock's gaps.
     Widget art = Stack(alignment: Alignment.center, children: [
-      if (enabled) SvgPicture.asset(lampsAsset, height: iconHeight),
+      if (enabled && !isPadlock) SvgPicture.asset(lampsAsset, height: iconHeight),
       SvgPicture.asset(frameAsset,
         height: iconHeight,
         colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),

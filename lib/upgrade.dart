@@ -74,6 +74,8 @@ class UpgradePage extends HookConsumerWidget {
     final premiumPrice = useState("premiumPrice".getSettingsValueString(""));
     // The country style (US/UK/JP/AU) the car signal and push button are drawn from
     final counter = useState(0);
+    // Which flag the preview's background shows; null until locale detection resolves
+    final flagKey = useState<String?>(null);
     // Blinks the "Buy" cue five times so the eye finds the button, then stops
     final blink = useCueBlink(reduceMotion: premiumReduceMotion(context));
     // Create upgrade widget instance
@@ -103,7 +105,9 @@ class UpgradePage extends HookConsumerWidget {
         // Once per page instance, named by where it was opened from.
         // Sent before the locale lookup below, which a platform without it would leave hanging.
         SignalAnalytics.log('paywall_view_${source.name}');
-        counter.value = _toNewSignalCounter(await getCountryCounter());
+        final (detectedCounter, detectedFlagKey) = await getCountryCounter();
+        counter.value = _toNewSignalCounter(detectedCounter);
+        flagKey.value = detectedFlagKey;
       });
       return;
     }, const []);
@@ -144,6 +148,7 @@ class UpgradePage extends HookConsumerWidget {
     // The home screen in car mode, built from the same HomeWidget parts
     final preview = HomeWidget(context,
       counter: counter.value,
+      flagKey: flagKey.value,
       signalColor: const [false, false, false],
       isFlash: false,
       opaque: true,

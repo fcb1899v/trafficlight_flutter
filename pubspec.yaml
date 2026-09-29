@@ -93,6 +93,9 @@ flutter:
     - assets/images/pedestrian/jp/
     - assets/images/pedestrian/uk/
     - assets/images/pedestrian/au/
+    - assets/images/pedestrian/nz/
+    - assets/images/pedestrian/sg/
+    - assets/images/pedestrian/ca/
     - assets/images/traffic/us/
     - assets/images/traffic/jp/
     - assets/images/traffic/uk/

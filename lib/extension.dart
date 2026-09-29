@@ -12,14 +12,15 @@ import 'constant.dart';
 part 'l10n_extension.dart';
 part 'size_extension.dart';
 
-/// Get default country counter based on device locale
-/// Shared by HomePage (signal style) and UpgradePage (localized buy button)
-Future<int> getCountryCounter() async {
+/// Get default country counter and flag key based on device locale
+/// Shared by HomePage (signal style + flag) and UpgradePage (localized buy button)
+Future<(int, String)> getCountryCounter() async {
   final locale = await Devicelocale.currentLocale ?? "en-US";
   final countryCode = locale.substring(3, 5);
   final counter = countryCode.getDefaultCounter();
-  "Locale: $locale, counter: $counter".debugPrint();
-  return counter;
+  final flagKey = countryCode.getDefaultFlagKey();
+  "Locale: $locale, counter: $counter, flagKey: $flagKey".debugPrint();
+  return (counter, flagKey);
 }
 
 /// Extension on BuildContext for navigation
@@ -68,13 +69,26 @@ extension StringExt on String {
   String getSettingsValueString(String defaultValue) =>
       Settings.getValue<String>("key_$this", defaultValue: defaultValue) ?? defaultValue;
 
+  /// Country Code to Group Mapping
+  /// A country not listed in any group (see constant.dart) falls into "uk"
+  String getGroup() {
+    for (final entry in countryGroups.entries) {
+      if (entry.value.contains(this)) return entry.key;
+    }
+    return "uk";
+  }
+
   /// Country Code to Signal Index Mapping
-  /// Returns the default signal configuration index for each country
-  int getDefaultCounter() =>
-      (this == "GB") ? 3:  // UK signals
-      (this == "JP") ? 5:  // Japan signals
-      (this == "AU") ? 6:  // Australia signals
-      0;                   // US signals (default)
+  /// Returns the default signal configuration index for the country's group
+  int getDefaultCounter() => groupCounter[getGroup()]!;
+
+  /// Country Code to Flag Key Mapping
+  /// A country explicitly listed in a group keeps its own flag; an unlisted
+  /// country shows its group's flag (e.g. "other" countries show the UK flag)
+  String getDefaultFlagKey() {
+    const explicitFlag = {"US": "us", "CA": "ca", "JP": "jp", "GB": "uk", "AU": "au", "NZ": "nz", "SG": "sg"};
+    return explicitFlag[this] ?? getGroup();
+  }
 
   /// Signal Image Path Generation
   /// Methods for generating image paths for different signal states and countries
@@ -139,6 +153,14 @@ extension IntExt on int {
       (this / greenTime > 0.125) ? [false, false, false, false, false, false, true, true]: // 12.5% - 25%
       (this / greenTime > 0) ? [false, false, false, false, false, false, false, true]:    // 0% - 12.5%
       [false, false, false, false, false, false, false, false];                            // 0% or less
+
+  /// Default flag key for a manually chosen signal style index (0-6)
+  /// NZ/SG only show up from locale detection, never from manual style paging
+  String defaultFlagKey() =>
+      (this == 2 || this == 3) ? "uk":
+      (this == 4 || this == 5) ? "jp":
+      (this == 6) ? "au":
+      "us";
 
   /// Utility Methods for Countdown Display
   /// Helper methods for countdown number formatting and display

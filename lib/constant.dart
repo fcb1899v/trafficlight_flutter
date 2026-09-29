@@ -5,6 +5,23 @@ import 'package:flutter/material.dart';
 /// Signal Number
 /// Total number of different signal configurations available in the app
 const int signalNumber = 7;
+
+/// Country Groups
+/// Countries sharing one signal style; a country code not listed anywhere falls into "uk".
+const Map<String, List<String>> countryGroups = {
+  "us": ["US", "CA"],
+  "jp": ["JP"],
+  "au": ["AU", "NZ", "SG"],
+  "uk": ["GB"],
+};
+
+/// Signal style index (0-6, see extension.dart's image lists) used by each group
+const Map<String, int> groupCounter = {
+  "us": 0,
+  "jp": 5,
+  "au": 6,
+  "uk": 3,
+};
 /// Wait after the home screen's launch work (splash removed) before fetching the price
 const Duration pricePrefetchDelay = Duration(seconds: 3);
 
@@ -120,9 +137,9 @@ const String forwardArrow = "assets/images/forwardArrow.png";  // Next signal ar
 const String backArrow = "assets/images/backArrow.png";        // Previous signal arrow
 
 /// Flag images keyed by actual country, not signal style.
-/// AU/NZ/SG all share signal style index 6 but keep separate flags.
+/// AU/NZ/SG share signal style index 6, CA shares index 0, but each keeps its own flag.
 Map<String, String> countryFlag = {
-  for (final t in ["us", "uk", "jp", "au", "nz", "sg"]) t: "$pedestrianAssets$t/flag_$t.svg",
+  for (final t in ["us", "uk", "jp", "au", "nz", "sg", "ca"]) t: "$pedestrianAssets$t/flag_$t.svg",
 };
 
 /// Pedestrian Signal Images

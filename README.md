@@ -15,7 +15,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 
 ### 🎯 Key Features
 
-- **Multi-Country Signal Support**: Authentic traffic signals from US, UK, Australia and Japan
+- **Multi-Country Signal Support**: Authentic traffic signals from US, UK, Australia and Japan. New Zealand and Singapore use the same Australia-style signal, shown with each country's own flag
 - **Pedestrian Signals**: Realistic pedestrian crossing signals for each country
 - **Cross-platform Support**: Android & iOS compatibility
 - **Multi-language Support**: English, Japanese, Chinese
