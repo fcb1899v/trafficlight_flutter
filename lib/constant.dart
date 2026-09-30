@@ -171,10 +171,11 @@ const Color trialTagColor = yellowColor;             // "Try" ribbon fill
 const Color trialTagTextColor = signalGrayColor;     // "Try" word on the ribbon, as on the price pill
 const Color trialTagEdgeColor = signalGrayColor;     // Dark edge around the ribbon
 const Color modeIconDimColor = Color(0xFF4A4A4A);    // Signal art while the "Try" button cannot be pressed
-const String padlockStarYellow = "assets/images/icons/padlock_star_yellow.svg";   // Padlock over the art once the trial is used up
-const String padlockStarOutline = "assets/images/icons/padlock_star_outline.svg"; // Black outline and star drawn behind it
-const String settingsPremiumCardIcon = "assets/images/icons/traffic_signal_color.svg"; // Colour signal on the settings premium card
-const double padlockOutlineScale = 359.52 / 329.52;  // Outline SVG height over the padlock SVG height (15-unit margin each side)
+const String padlockStar = "assets/images/icons/padlock_star.svg"; // Padlock over the art once the trial is used up, with its black outline baked in
+const String settingsPremiumCardIcon = "assets/images/icons/traffic_signal.svg"; // Colour signal on the settings premium card
+const double padlockOutlineScale = 359.52 / 329.52;  // padlock_star.svg's viewBox height over the padlock shape's own height (15-unit outline margin each side)
+const String trafficSignal = "assets/images/icons/traffic_signal.svg"; // Traffic mode button art, colours baked in
+const String pedestrianSignal = "assets/images/icons/pedestrian_signal.svg"; // Pedestrian mode button art, colours baked in
 
 /// Settings Screen Configuration
 /// UI settings for the settings screen

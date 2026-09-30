@@ -15,7 +15,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 
 ### 🎯 Key Features
 
-- **Multi-Country Signal Support**: Authentic traffic signals from US, UK, Australia and Japan. New Zealand and Singapore use the same Australia-style signal, shown with each country's own flag
+- **Multi-Country Signal Support**: Authentic traffic signals from US, UK, Australia and Japan. Canada shares the US-style signal, and New Zealand and Singapore share the Australia-style signal, each shown with its own flag. Paging through styles with the forward/back buttons shows each style's own generic flag, restoring the detected country's flag on returning to its style group
 - **Pedestrian Signals**: Realistic pedestrian crossing signals for each country
 - **Cross-platform Support**: Android & iOS compatibility
 - **Multi-language Support**: English, Japanese, Chinese
@@ -147,15 +147,19 @@ test/
 integration_test/
 ├── upgrade_page_test.dart  # Opens the upgrade page from the settings premium card on a device and returns with the back button; prints the settings layout in the device's real fonts; --dart-define=SCREENSHOT_LOCALE=ja picks the UI language and holds settings for a screenshot
 ├── car_trial_test.dart     # The mode button on a device: Try ribbon, dimmed art during a cycle, switching signals before and during a trial's cycle, the trying banner over the signal/push-button seam, the paywall, padlock (two taps open the page), purchaser
-└── button_corner_test.dart # The three round buttons' continuous (iOS-icon-like) corner, measured as drawn on the device
+├── button_corner_test.dart # The three round buttons' continuous (iOS-icon-like) corner, measured as drawn on the device
+└── country_flag_persistence_test.dart # The locale-detected flag on a device: stays fixed while paging within its own style group, and shows each other group's own generic flag, in both directions
 
 assets/
 ├── images/                # Image resources
-│   ├── pedestrian/       # Pedestrian signal images by country
+│   ├── pedestrian/       # Pedestrian signal images and flags by country
 │   │   ├── jp/          # Japanese pedestrian signals
 │   │   ├── us/          # US pedestrian signals
 │   │   ├── uk/          # UK pedestrian signals
-│   │   └── au/          # Australian pedestrian signals
+│   │   ├── au/          # Australian pedestrian signals
+│   │   ├── ca/          # Canada's own flag (US-style signal)
+│   │   ├── nz/          # New Zealand's own flag (Australia-style signal)
+│   │   └── sg/          # Singapore's own flag (Australia-style signal)
 │   ├── traffic/         # Traffic signal images by country
 │   │   ├── jp/          # Japanese traffic signals
 │   │   ├── us/          # US traffic signals

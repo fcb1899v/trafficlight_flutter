@@ -40,9 +40,9 @@ Finder svgIconEither(String whiteAsset, String darkAsset) => find.byWidgetPredic
   && ((w.bytesLoader as SvgAssetLoader).assetName == whiteAsset || (w.bytesLoader as SvgAssetLoader).assetName == darkAsset));
 
 final trafficIcon = svgIconEither(
-  'assets/images/icons/traffic_signal_frame.svg', 'assets/images/icons/traffic_signal_dark.svg');
+  'assets/images/icons/traffic_signal.svg', 'assets/images/icons/traffic_signal.svg');
 final walkIcon = svgIconEither(
-  'assets/images/icons/pedestrian_signal_frame.svg', 'assets/images/icons/pedestrian_signal_dark.svg');
+  'assets/images/icons/pedestrian_signal.svg', 'assets/images/icons/pedestrian_signal.svg');
 
 /// Pumps frames until [finder] matches, without waiting for the home screen's endless animations to settle
 Future<void> pumpUntilFound(WidgetTester tester, Finder finder, {Duration timeout = const Duration(seconds: 30)}) async {

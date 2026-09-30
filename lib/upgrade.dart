@@ -120,9 +120,17 @@ class UpgradePage extends HookConsumerWidget {
       "isRestore: $isRestore".debugPrint();
       try {
         await plan.buyUpgrade(isRestore);
-        // getRestoreInfo() returns normally even when nothing was restored, so the dialog can say "success" with no entitlement.
-        // The event is sent only when premium was really granted.
-        if (ref.read(planProvider).isPremium) {
+        // getRestoreInfo() returns normally even with nothing restored, so check the entitlement.
+        final isPremium = ref.read(planProvider).isPremium;
+        if (isRestore && !isPremium) {
+          upgrade.purchaseDialog(
+            isSuccess: false,
+            isRestore: isRestore,
+          );
+          return;
+        }
+        // Logged only when premium was really granted, for both a purchase and a restore.
+        if (isPremium) {
           SignalAnalytics.log(isRestore ? 'premium_restore_${source.name}': 'premium_purchase_${source.name}');
         }
         upgrade.purchaseDialog(

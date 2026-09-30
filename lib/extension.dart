@@ -46,6 +46,12 @@ extension ContextExt on BuildContext {
 }
 
 
+/// Extension on bool for the mode button's signal-type choice
+extension IsPedestrianExt on bool {
+  /// Mode button art: each signal type's own single SVG, colours already baked in
+  String frameAsset() => this ? trafficSignal: pedestrianSignal;
+}
+
 /// Extension on String for utility operations and settings management
 /// Provides methods for debug printing, settings access, and image path generation
 extension StringExt on String {

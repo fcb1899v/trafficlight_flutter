@@ -12,9 +12,9 @@ import 'package:signalbutton/l10n/app_localizations.dart';
 Finder svgIcon(String assetName) => find.byWidgetPredicate((w) =>
   w is SvgPicture && w.bytesLoader is SvgAssetLoader && (w.bytesLoader as SvgAssetLoader).assetName == assetName);
 
-final trafficFrame = svgIcon('assets/images/icons/traffic_signal_frame.svg');
-final walkFrame = svgIcon('assets/images/icons/pedestrian_signal_frame.svg');
-final padlock = svgIcon(padlockStarYellow);
+final trafficFrame = svgIcon('assets/images/icons/traffic_signal.svg');
+final walkFrame = svgIcon('assets/images/icons/pedestrian_signal.svg');
+final padlock = svgIcon(padlockStar);
 
 /// The frame's colour filter, null when it is drawn in its own black
 ColorFilter? artFilter(WidgetTester tester) => tester.widget<SvgPicture>(trafficFrame).colorFilter;

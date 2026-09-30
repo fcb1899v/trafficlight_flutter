@@ -37,8 +37,11 @@ class HomePage extends HookConsumerWidget {
     // Local state for signal simulation
     final signalColor = useState([false, false, false]); //isGreen, isYellow, isArrow
     final counter = useState(0);
-    // Which flag to show; separate from counter so AU/NZ/SG can share signal style 6
+    // Which flag to show; separate from counter so AU/NZ/SG/CA can share a signal style
     final flagKey = useState("us");
+    // The locale-detected flag and its style group, restored when paging returns to that group
+    final detectedFlagKey = useRef("us");
+    final detectedGroupKey = useRef("us");
     final isPressed = useState(false);
     final isFlash = useState(false);
     final opaque = useState(false);
@@ -102,9 +105,11 @@ class HomePage extends HookConsumerWidget {
     Future<void> initState() async {
       plan.setCurrentPlan(isPremium.value);
       "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
-      final (detectedCounter, detectedFlagKey) = await getCountryCounter();
+      final (detectedCounter, detectedFlag) = await getCountryCounter();
       counter.value = detectedCounter;
-      flagKey.value = detectedFlagKey;
+      flagKey.value = detectedFlag;
+      detectedFlagKey.value = detectedFlag;
+      detectedGroupKey.value = detectedCounter.defaultFlagKey();
       "waitTime: $waitTime, goTime: $goTime, flashTime: $flashTime, yellowTime: $yellowTime, arrowTime: $arrowTime, isSound: $isSound".debugPrint();
     }
 
@@ -197,11 +202,12 @@ class HomePage extends HookConsumerWidget {
 
     /// Navigate between different country signal styles
     /// @param isNext Whether to go to next or previous country
+    /// The detected flag returns within its own group; another group shows its generic flag.
     nextOrBackCounter(bool isNext) {
       "${(isNext) ? "next": "back"}Counter".debugPrint();
       counter.value = (counter.value + ((isNext) ? 1: -1)) % signalNumber;
-      // Manual paging never shows NZ/SG; reset to the new style's own default flag
-      flagKey.value = counter.value.defaultFlagKey();
+      final newGroupKey = counter.value.defaultFlagKey();
+      flagKey.value = (newGroupKey == detectedGroupKey.value) ? detectedFlagKey.value: newGroupKey;
       "counter: ${counter.value}".debugPrint();
     }
 
@@ -553,27 +559,19 @@ class HomeWidget {
   }) {
     final size = context.floatingButtonSize();
     final iconHeight = context.modeIconHeight();
-    final frameAsset = isPedestrian ? 'assets/images/icons/traffic_signal_frame.svg': 'assets/images/icons/pedestrian_signal_frame.svg';
-    final lampsAsset = isPedestrian ? 'assets/images/icons/traffic_signal_lamps.svg': 'assets/images/icons/pedestrian_signal_lamps.svg';
+    final frameAsset = isPedestrian.frameAsset();
     // Only the height is set: the width follows the tall SVG's own shape.
-    // Lamp colours sit behind the frame's holes and hide while disabled or padlocked, so no colour leaks through the padlock's gaps.
-    Widget art = Stack(alignment: Alignment.center, children: [
-      if (enabled && !isPadlock) SvgPicture.asset(lampsAsset, height: iconHeight),
-      SvgPicture.asset(frameAsset,
-        height: iconHeight,
-        colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),
-      ),
-    ]);
+    Widget art = SvgPicture.asset(frameAsset,
+      height: iconHeight,
+      colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),
+    );
     // Behind the padlock only, the art shows through it at 80% opacity, never fully hidden
     if (isPadlock) art = Opacity(opacity: 0.8, child: art);
     Widget? padlock;
     if (isPadlock) {
       final lockHeight = context.modePadlockHeight();
-      // The black copy behind, a little larger, keeps the yellow padlock apart from the art behind it and fills its star
-      padlock = Stack(key: const Key('trialPadlock'), alignment: Alignment.center, children: [
-        SvgPicture.asset(padlockStarOutline, height: lockHeight * padlockOutlineScale),
-        SvgPicture.asset(padlockStarYellow, height: lockHeight),
-      ]);
+      // padlock_star.svg's own black outline keeps the yellow padlock apart from the art behind it
+      padlock = SvgPicture.asset(padlockStar, key: const Key('trialPadlock'), height: lockHeight * padlockOutlineScale);
       if (padlockSwing != null) {
         padlock = AnimatedBuilder(
           animation: padlockSwing,
