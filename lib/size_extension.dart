@@ -13,7 +13,7 @@ extension SizeExt on BuildContext {
   double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
 
   /// Settings premium card: header row sized by width, benefit rows by height.
-  /// Side and base top margins match settings_ui's tile edges; the top and bottom margin is added on top, scaled by screen height.
+  /// Side and base top margins match settings_ui's tile edges; an extra top and bottom margin of 1.2% of the screen height is added.
   bool _isIosSettingsStyle() => Theme.of(this).platform == TargetPlatform.iOS;
   double settingsPremiumCardOuterSide() => _isIosSettingsStyle() ? 20: 16;
   double settingsPremiumCardOuterExtra() => height() * 0.012;
