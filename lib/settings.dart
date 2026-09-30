@@ -95,6 +95,7 @@ class SettingsPage extends HookConsumerWidget {
                     start: context.settingsPremiumCardOuterSide(),
                     end: context.settingsPremiumCardOuterSide(),
                     top: context.settingsPremiumCardOuterTop(),
+                    bottom: context.settingsPremiumCardOuterBottom(),
                   ),
                   child: settings.premiumCard(price: premiumPrice),
                 ): const SizedBox.shrink(),

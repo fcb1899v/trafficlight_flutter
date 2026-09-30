@@ -13,11 +13,12 @@ extension SizeExt on BuildContext {
   double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
 
   /// Settings premium card: header row sized by width, benefit rows by height.
-  /// The outer margins are fixed to match settings_ui's own tile edges (iOS 20/14, Android 16/16).
-  /// The platform comes from Theme, the same source settings_ui uses to pick its style.
+  /// Side and base top margins match settings_ui's tile edges; the top and bottom margin is added on top, scaled by screen height.
   bool _isIosSettingsStyle() => Theme.of(this).platform == TargetPlatform.iOS;
   double settingsPremiumCardOuterSide() => _isIosSettingsStyle() ? 20: 16;
-  double settingsPremiumCardOuterTop() => _isIosSettingsStyle() ? 14: 16;
+  double settingsPremiumCardOuterExtra() => height() * 0.012;
+  double settingsPremiumCardOuterTop() => (_isIosSettingsStyle() ? 14: 16) + settingsPremiumCardOuterExtra();
+  double settingsPremiumCardOuterBottom() => settingsPremiumCardOuterExtra();
   double settingsPremiumCardPaddingV() => height() * 0.018;
   double settingsPremiumCardPaddingH() => width() * 0.05;
   double settingsPremiumCardRadius() => height() * 0.017;
