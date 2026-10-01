@@ -71,15 +71,19 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
 flutter_icons:
-  image_path: "assets/images/icon.png"
+  image_path: "assets/icon/icon.png"
+  image_path_android: "assets/icon/icon_legacy.png"
   android: true
   ios: true
-  adaptive_icon_background: "#373635"
-  adaptive_icon_foreground: "assets/images/appIcon.png"
+  adaptive_icon_background: "#57BFA3"
+  adaptive_icon_foreground: "assets/icon/icon_android.png"
 
 flutter_native_splash:
-  image: "assets/images/human.png"
-  color: "373635"
+  image: "assets/icon/icon.png"
+  color: "57BFA3"
+  android_12:
+    image: "assets/icon/icon_android.png"
+    color: "57BFA3"
 
 flutter:
   config:

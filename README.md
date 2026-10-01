@@ -1,7 +1,7 @@
 # LETS SIGNAL - Traffic Light Simulator
 
 <div align="center">
-  <img src="assets/images/icon.png" alt="LETS SIGNAL Icon" width="120" height="120">
+  <img src="assets/icon/icon.png" alt="LETS SIGNAL Icon" width="120" height="120">
   <br>
   <strong>Experience authentic traffic signals from around the world</strong>
   <br>
@@ -151,6 +151,10 @@ integration_test/
 └── country_flag_persistence_test.dart # The locale-detected flag on a device: stays fixed while paging within its own style group, and shows each other group's own generic flag, in both directions
 
 assets/
+├── icon/                  # Launcher icon and splash sources (read by the generators, not bundled)
+│   ├── icon.png         # iOS icon, splash image, and source of the legacy Android icon
+│   ├── icon_android.png # Adaptive icon foreground and Android 12+ splash icon
+│   └── icon_legacy.png  # Android 7.x icon (rounded corners)
 ├── images/                # Image resources
 │   ├── pedestrian/       # Pedestrian signal images and flags by country
 │   │   ├── jp/          # Japanese pedestrian signals
@@ -165,9 +169,9 @@ assets/
 │   │   ├── us/          # US traffic signals
 │   │   ├── uk/          # UK traffic signals
 │   │   └── au/          # Australian traffic signals
-│   ├── icon.png         # App icon
-│   ├── appIcon.png      # Adaptive icon foreground
-│   ├── human.png        # Splash screen image
+│   ├── icon.png         # Not referenced by the app
+│   ├── appIcon.png      # Not referenced by the app
+│   ├── human.png        # Not referenced by the app
 │   ├── forwardArrow.png # Forward arrow image
 │   └── backArrow.png    # Back arrow image
 ├── audios/              # Audio files

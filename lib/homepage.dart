@@ -116,12 +116,16 @@ class HomePage extends HookConsumerWidget {
     // Initialize settings and audio on first frame
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        FlutterNativeSplash.remove();
-        await Settings.init(cacheProvider: SharePreferenceCache(),);
-        // Price prefetch plus its delay, not behind the country or TTS setup; it only needs
-        // Settings, where it stores the price. Configure stays in main()
-        if (context.mounted && !ref.read(planProvider).isPremium) unawaited(PremiumPrice.prefetch());
-        await initState();
+        try {
+          await Settings.init(cacheProvider: SharePreferenceCache(),);
+          // Price prefetch plus its delay, not behind the country or TTS setup; it only needs
+          // Settings, where it stores the price. Configure stays in main()
+          if (context.mounted && !ref.read(planProvider).isPremium) unawaited(PremiumPrice.prefetch());
+          await initState();
+        } finally {
+          // The splash stays until settings and the country flag are set; TTS setup is not visual
+          FlutterNativeSplash.remove();
+        }
         await ttsManager.initTts();
       });
       return () async {
