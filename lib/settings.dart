@@ -117,6 +117,10 @@ class SettingsPage extends HookConsumerWidget {
                 settings.setSoundTile(onChanged: (value) => setSound(value)),
               ]
             ),
+            /// Clearance between the last row and the ad when the list is scrolled to the end
+            if (!isPremiumProvider) CustomSettingsSection(
+              child: SizedBox(height: context.settingsListEndGap()),
+            ),
           ]),
         ),
         /// AdMob Banner (only shown for non-premium users)

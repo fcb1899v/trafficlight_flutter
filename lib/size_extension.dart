@@ -11,6 +11,7 @@ extension SizeExt on BuildContext {
 
   /// Settings screen specific sizing
   double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
+  double settingsListEndGap() => height() * 0.012;
 
   /// Settings premium card: header row sized by width, benefit rows by height.
   /// Side and base top margins match settings_ui's tile edges; an extra top and bottom margin of 1.2% of the screen height is added.

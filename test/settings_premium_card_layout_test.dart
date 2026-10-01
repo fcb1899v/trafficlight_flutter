@@ -71,7 +71,7 @@ void main() {
 
   // top/bottom match the iPhone 17 Pro and iPhone SE safe areas used across this app's tests.
   // cardHeight is the design spec's range, with a tolerance; null where the spec gives none.
-  // checked: false skips the 15pt clearance; the scroll test below checks the sound row ends up above the ad.
+  // checked: false skips the 15pt clearance; the end-gap test below checks it at the end of the list.
   final devices = [
     (name: 'iOS 874', platform: TargetPlatform.iOS, size: const Size(402, 874), top: 62.0, bottom: 34.0, cardHeight: (124.3, 128.7), checked: true),
     (name: 'iOS 667', platform: TargetPlatform.iOS, size: const Size(375, 667), top: 20.0, bottom: 0.0, cardHeight: (99.3, 103.5), checked: false),
@@ -108,17 +108,23 @@ void main() {
       }, variant: TargetPlatformVariant.only(device.platform));
     }
   }
-  // Scrolls to the end only where the switch starts under the ad, then it must sit above the ad slot.
+  // At the end of the list, the end gap must sit between the sound switch and the ad slot.
   for (final device in devices.where((d) => !d.checked)) {
     for (final locale in ['ja', 'en', 'zh']) {
-      testWidgets('the sound switch ends up above the ad after any needed scroll: $locale @ ${device.name}', (tester) async {
-        await pumpSettings(tester, size: device.size, top: device.top, bottom: device.bottom, locale: locale);
+      testWidgets('the end gap keeps the sound switch clear of the ad: $locale @ ${device.name}', (tester) async {
+        final context = await pumpSettings(tester, size: device.size, top: device.top, bottom: device.bottom, locale: locale);
+        final position = tester.state<ScrollableState>(find.byType(Scrollable).first).position;
+        position.jumpTo(position.maxScrollExtent);
+        await tester.pump();
+        final gap = context.settingsListEndGap();
+        // The card's inner gap has the same height, so take the last one: the list's end gap
+        final gapRect = tester.getRect(find.byWidgetPredicate((w) => w is SizedBox && w.height == gap).last);
         final adTop = tester.getRect(find.byType(AdBannerWidget)).top;
-        if (tester.getRect(soundSwitch).bottom > adTop) {
-          await tester.drag(find.byType(Scrollable).first, const Offset(0, -2000));
-          await tester.pump(const Duration(seconds: 1));
-        }
-        expect(tester.getRect(soundSwitch).bottom, lessThanOrEqualTo(adTop));
+        debugPrint('${device.name} $locale: end gap ${gapRect.top.toStringAsFixed(1)}-${gapRect.bottom.toStringAsFixed(1)}, '
+          'switch bottom ${tester.getRect(soundSwitch).bottom.toStringAsFixed(1)}, ad top ${adTop.toStringAsFixed(1)}');
+        expect(gapRect.height, closeTo(gap, 0.5));
+        expect(gapRect.bottom, lessThanOrEqualTo(adTop + 0.5));
+        expect(tester.getRect(soundSwitch).bottom, lessThanOrEqualTo(gapRect.top + 0.5));
       }, variant: TargetPlatformVariant.only(device.platform));
     }
   }
