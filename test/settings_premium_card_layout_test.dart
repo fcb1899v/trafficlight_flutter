@@ -71,7 +71,7 @@ void main() {
 
   // top/bottom match the iPhone 17 Pro and iPhone SE safe areas used across this app's tests.
   // cardHeight is the design spec's range, with a tolerance; null where the spec gives none.
-  // checked: false only reports the numbers; on short screens the sound row may sit under the ad and scroll into view.
+  // checked: false skips the 15pt clearance; the scroll test below checks the sound row ends up above the ad.
   final devices = [
     (name: 'iOS 874', platform: TargetPlatform.iOS, size: const Size(402, 874), top: 62.0, bottom: 34.0, cardHeight: (124.3, 128.7), checked: true),
     (name: 'iOS 667', platform: TargetPlatform.iOS, size: const Size(375, 667), top: 20.0, bottom: 0.0, cardHeight: (99.3, 103.5), checked: false),
@@ -105,6 +105,20 @@ void main() {
         if (range != null) expect(cardRect.height, inInclusiveRange(range.$1, range.$2));
         // Nothing in the card overflowed
         expect(tester.takeException(), isNull);
+      }, variant: TargetPlatformVariant.only(device.platform));
+    }
+  }
+  // Scrolls to the end only where the switch starts under the ad, then it must sit above the ad slot.
+  for (final device in devices.where((d) => !d.checked)) {
+    for (final locale in ['ja', 'en', 'zh']) {
+      testWidgets('the sound switch ends up above the ad after any needed scroll: $locale @ ${device.name}', (tester) async {
+        await pumpSettings(tester, size: device.size, top: device.top, bottom: device.bottom, locale: locale);
+        final adTop = tester.getRect(find.byType(AdBannerWidget)).top;
+        if (tester.getRect(soundSwitch).bottom > adTop) {
+          await tester.drag(find.byType(Scrollable).first, const Offset(0, -2000));
+          await tester.pump(const Duration(seconds: 1));
+        }
+        expect(tester.getRect(soundSwitch).bottom, lessThanOrEqualTo(adTop));
       }, variant: TargetPlatformVariant.only(device.platform));
     }
   }

@@ -134,7 +134,7 @@ packages/
 
 test/
 ├── settings_upgrade_entry_test.dart  # Settings premium card, driven by the store price
-├── settings_premium_card_layout_test.dart # Settings premium card: height, benefit-to-arrow gap, the sound switch 15pt clear of the ad (iPhone 874pt, Android 412x915; iPhone 667pt and Android 360x640-700 report only, the list scrolls; card height on 874pt/667pt), and no card or ad for purchasers
+├── settings_premium_card_layout_test.dart # Settings premium card: height, benefit-to-arrow gap, the sound switch 15pt clear of the ad (iPhone 874pt, Android 412x915; iPhone 667pt and Android 360x640-700 skip the 15pt clearance and instead check the switch sits above the ad, after scrolling to the end where it starts under the ad (360x640 only); card height on 874pt/667pt), and no card or ad for purchasers
 ├── upgrade_back_test.dart            # Upgrade page back button: centred on the top bar, at least a 48x48 tap target
 ├── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
 ├── upgrade_ad_premium_gate_test.dart # Purchase page: no banner for purchasers, with the same layout as non-purchasers
