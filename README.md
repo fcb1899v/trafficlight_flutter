@@ -171,9 +171,6 @@ assets/
 │   │   ├── us/          # US traffic signals
 │   │   ├── uk/          # UK traffic signals
 │   │   └── au/          # Australian traffic signals
-│   ├── icon.png         # Not referenced by the app
-│   ├── appIcon.png      # Not referenced by the app
-│   ├── human.png        # Not referenced by the app
 │   ├── forwardArrow.png # Forward arrow image
 │   └── backArrow.png    # Back arrow image
 ├── audios/              # Audio files
