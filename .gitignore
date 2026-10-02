@@ -145,3 +145,8 @@ ios/firebase_app_id_file.json
 
 # Golden test failure diffs: auto-generated, safe to discard.
 test/failures/
+
+# Regenerable files: Xcode workspace state
+**/xcshareddata/IDEWorkspaceChecks.plist
+**/xcshareddata/WorkspaceSettings.xcsettings
+**/xcshareddata/WorkspaceSettings.xcsettings.xml
