@@ -47,6 +47,10 @@ const int deltaFlash = 500;      // Flash interval for blinking signals (millise
 /// trialAutoPressDelay is the wait before the push button presses itself.
 /// maxTrialPaywallCloseCount is how many closes of the trial's paywall turn the "Try" ribbon into a padlock.
 const Duration trialAutoPressDelay = Duration(seconds: 5);
+
+/// The mode button's place in the right-hand column: free space above it and below it (above the country buttons), as a flex ratio.
+const int modeTopFlex = 5;
+const int modeBottomFlex = 2;
 const int maxTrialPaywallCloseCount = 2;
 
 /// Vibration Configuration
@@ -170,7 +174,6 @@ const Color premiumPlateColor = Color.fromRGBO(0, 0, 0, 0.35);  // Benefit plate
 const Color trialTagColor = yellowColor;             // "Try" ribbon fill
 const Color trialTagTextColor = signalGrayColor;     // "Try" word on the ribbon, as on the price pill
 const Color trialTagEdgeColor = signalGrayColor;     // Dark edge around the ribbon
-const Color modeIconDimColor = Color(0xFF4A4A4A);    // Signal art while the "Try" button cannot be pressed
 const String padlockStar = "assets/images/icons/padlock_star.svg"; // Padlock over the art once the trial is used up, with its black outline baked in
 const String settingsPremiumCardIcon = "assets/images/icons/traffic_signal.svg"; // Colour signal on the settings premium card
 const double padlockOutlineScale = 359.52 / 329.52;  // padlock_star.svg's viewBox height over the padlock shape's own height (15-unit outline margin each side)

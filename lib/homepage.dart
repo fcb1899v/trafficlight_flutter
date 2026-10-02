@@ -57,6 +57,10 @@ class HomePage extends HookConsumerWidget {
     final trialToggleCount = useRef(0);
     final trialPressType = useRef("none");
     final autoPressTimer = useRef<Timer?>(null);
+    // True while the running cycle was pressed by the trial (manually or automatically), so only that cycle ends on the paywall
+    final trialOwnsCycle = useRef(false);
+    // The newest pushButtonActions, so a timer started in an older build still runs on the current times
+    final pushLatest = useRef<Future<void> Function()?>(null);
     // Swings the padlock when it is tapped
     final padlockSwing = useAnimationController(duration: const Duration(milliseconds: 600));
     // True once the padlock has been tapped, so the next tap opens the purchase page
@@ -168,6 +172,8 @@ class HomePage extends HookConsumerWidget {
         autoPressTimer.value?.cancel();
         trialActive.value = false;
         isPedestrian.value = true;
+        // With no cycle running, the next press must use the saved times again
+        if (!isPressed.value && !isFlash.value) useCycleDefaults.value = false;
       }
       return null;
     }, [lifecycle]);
@@ -254,15 +260,30 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    /// Presses the push button by itself once trialAutoPressDelay passes without a press
+    void armAutoPress() {
+      autoPressTimer.value?.cancel();
+      autoPressTimer.value = Timer(trialAutoPressDelay, () {
+        if (trialActive.value && !isPressed.value) {
+          trialPressType.value = "auto";
+          trialOwnsCycle.value = true;
+          pushLatest.value?.call();
+        }
+      });
+    }
+
     /// Set signal to red state and reset button.
-    /// A trial cycle that was not aborted opens the paywall here, silently, and the red sound resumes only once it closes.
+    /// A trial cycle opens the paywall here and the red sound resumes once it closes; a cycle started before "Try" ends without it.
     setRedState() async {
-      final endsTrial = trialActive.value;
+      final endsTrial = trialActive.value && trialOwnsCycle.value;
+      final trialWaits = trialActive.value && !endsTrial;
       signalColor.value = [false, false, false];
       isFlash.value = false;
       isPressed.value = false;
-      useCycleDefaults.value = false;
-      trialActive.value = false;
+      trialOwnsCycle.value = false;
+      useCycleDefaults.value = trialWaits;
+      if (endsTrial) trialActive.value = false;
+      if (trialWaits) armAutoPress();
       "redState: ${signalColor.value}, isFlash: ${isFlash.value}, isPressed: ${isPressed.value}".debugPrint();
       if (endsTrial) {
         await audioManager.stopAll();
@@ -309,21 +330,19 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    pushLatest.value = pushButtonActions;
+
     /// Starts the car-signal trial: switches to the car display and shows the "trying" banner.
-    /// The user has up to trialAutoPressDelay to press before the push button presses itself.
+    /// The push button presses itself after trialAutoPressDelay; tapped mid-cycle, that cycle runs on unchanged and the wait starts after it.
     void startCarTrial() {
+      final cycleRunning = isPressed.value || isFlash.value;
       trialActive.value = true;
-      useCycleDefaults.value = true;
+      useCycleDefaults.value = !cycleRunning;
       trialToggleCount.value = 0;
       trialPressType.value = "none";
       isPedestrian.value = false;
       SignalAnalytics.log('car_trial_start');
-      autoPressTimer.value = Timer(trialAutoPressDelay, () {
-        if (trialActive.value && !isPressed.value) {
-          trialPressType.value = "auto";
-          pushButtonActions();
-        }
-      });
+      if (!cycleRunning) armAutoPress();
     }
 
     /// The push button's own tap handler.
@@ -333,6 +352,7 @@ class HomePage extends HookConsumerWidget {
       if (trialActive.value && !isPressed.value) {
         autoPressTimer.value?.cancel();
         trialPressType.value = "manual";
+        trialOwnsCycle.value = true;
       }
       pushButtonActions();
     }
@@ -371,9 +391,6 @@ class HomePage extends HookConsumerWidget {
       if (context.mounted) await context.pushUpgradePage(source: UpgradeSource.lock);
       if (context.mounted) (signalColor.value[0]) ? setGreenSound(): setRedSound();
     }
-
-    // The "Try" button cannot start a trial while any pedestrian cycle is running
-    final cycleRunning = isPressed.value || isFlash.value;
 
     return Scaffold(
       // The gear stays visible but disabled while the trial runs
@@ -418,7 +435,7 @@ class HomePage extends HookConsumerWidget {
       floatingActionButton: Container(
         margin: EdgeInsets.only(bottom: context.floatingMarginBottom()),
         child: Column(children: [
-          const Spacer(flex: 3),
+          const Spacer(flex: modeTopFlex),
           // One black button for everyone; unpurchased users see the "Try" ribbon, then the padlock, while no trial runs
           if (isPremiumProvider || trialActive.value) home.changeIsPedestrianButton(
             isPedestrian: isPedestrian.value,
@@ -426,7 +443,6 @@ class HomePage extends HookConsumerWidget {
           )
           else if (canShowTrialButton) home.changeIsPedestrianButton(
             isPedestrian: isPedestrian.value,
-            enabled: !cycleRunning,
             onPressed: () => startCarTrial(),
             isTag: true,
             semanticsLabel: context.carSignalTrialButtonLabel(),
@@ -438,7 +454,7 @@ class HomePage extends HookConsumerWidget {
             padlockSwing: padlockSwing,
             semanticsLabel: context.carSignalAvailable(),
           ),
-          const Spacer(flex: 2),
+          const Spacer(flex: modeBottomFlex),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [false, true].map((isForward) => home.countryChangeButton(
               onPressed: () => countryBack(isForward),
@@ -550,12 +566,10 @@ class HomeWidget {
   /// Mode button between the pedestrian and car signals: the same light box and black signal art for every user.
   /// The art shows the signal a tap switches to.
   /// [isTag] hangs the yellow swallowtail "Try" ribbon diagonally across the top-right corner (unpurchased users).
-  /// While that button cannot be pressed (a pedestrian cycle is running), only the art dims; the ribbon stays yellow.
   /// [isPadlock] lays the yellow star padlock, outlined in black, over the centre of the art; it is never disabled.
   Widget changeIsPedestrianButton({
     required bool isPedestrian,
     required void Function() onPressed,
-    bool enabled = true,
     bool isTag = false,
     bool isPadlock = false,
     Animation<double>? padlockSwing,
@@ -565,10 +579,7 @@ class HomeWidget {
     final iconHeight = context.modeIconHeight();
     final frameAsset = isPedestrian.frameAsset();
     // Only the height is set: the width follows the tall SVG's own shape.
-    Widget art = SvgPicture.asset(frameAsset,
-      height: iconHeight,
-      colorFilter: enabled ? null: const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn),
-    );
+    Widget art = SvgPicture.asset(frameAsset, height: iconHeight);
     // Behind the padlock only, the art shows through it at 80% opacity, never fully hidden
     if (isPadlock) art = Opacity(opacity: 0.8, child: art);
     Widget? padlock;
@@ -602,7 +613,7 @@ class HomeWidget {
                 backgroundColor: lightGrayColor,
                 heroTag: 'mode',
                 shape: floatingButtonShape(side: BorderSide(color: blackColor, width: context.modeButtonBorderWidth())),
-                onPressed: enabled ? onPressed: null,
+                onPressed: onPressed,
                 child: (padlock == null) ? art: Stack(alignment: Alignment.center, children: [art, padlock]),
               )),
               // Drawn over the button and past its edges; taps fall through to the button beneath

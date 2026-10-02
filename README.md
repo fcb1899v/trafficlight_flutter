@@ -139,14 +139,16 @@ test/
 ├── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
 ├── upgrade_ad_premium_gate_test.dart # Purchase page: no banner for purchasers, with the same layout as non-purchasers
 ├── upgrade_source_test.dart          # Purchase-page analytics event names and close counting, by open source (trial vs. settings)
-├── mode_button_test.dart             # Mode button: art by displayed signal, the Try ribbon, dimmed art while it cannot be pressed, the padlock, tap targets
-├── mode_button_icon_preview_test.dart # Golden PNG of the mode button's five real-size states: purchaser (pedestrian and car art), Try ribbon, dimmed ribbon, padlock
+├── mode_button_test.dart             # Mode button: art by displayed signal, the Try ribbon, a tap during a pedestrian cycle, the padlock, tap targets
+├── mode_button_icon_preview_test.dart # Golden PNG of the mode button's four real-size states: purchaser (pedestrian and car art), Try ribbon, padlock
+├── mode_button_position_test.dart    # Mode button position: at most a brush on the signal and trial banner, no touch on the country buttons, across 7 styles and 4 screen sizes (slow; SHOT_DIR=<dir> also saves images)
 ├── trial_banner_blink_test.dart      # The trying banner blinks continuously with the purchase page's Buy cue's cycle and curve, never stopping
 └── trial_banner_size_test.dart       # The trying banner stays inside the screen and clears the signal/push-button gap, at both device sizes and every language
 
 integration_test/
 ├── upgrade_page_test.dart  # Opens the upgrade page from the settings premium card on a device and returns with the back button; prints the settings layout in the device's real fonts; --dart-define=SCREENSHOT_LOCALE=ja picks the UI language and holds settings for a screenshot
-├── car_trial_test.dart     # The mode button on a device: Try ribbon, dimmed art during a cycle, switching signals before and during a trial's cycle, the trying banner over the signal/push-button seam, the paywall, padlock (two taps open the page), purchaser
+├── car_trial_test.dart     # The mode button on a device: Try ribbon, a trial begun mid-cycle, switching signals before and during a trial's cycle, the trying banner over the signal/push-button seam, the paywall, padlock (two taps open the page), purchaser
+├── car_trial_cancel_test.dart # After a trial is cancelled by going to the background, an ordinary press runs on the saved times, not the trial's default times
 ├── button_corner_test.dart # The three round buttons' continuous (iOS-icon-like) corner, measured as drawn on the device
 └── country_flag_persistence_test.dart # The locale-detected flag on a device: stays fixed while paging within its own style group, and shows each other group's own generic flag, in both directions
 

@@ -77,15 +77,35 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets("while it cannot be pressed, only the art dims; the ribbon stays, and taps are ignored", (tester) async {
+  testWidgets("while a pedestrian cycle runs, the Try button keeps its colours and a tap still reaches it", (tester) async {
     var taps = 0;
-    await pumpModeButton(tester, (home) => home.changeIsPedestrianButton(
-      isPedestrian: true, enabled: false, onPressed: () => taps++, isTag: true));
-    expect(artFilter(tester), const ColorFilter.mode(modeIconDimColor, BlendMode.srcIn));
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(402, 874);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('ja'),
+      home: Scaffold(body: Align(alignment: Alignment.topRight, child: Builder(builder: (context) =>
+        HomeWidget(context,
+          counter: 0,
+          signalColor: const [true, false, false],
+          isFlash: true,
+          opaque: false,
+          isPressed: true,
+          waitTime: initialWaitTime,
+          goTime: initialGoTime,
+          flashTime: initialFlashTime,
+          yellowTime: initialYellowTime,
+          arrowTime: initialArrowTime,
+        ).changeIsPedestrianButton(isPedestrian: true, onPressed: () => taps++, isTag: true))),
+      ),
+    ));
+    expect(artFilter(tester), isNull);
     expect(artOpacity(tester), 1.0);
-    expect(find.byKey(const Key('trialRibbon')), findsOneWidget);
+    expect(tester.widget<FloatingActionButton>(find.byKey(const Key('modeButton'))).onPressed, isNotNull);
     await tester.tap(find.byKey(const Key('modeButton')));
-    expect(taps, 0);
+    expect(taps, 1);
   });
 
   testWidgets("the padlock lies over the undimmed art with no ribbon, and a tap reaches the callback", (tester) async {

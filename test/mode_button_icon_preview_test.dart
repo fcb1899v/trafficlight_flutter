@@ -1,5 +1,5 @@
-// Draws the real mode button in its five states at real size and keeps them as a golden PNG for review.
-// The states: purchaser (pedestrian and car art), "Try" ribbon, ribbon while it cannot be pressed, and padlock.
+// Draws the real mode button in its four states at real size and keeps them as a golden PNG for review.
+// The states: purchaser (pedestrian and car art), "Try" ribbon, and padlock.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,7 +39,6 @@ void main() {
             cell(home.changeIsPedestrianButton(isPedestrian: false, onPressed: () {})),
             cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {})),
             cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}, isTag: true)),
-            cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}, isTag: true, enabled: false)),
             cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}, isPadlock: true)),
           ]);
         }),

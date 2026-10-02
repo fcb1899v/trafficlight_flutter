@@ -238,7 +238,7 @@ void expectModeButtonClear(WidgetTester tester, String where) {
 }
 
 /// Walks the mode button through every state.
-/// They are the "Try" ribbon, its dimmed art during a cycle, two trials ending on the paywall, the padlock, and a purchaser's plain button.
+/// They are the "Try" ribbon, a trial begun mid-cycle, the other trials ending on the paywall, the padlock, and a purchaser's plain button.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -305,7 +305,13 @@ void main() {
       await pumpUntilFound(tester, find.byType(UpgradePage), timeout: const Duration(seconds: 45));
       return;
     }
-    // The Try ribbon needs a live store price
+    // The Try ribbon needs a store price.
+    // An emulator without a store has none; the price only gates the ribbon, so a stand-in is enough here.
+    await tester.pump(const Duration(seconds: 8));
+    // A store account that already owns premium would hide the trial, so treat this run as a free user
+    ProviderScope.containerOf(tester.element(find.byType(Scaffold).first)).read(planProvider.notifier).setCurrentPlan(false);
+    await tester.pump(const Duration(seconds: 1));
+    if (PremiumPrice.value.value.isEmpty) PremiumPrice.value.value = "¥500";
     await pumpUntilFound(tester, modeButtonWord, timeout: const Duration(seconds: 20));
     expect(trafficIcon, findsOneWidget);
 
@@ -320,17 +326,34 @@ void main() {
     expectRibbonFits(tester, "try");
     await hold(tester, "SHOT_TRY");
 
-    // A pedestrian cycle dims the art and disables the button until it ends
+    // A pedestrian cycle does not lock the button: tapping Try mid-cycle starts the trial and the cycle runs on
     await tester.tap(assetImage("/button_").first);
     await tester.pump(const Duration(seconds: 2));
-    expect(modeButtonEnabled(tester), isFalse);
-    expectRibbonFits(tester, "cannot press");
-    await hold(tester, "SHOT_GRAY");
-    final end = DateTime.now().add(const Duration(seconds: 60));
-    while (!modeButtonEnabled(tester)) {
-      if (DateTime.now().isAfter(end)) fail("The cycle never ended");
-      await tester.pump(const Duration(milliseconds: 500));
+    expect(modeButtonEnabled(tester), isTrue);
+    expectRibbonFits(tester, "during a cycle");
+    await hold(tester, "SHOT_TRY_IN_CYCLE");
+    await tester.tap(modeButton);
+    await tester.pump();
+    expect(trialBanner, findsOneWidget);
+    expect(carSignalShown, findsOneWidget);
+    await expectModeButtonFlips(tester, "during the user's own cycle");
+    await hold(tester, "SHOT_TRIAL_IN_CYCLE", seconds: 1);
+    // The user's own cycle ends without the paywall; the trial then waits for its own press and ends on the paywall
+    var sawCycle = false;
+    final ownEnd = DateTime.now().add(const Duration(seconds: 90));
+    while (!sawCycle || carSignalInCycle(tester)) {
+      if (DateTime.now().isAfter(ownEnd)) fail("The user's own cycle never ended");
+      await tester.pump(const Duration(milliseconds: 250));
+      if (carSignalShown.evaluate().isNotEmpty && carSignalInCycle(tester)) sawCycle = true;
     }
+    expect(find.byType(UpgradePage), findsNothing, reason: "the user's own cycle must not end on the paywall");
+    expect(trialBanner, findsOneWidget);
+    await pumpUntilFound(tester, find.byType(UpgradePage), timeout: const Duration(seconds: 45));
+    debugPrint("MIDCYCLE_TRIAL_PAYWALL_SHOWN");
+    await tester.tap(find.descendant(of: find.byType(UpgradePage), matching: find.byIcon(Icons.arrow_back_ios)));
+    await hold(tester, "MIDCYCLE_TRIAL_CLOSED", seconds: 2);
+    expect(find.byType(UpgradePage), findsNothing);
+    expect(trialBanner, findsNothing);
 
     // Settings and back first, as a user does: the back button replaces settings with a new home screen
     await tester.tap(find.byIcon(Icons.settings));
@@ -339,8 +362,8 @@ void main() {
     await pumpUntilFound(tester, modeButtonWord);
     await tester.pump(const Duration(seconds: 1));
 
-    // Two trials, each ending on the paywall and closed from it
-    for (var trial = 1; trial <= maxTrialPaywallCloseCount; trial++) {
+    // The remaining trials, each ending on the paywall and closed from it (the mid-cycle trial was the first close)
+    for (var trial = 1; trial < maxTrialPaywallCloseCount; trial++) {
       await tester.tap(modeButton);
       await tester.pump();
       expect(trialBanner, findsOneWidget);
