@@ -107,7 +107,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String carSignalLockBalloon(int count) {
-    return '解锁车辆信号灯还需\n$count 次';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Car signal unlocks in\n[$count cycles]',
+      one: 'Car signal unlocks in\n[1 cycle]',
+    );
+    return '$_temp0';
   }
 
   @override

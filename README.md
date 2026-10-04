@@ -18,7 +18,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 - **Multi-Country Signal Support**: Authentic traffic signals from US, UK, Australia and Japan. Canada shares the US-style signal, and New Zealand and Singapore share the Australia-style signal, each shown with its own flag. Paging through styles with the forward/back buttons shows each style's own generic flag, restoring the detected country's flag on returning to its style group
 - **Pedestrian Signals**: Realistic pedestrian crossing signals for each country
 - **Cross-platform Support**: Android & iOS compatibility
-- **Multi-language Support**: English, Japanese, Chinese (Simplified)
+- **Multi-language Support**: English, Japanese, Chinese
 - **Google Mobile Ads**: Banner ads
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Authentic signal sounds and haptic feedback

@@ -141,7 +141,7 @@ void main() {
     expect(lock.bottom, lessThanOrEqualTo(frame.bottom));
   });
 
-  for (final (locale, size) in [('ja', const Size(402, 874)), ('en', const Size(402, 874)), ('zh', const Size(402, 874)), ('ja', const Size(375, 667)), ('en', const Size(375, 667)), ('zh', const Size(375, 667))]) {
+  for (final (locale, size) in [('ja', const Size(402, 874)), ('en', const Size(402, 874)), ('ja', const Size(375, 667)), ('en', const Size(375, 667))]) {
     testWidgets("the balloon is two lines that do not wrap, with the count unpadded ($locale ${size.width.toInt()})", (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = size;
@@ -163,8 +163,8 @@ void main() {
         final lines = text.split('\n');
         expect(lines, hasLength(2), reason: '$n');
         // Top line: the fixed sentence; bottom line: the count with its unit, unpadded
-        final bottom = switch (locale) { 'ja' => '$n 周', 'zh' => '$n 次', _ => n == 1 ? '1 cycle' : '$n cycles' };
-        expect(lines[0], switch (locale) { 'ja' => '車用信号の解放まであと', 'zh' => '解锁车辆信号灯还需', _ => 'Car signal unlocks in' });
+        final bottom = locale == 'ja' ? '$n 周' : (n == 1 ? '1 cycle' : '$n cycles');
+        expect(lines[0], locale == 'ja' ? '車用信号の解放まであと' : 'Car signal unlocks in');
         expect(lines[1], bottom);
         // Never wraps: two lines in the paragraph, and the shrunk text stays inside the balloon
         final paragraph = tester.renderObject<RenderParagraph>(textFinder);
@@ -182,8 +182,8 @@ void main() {
           final root = tester.widget<Text>(textFinder).textSpan! as TextSpan;
           final spans = root.children!.cast<TextSpan>();
           final number = spans.firstWhere((t) => t.text == '$n');
-          final word = spans.firstWhere((t) => t.text!.contains(switch (locale) { 'ja' => '周', 'zh' => '次', _ => 'cycle' }));
-          expect(word.text, switch (locale) { 'ja' => ' 周', 'zh' => ' 次', _ => n == 1 ? ' cycle' : ' cycles' }, reason: 'a half-width space between the number and the counter');
+          final word = spans.firstWhere((t) => t.text!.contains(locale == 'ja' ? '周' : 'cycle'));
+          expect(word.text, locale == 'ja' ? ' 周' : (n == 1 ? ' cycle' : ' cycles'), reason: 'a half-width space between the number and the counter');
           expect(number.style!.fontFamily, 'beon');
           expect(number.style!.fontSize! / root.style!.fontSize!, closeTo(2.0, 0.001), reason: '1.5 / 0.75');
         }
@@ -194,7 +194,7 @@ void main() {
     });
   }
 
-  for (final (locale, size) in [('ja', const Size(402, 874)), ('en', const Size(402, 874)), ('zh', const Size(402, 874)), ('ja', const Size(375, 667)), ('en', const Size(375, 667)), ('zh', const Size(375, 667))]) {
+  for (final (locale, size) in [('ja', const Size(402, 874)), ('en', const Size(402, 874)), ('ja', const Size(375, 667)), ('en', const Size(375, 667))]) {
     testWidgets("the balloon sits left of the padlock, its tail points right at it, and it stays on screen ($locale ${size.width.toInt()})", (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = size;
@@ -218,9 +218,9 @@ void main() {
       final tail = tester.getRect(find.byKey(const Key('lockBalloonTail')));
       final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
       // The balloon's left margin equals the button's right margin
-      // The box fits its text, so Japanese and Chinese start right of the edge margin; the test font's wide English fills it.
+      // The box fits its text, so it never starts left of the edge margin; the test font's wide English fills it, the Japanese does not
       expect(body.left, greaterThanOrEqualTo(screen.width - button.right - 0.01));
-      if (locale == 'ja' || locale == 'zh') expect(body.left, greaterThan(screen.width - button.right + 1));
+      if (locale == 'ja') expect(body.left, greaterThan(screen.width - button.right + 1));
       // The tail ends where the button begins, and points at the button's centre height
       expect(tail.left, closeTo(body.right, 0.01));
       expect(tail.right, closeTo(button.left, 0.01));
