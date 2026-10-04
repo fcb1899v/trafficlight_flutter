@@ -10,23 +10,28 @@ import 'extension.dart';
 /// Provider for managing premium plan state across the app
 final planProvider = NotifierProvider<PlanNotifier, PlanState>(PlanNotifier.new);
 
+/// Asks RevenueCat for the entitlements. Tests replace it so no store is needed
+@visibleForTesting
+Future<CustomerInfo> Function() customerInfoSource = Purchases.getCustomerInfo;
+
 /// Returns the initial premium status for app startup (used from main() before ProviderScope).
+/// RevenueCat decides: both entitlements active stores key_premium true, none active resets it to false.
+/// When RevenueCat cannot be reached the stored value is kept, so a purchaser is never made free by a failed lookup.
 /// Does not use any notifier/ref/state.
 Future<bool> getInitialPremiumStatus() async {
+  final stored = "premium".getSettingsValueBool(false);
   try {
-    final localPremium = "premium".getSettingsValueBool(false);
-    if (localPremium) return true;
-    final CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+    final CustomerInfo customerInfo = await customerInfoSource();
     final bool isCars = customerInfo.entitlements.active["signal_for_cars"]?.isActive ?? false;
     final bool isNoAds = customerInfo.entitlements.active["no_ads"]?.isActive ?? false;
     final bool actualPremium = isCars && isNoAds;
-    if (actualPremium) {
+    if (actualPremium != stored) {
       await Settings.setValue('key_premium', actualPremium, notify: true);
     }
     return actualPremium;
   } catch (e) {
     "Error initializing premium status: $e".debugPrint();
-    return "premium".getSettingsValueBool(false);
+    return stored;
   }
 }
 
@@ -121,7 +126,7 @@ class PlanNotifier extends Notifier<PlanState> {
     );
   }
 
-  /// Refreshes premium status (local storage first, then RevenueCat) on a mounted notifier;
+  /// Refreshes premium status from RevenueCat (the stored value is used only when it cannot be reached) on a mounted notifier;
   /// for main() startup use getInitialPremiumStatus() and override planProvider instead.
   Future<void> initializePremiumStatus() async {
     final initial = await getInitialPremiumStatus();

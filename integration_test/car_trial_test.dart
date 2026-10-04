@@ -456,7 +456,7 @@ void main() {
     debugPrint("PADLOCK_CHECKED events=$events");
 
     // A purchaser: the same button with no ribbon or padlock, offering whichever signal is not shown
-    await Settings.setValue("key_premium", true);
+    ProviderScope.containerOf(tester.element(find.byType(Scaffold).first)).read(planProvider.notifier).setCurrentPlan(true);
     await tester.tap(find.byIcon(Icons.settings));
     await pumpUntilFound(tester, find.byIcon(Icons.arrow_back_ios));
     await tester.tap(find.byIcon(Icons.arrow_back_ios));

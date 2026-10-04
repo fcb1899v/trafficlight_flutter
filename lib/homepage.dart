@@ -24,12 +24,10 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Read plan notifier for actions and watch premium status
-    final plan = ref.read(planProvider.notifier);
+    // Watch premium status
     final isPremiumProvider = ref.watch(planProvider).isPremium;
     // Bought or unlocked by 999 cycles; ads stay on isPremiumProvider
     final hasCarSignal = ref.watch(carSignalProvider);
-    final isPremium = useState("premium".getSettingsValueBool(false));
     // Watch time-related state providers (the user's saved settings)
     final savedWaitTime = ref.watch(waitTimeProvider);
     final savedGoTime = ref.watch(goTimeProvider);
@@ -122,8 +120,7 @@ class HomePage extends HookConsumerWidget {
 
     /// Initialize app state and load saved settings
     Future<void> initState() async {
-      plan.setCurrentPlan(isPremium.value);
-      "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}".debugPrint();
+      "isPremiumProvider: $isPremiumProvider".debugPrint();
       final (detectedCounter, detectedFlag) = await getCountryCounter();
       counter.value = detectedCounter;
       flagKey.value = detectedFlag;

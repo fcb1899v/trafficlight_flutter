@@ -27,7 +27,6 @@ class SettingsPage extends HookConsumerWidget {
     final isSound = ref.watch(isSoundProvider);
     // Watch premium status and local state
     final isPremiumProvider = ref.watch(planProvider).isPremium;
-    final isPremium = useState("premium".getSettingsValueBool(false));
     final isPremiumRestore = useState("premiumRestore".getSettingsValueBool(false));
     // The live store price, empty while unknown; listened to, so a late price shows the entry
     final premiumPrice = useValueListenable(PremiumPrice.value);
@@ -74,7 +73,7 @@ class SettingsPage extends HookConsumerWidget {
         }
       });
       "waitTime: $waitTime, goTime: $goTime, flashTime: $flashTime, isSound: $isSound".debugPrint();
-      "isPremiumProvider: $isPremiumProvider, isPremium: ${isPremium.value}, isPremiumRestore: ${isPremiumRestore.value}".debugPrint();
+      "isPremiumProvider: $isPremiumProvider, isPremiumRestore: ${isPremiumRestore.value}".debugPrint();
       return null;
     }, const []);
 

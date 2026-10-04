@@ -141,6 +141,7 @@ test/
 ├── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
 ├── upgrade_ad_premium_gate_test.dart # Purchase page: no banner for purchasers, with the same layout as non-purchasers
 ├── upgrade_source_test.dart          # Purchase-page analytics event names and close counting, by open source (trial vs. settings)
+├── premium_status_test.dart          # Stored premium follows RevenueCat: reset when no entitlement is active, kept when RevenueCat is unreachable, cycle unlock untouched
 ├── cycle_unlock_test.dart            # Cycle count, unlock at 999 and its persistence, no cycle_unlock for purchasers, milestones and cycle_bucket edges
 ├── home_car_signal_entry_test.dart   # Home mode button follows bought-or-unlocked (not the store price); cycles count once the trial is used up, with or without a store price; the padlock's remaining number, balloon and three-tap flow
 ├── mode_button_test.dart             # Mode button: art by displayed signal, the Try ribbon, a tap during a pedestrian cycle, the padlock, tap targets
