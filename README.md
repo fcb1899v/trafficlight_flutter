@@ -18,7 +18,7 @@ It provides a realistic and educational experience through authentic sounds, ani
 - **Multi-Country Signal Support**: Authentic traffic signals from US, UK, Australia and Japan. Canada shares the US-style signal, and New Zealand and Singapore share the Australia-style signal, each shown with its own flag. Paging through styles with the forward/back buttons shows each style's own generic flag, restoring the detected country's flag on returning to its style group
 - **Pedestrian Signals**: Realistic pedestrian crossing signals for each country
 - **Cross-platform Support**: Android & iOS compatibility
-- **Multi-language Support**: English, Japanese, Chinese
+- **Multi-language Support**: English, Japanese
 - **Google Mobile Ads**: Banner ads
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Authentic signal sounds and haptic feedback
@@ -125,11 +125,9 @@ lib/
 └── l10n/                  # Localization
     ├── app_en.arb
     ├── app_ja.arb
-    ├── app_zh.arb
     ├── app_localizations.dart
     ├── app_localizations_en.dart
-    ├── app_localizations_ja.dart
-    └── app_localizations_zh.dart
+    └── app_localizations_ja.dart
 
 packages/
 └── flutter_tts/           # Local fork of flutter_tts 4.2.5
@@ -190,7 +188,6 @@ assets/
 │   └── sound_none.mp3   # No sound option
 └── fonts/               # Font files
     ├── NotoSansJP-Bold.ttf
-    ├── NotoSansSC-Bold.ttf
     ├── Roboto-Bold.ttf
     ├── freetfb.ttf
     └── beon.ttf

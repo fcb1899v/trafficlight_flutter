@@ -18,7 +18,6 @@
 	<array>
 		<string>en</string>
 		<string>ja</string>
-		<string>zh</string>
 	</array>
 	<key>CFBundleName</key>
 	<string>crosswalksignal</string>

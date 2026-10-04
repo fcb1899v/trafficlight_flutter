@@ -42,9 +42,6 @@
 		024602CC28312F0B00F3EDB4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		024602CD28312F0B00F3EDB4 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0299BB742E18FBB300BC5104 /* SyncedProducts.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SyncedProducts.storekit; sourceTree = "<group>"; };
-		02B6E59A2C6B580E00207778 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
-		02B6E59B2C6B580E00207778 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
-		02B6E59C2C6B580E00207778 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
@@ -181,7 +178,6 @@
 				en,
 				Base,
 				ja,
-				"zh-Hans",
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
@@ -265,7 +261,6 @@
 			children = (
 				024602C928312E9300F3EDB4 /* en */,
 				024602CD28312F0B00F3EDB4 /* ja */,
-				02B6E59C2C6B580E00207778 /* zh-Hans */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -275,7 +270,6 @@
 			children = (
 				97C146FB1CF9000F007C117D /* Base */,
 				024602CB28312F0B00F3EDB4 /* ja */,
-				02B6E59A2C6B580E00207778 /* zh-Hans */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -285,7 +279,6 @@
 			children = (
 				97C147001CF9000F007C117D /* Base */,
 				024602CC28312F0B00F3EDB4 /* ja */,
-				02B6E59B2C6B580E00207778 /* zh-Hans */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";

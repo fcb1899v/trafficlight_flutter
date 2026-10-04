@@ -102,7 +102,7 @@ extension SizeExt on BuildContext {
 
   /// Trial Ribbon Responsive Sizing
   /// Latin glyphs sit smaller than CJK glyphs at the same font size, so en gets a size boost.
-  double trialRibbonFontSize() => floatingButtonSize() * ((lang() == "ja" || lang() == "zh") ? 0.16 : 0.20);
+  double trialRibbonFontSize() => floatingButtonSize() * (lang() == "ja" ? 0.16 : 0.20);
   double trialRibbonThickness() => trialRibbonFontSize() * 1.3;
   double trialRibbonCenter() => floatingButtonSize() * 0.198;
   double trialRibbonEdgeWidth() => premiumPlateBorderWidth();

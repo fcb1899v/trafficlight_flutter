@@ -1,6 +1,6 @@
 // The "Trying the car signal" banner must stay inside the screen and clear the signal/push-button
 // gap above and below it, at both device sizes and in every UI language.
-// English wraps to two lines (see app_en.arb); Japanese and Chinese stay on one line.
+// English wraps to two lines (see app_en.arb); Japanese stays on one line.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -27,13 +27,12 @@ void main() {
   setUpAll(() async {
     await loadRealFont('beon', 'assets/fonts/beon.ttf');
     await loadRealFont('notoJP', 'assets/fonts/NotoSansJP-Bold.ttf');
-    await loadRealFont('notoSC', 'assets/fonts/NotoSansSC-Bold.ttf');
   });
 
   // top/bottom match the iPhone 17 Pro and iPhone SE safe areas used across this app's tests.
   for (final device in [(size: const Size(402, 874), top: 62.0, bottom: 34.0),
                          (size: const Size(375, 667), top: 20.0, bottom: 0.0)]) {
-    for (final locale in ['en', 'ja', 'zh']) {
+    for (final locale in ['en', 'ja']) {
       testWidgets('banner clears the signal/push-button gap: $locale @ ${device.size.width}x${device.size.height}', (tester) async {
         tester.view.devicePixelRatio = 1;
         tester.view.physicalSize = device.size;

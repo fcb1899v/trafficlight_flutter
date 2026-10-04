@@ -712,7 +712,7 @@ class HomeWidget {
           softWrap: false,
           style: TextStyle(
             color: trialTagTextColor,
-            // English reads better in "roboto" than in "beon"; ja/zh keep their usual font.
+            // English reads better in "roboto" than in "beon"; ja keeps its usual font.
             fontFamily: context.font("roboto"),
             fontSize: font,
             fontWeight: FontWeight.bold,

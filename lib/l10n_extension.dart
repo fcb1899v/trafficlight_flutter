@@ -8,10 +8,9 @@ extension L10nContextExt on BuildContext {
   String lang() => locale().languageCode;
 
   /// Returns appropriate font family based on language
-  /// Japanese: Noto Sans JP, Chinese: Noto Sans SC, Others: Beon
+  /// Japanese: Noto Sans JP, Others: Beon
   String font(String defaultFont) =>
     (lang() == "ja") ? "notoJP":
-    (lang() == "zh") ? "notoSC":
     defaultFont;
 
   /// Localization Methods

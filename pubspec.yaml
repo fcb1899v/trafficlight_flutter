@@ -122,8 +122,4 @@ flutter:
     - family: notoJP
       fonts:
         - asset: assets/fonts/NotoSansJP-Bold.ttf
-    #For Chinese font
-    - family: notoSC
-      fonts:
-        - asset: assets/fonts/NotoSansSC-Bold.ttf
 

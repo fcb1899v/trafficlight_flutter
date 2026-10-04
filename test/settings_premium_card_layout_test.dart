@@ -58,7 +58,6 @@ void main() {
   setUpAll(() async {
     await loadRealFont('beon', 'assets/fonts/beon.ttf');
     await loadRealFont('notoJP', 'assets/fonts/NotoSansJP-Bold.ttf');
-    await loadRealFont('notoSC', 'assets/fonts/NotoSansSC-Bold.ttf');
     // The app's own time rows use the theme font; Roboto Bold stands in for it so English keeps real widths
     for (final family in ['Roboto', 'CupertinoSystemText', 'CupertinoSystemDisplay']) {
       await loadRealFont(family, 'assets/fonts/Roboto-Bold.ttf');
@@ -85,7 +84,7 @@ void main() {
     (name: 'Android 412x915', platform: TargetPlatform.android, size: const Size(412, 915), top: 24.0, bottom: 0.0, cardHeight: null, checked: true),
   ];
   for (final device in devices) {
-    for (final locale in ['ja', 'en', 'zh']) {
+    for (final locale in ['ja', 'en']) {
       testWidgets('card fits and the sound switch clears the ad: $locale @ ${device.name}', (tester) async {
         final context = await pumpSettings(tester,
           size: device.size, top: device.top, bottom: device.bottom, locale: locale);
@@ -114,7 +113,7 @@ void main() {
   }
   // At the end of the list, the end gap must sit between the sound switch and the ad slot.
   for (final device in devices.where((d) => !d.checked)) {
-    for (final locale in ['ja', 'en', 'zh']) {
+    for (final locale in ['ja', 'en']) {
       testWidgets('the end gap keeps the sound switch clear of the ad: $locale @ ${device.name}', (tester) async {
         final context = await pumpSettings(tester, size: device.size, top: device.top, bottom: device.bottom, locale: locale);
         final position = tester.state<ScrollableState>(find.byType(Scrollable).first).position;
