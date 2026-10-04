@@ -39,7 +39,7 @@ void main() {
             cell(home.changeIsPedestrianButton(isPedestrian: false, onPressed: () {})),
             cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {})),
             cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}, isTag: true)),
-            cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}, isPadlock: true)),
+            cell(home.changeIsPedestrianButton(isPedestrian: true, onPressed: () {}, isPadlock: true, padlockRemaining: 999)),
           ]);
         }),
       )),

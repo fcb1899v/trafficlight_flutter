@@ -2,9 +2,11 @@
 // Unpurchased users see a yellow "Try" ribbon on its corner, or a yellow padlock over its art once the trial is used up.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:signalbutton/constant.dart';
+import 'package:signalbutton/extension.dart';
 import 'package:signalbutton/homepage.dart';
 import 'package:signalbutton/l10n/app_localizations.dart';
 
@@ -14,7 +16,7 @@ Finder svgIcon(String assetName) => find.byWidgetPredicate((w) =>
 
 final trafficFrame = svgIcon('assets/images/icons/traffic_signal.svg');
 final walkFrame = svgIcon('assets/images/icons/pedestrian_signal.svg');
-final padlock = svgIcon(padlockStar);
+final padlock = svgIcon(padlockSvg);
 
 /// The frame's colour filter, null when it is drawn in its own black
 ColorFilter? artFilter(WidgetTester tester) => tester.widget<SvgPicture>(trafficFrame).colorFilter;
@@ -120,5 +122,128 @@ void main() {
     expect(find.byKey(const Key('trialRibbon')), findsNothing);
     await tester.tap(find.byKey(const Key('modeButton')));
     expect(taps, 1);
+  });
+
+  testWidgets("the remaining cycles sit inside the padlock body, and the balloon stays on screen", (tester) async {
+    await pumpModeButton(tester, (home) => home.changeIsPedestrianButton(
+      isPedestrian: true, onPressed: () {}, isPadlock: true, padlockRemaining: 999, showLockBalloon: true));
+    final lock = tester.getRect(padlock);
+    final digits = tester.getRect(find.byKey(const Key('padlockRemaining')));
+    expect(tester.widget<Text>(find.byKey(const Key('padlockRemaining'))).data, '999');
+    expect(lock.contains(digits.center), isTrue);
+    // The body is the lower part of the padlock, so the digits sit below the shackle
+    expect(digits.center.dy, greaterThan(lock.center.dy));
+    // The padlock, with its outline, stays inside the mode button's frame
+    final frame = tester.getRect(find.byKey(const Key('modeButton')));
+    expect(lock.left, greaterThanOrEqualTo(frame.left));
+    expect(lock.right, lessThanOrEqualTo(frame.right));
+    expect(lock.top, greaterThanOrEqualTo(frame.top));
+    expect(lock.bottom, lessThanOrEqualTo(frame.bottom));
+  });
+
+  for (final (locale, size) in [('ja', const Size(402, 874)), ('en', const Size(402, 874)), ('ja', const Size(375, 667)), ('en', const Size(375, 667))]) {
+    testWidgets("the balloon is two lines that do not wrap, with the count unpadded ($locale ${size.width.toInt()})", (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = size;
+      addTearDown(tester.view.reset);
+      for (final n in [999, 88, 8, 1]) {
+        await tester.pumpWidget(MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale(locale),
+          home: Scaffold(
+            floatingActionButton: Builder(builder: (context) => Container(
+              margin: EdgeInsets.only(bottom: size.height * 0.4),
+              child: homeWidget(context).changeIsPedestrianButton(
+                isPedestrian: true, onPressed: () {}, isPadlock: true, padlockRemaining: n, showLockBalloon: true))),
+          ),
+        ));
+        final textFinder = find.byKey(const Key('lockBalloonText'));
+        final text = tester.widget<Text>(textFinder).textSpan!.toPlainText();
+        final lines = text.split('\n');
+        expect(lines, hasLength(2), reason: '$n');
+        // Top line: the fixed sentence; bottom line: the count with its unit, unpadded
+        final bottom = locale == 'ja' ? '$n 周' : (n == 1 ? '1 cycle' : '$n cycles');
+        expect(lines[0], locale == 'ja' ? '車用信号の解放まであと' : 'Car signal unlocks in');
+        expect(lines[1], bottom);
+        // Never wraps: two lines in the paragraph, and the shrunk text stays inside the balloon
+        final paragraph = tester.renderObject<RenderParagraph>(textFinder);
+        final firstLine = paragraph.getBoxesForSelection(TextSelection(baseOffset: 0, extentOffset: lines[0].length));
+        final secondLine = paragraph.getBoxesForSelection(TextSelection(baseOffset: lines[0].length + 1, extentOffset: text.length));
+        // The first line sits on one level; the second sits below it and runs left to right with no wrap
+        expect(firstLine.map((b) => b.bottom.round()).toSet(), hasLength(1), reason: '$n');
+        expect(secondLine.every((b) => b.bottom > firstLine.first.bottom), isTrue, reason: '$n');
+        for (var i = 1; i < secondLine.length; i++) {
+          expect(secondLine[i].left, greaterThanOrEqualTo(secondLine[i - 1].left), reason: '$n');
+        }
+        final body = tester.getRect(find.byKey(const Key('lockBalloonBody')));
+        {
+          // The number is beon at twice the words' size
+          final root = tester.widget<Text>(textFinder).textSpan! as TextSpan;
+          final spans = root.children!.cast<TextSpan>();
+          final number = spans.firstWhere((t) => t.text == '$n');
+          final word = spans.firstWhere((t) => t.text!.contains(locale == 'ja' ? '周' : 'cycle'));
+          expect(word.text, locale == 'ja' ? ' 周' : (n == 1 ? ' cycle' : ' cycles'), reason: 'a half-width space between the number and the counter');
+          expect(number.style!.fontFamily, 'beon');
+          expect(number.style!.fontSize! / root.style!.fontSize!, closeTo(2.0, 0.001), reason: '1.5 / 0.75');
+        }
+        final shown = tester.getRect(textFinder);
+        expect(shown.left, greaterThanOrEqualTo(body.left));
+        expect(shown.right, lessThanOrEqualTo(body.right));
+      }
+    });
+  }
+
+  for (final (locale, size) in [('ja', const Size(402, 874)), ('en', const Size(402, 874)), ('ja', const Size(375, 667)), ('en', const Size(375, 667))]) {
+    testWidgets("the balloon sits left of the padlock, its tail points right at it, and it stays on screen ($locale ${size.width.toInt()})", (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = size;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: Locale(locale),
+        home: Scaffold(
+          // Placed at mid-height on the right with the home screen's edge margin
+          body: Builder(builder: (context) => Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.only(right: context.edgeMargin()),
+              child: homeWidget(context).changeIsPedestrianButton(
+                isPedestrian: true, onPressed: () {}, isPadlock: true, padlockRemaining: 999, showLockBalloon: true)))),
+        ),
+      ));
+      final button = tester.getRect(find.byKey(const Key('modeButton')));
+      final body = tester.getRect(find.byKey(const Key('lockBalloonBody')));
+      final tail = tester.getRect(find.byKey(const Key('lockBalloonTail')));
+      final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      // The balloon's left margin equals the button's right margin
+      // The box fits its text, so it never starts left of the edge margin; the test font's wide English fills it, the Japanese does not
+      expect(body.left, greaterThanOrEqualTo(screen.width - button.right - 0.01));
+      if (locale == 'ja') expect(body.left, greaterThan(screen.width - button.right + 1));
+      // The tail ends where the button begins, and points at the button's centre height
+      expect(tail.left, closeTo(body.right, 0.01));
+      expect(tail.right, closeTo(button.left, 0.01));
+      expect(tail.center.dy, closeTo(button.center.dy, 0.01));
+      expect(body.center.dy, closeTo(button.center.dy, 0.01));
+      expect(body.top, greaterThanOrEqualTo(0));
+      expect(body.bottom, lessThanOrEqualTo(screen.height));
+      expect(body.right, lessThan(button.left));
+    });
+  }
+
+  testWidgets("the remaining cycles are always three digits, zero-padded, in the same box", (tester) async {
+    Rect? first;
+    for (final (n, shown) in [(999, '999'), (88, '088'), (8, '008'), (1, '001')]) {
+      await pumpModeButton(tester, (home) => home.changeIsPedestrianButton(
+        isPedestrian: true, onPressed: () {}, isPadlock: true, padlockRemaining: n));
+      final digits = find.byKey(const Key('padlockRemaining'));
+      expect(tester.widget<Text>(digits).data, shown);
+      final lock = tester.getRect(padlock);
+      expect(lock.contains(tester.getRect(digits).center), isTrue);
+      final box = tester.getRect(find.ancestor(of: digits, matching: find.byType(FittedBox)));
+      first ??= box;
+      expect(box, first);
+    }
   });
 }

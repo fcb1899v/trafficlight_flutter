@@ -11,6 +11,7 @@ import 'extension.dart';
 import 'constant.dart';
 import 'main.dart';
 import 'plan_provider.dart';
+import 'cycle_unlock.dart';
 import 'admob_banner.dart';
 import 'sound_manager.dart';
 import 'analytics.dart';
@@ -26,6 +27,8 @@ class HomePage extends HookConsumerWidget {
     // Read plan notifier for actions and watch premium status
     final plan = ref.read(planProvider.notifier);
     final isPremiumProvider = ref.watch(planProvider).isPremium;
+    // Bought or unlocked by 999 cycles; ads stay on isPremiumProvider
+    final hasCarSignal = ref.watch(carSignalProvider);
     final isPremium = useState("premium".getSettingsValueBool(false));
     // Watch time-related state providers (the user's saved settings)
     final savedWaitTime = ref.watch(waitTimeProvider);
@@ -48,7 +51,7 @@ class HomePage extends HookConsumerWidget {
     final isPedestrian = useState(true);
     final countDown = useState(0);
     final lifecycle = useAppLifecycleState();
-    // Car-signal trial for unpurchased users: trialActive is true from the tap until the paywall or an abort
+    // Car-signal trial for users without the car signal: trialActive is true from the tap until the paywall or an abort
     final premiumPrice = useValueListenable(PremiumPrice.value);
     final trialCloseCount = useState("trialPaywallCloseCount".getSettingsValueInt(0));
     final trialActive = useState(false);
@@ -63,8 +66,19 @@ class HomePage extends HookConsumerWidget {
     final pushLatest = useRef<Future<void> Function()?>(null);
     // Swings the padlock when it is tapped
     final padlockSwing = useAnimationController(duration: const Duration(milliseconds: 600));
-    // True once the padlock has been tapped, so the next tap opens the purchase page
-    final isLockTapped = useRef(false);
+    // Taps on the padlock since the last visit to settings or the purchase page; the third opens the purchase page
+    final lockTaps = useRef(0);
+    // The padlock's speech balloon, and the timer that hides it
+    final lockBalloon = useState(false);
+    final lockBalloonTimer = useRef<Timer?>(null);
+    useEffect(() => () => lockBalloonTimer.value?.cancel(), const []);
+    // True once the trial is used up and no trial runs, with or without a store price; only then do finished cycles count
+    final cyclesCount = useRef(false);
+    void resetLockTaps() {
+      lockTaps.value = 0;
+      lockBalloonTimer.value?.cancel();
+      lockBalloon.value = false;
+    }
     // Blinks the trial banner, at the same cycle and curve as the purchase page's "Buy" cue, but without its 5-cycle stop
     final bannerBlink = useAnimationController(duration: cueBlinkCycle);
     final reduceMotion = premiumReduceMotion(context);
@@ -83,10 +97,11 @@ class HomePage extends HookConsumerWidget {
     final flashTime = useCycleDefaults.value ? initialFlashTime: savedFlashTime;
     final yellowTime = useCycleDefaults.value ? initialYellowTime: savedYellowTime;
     final arrowTime = useCycleDefaults.value ? initialArrowTime: savedArrowTime;
-    // Unpurchased users get the mode button only once the store price is known
-    final hasFreeModeButton = !isPremiumProvider && premiumPrice.isNotEmpty;
+    // Users without the car signal get the mode button only once the store price is known
+    final hasFreeModeButton = !hasCarSignal && premiumPrice.isNotEmpty;
     // It carries the "Try" ribbon until the trial's paywall has been closed often enough, then a padlock
     final canShowTrialButton = hasFreeModeButton && trialCloseCount.value < maxTrialPaywallCloseCount;
+    cyclesCount.value = !hasCarSignal && trialCloseCount.value >= maxTrialPaywallCloseCount && !trialActive.value;
     // Initialize audio and TTS managers
     final ttsManager = useMemoized(() => TtsManager(context: context));
     final audioManager = useMemoized(() => AudioManager());
@@ -164,8 +179,8 @@ class HomePage extends HookConsumerWidget {
     // Going to the background (`paused`, not `inactive` from Control Centre) aborts the trial.
     // A running cycle still finishes, just without the banner or the paywall.
     useEffect(() {
-      // The padlock needs two taps again
-      if (lifecycle == AppLifecycleState.paused) isLockTapped.value = false;
+      // The padlock's tap count starts over
+      if (lifecycle == AppLifecycleState.paused) resetLockTaps();
       if (lifecycle == AppLifecycleState.paused && trialActive.value) {
         SignalAnalytics.log('car_trial_end_aborted',
           {'toggle_count': trialToggleCount.value, 'press_type': isPressed.value ? trialPressType.value: 'none'});
@@ -275,6 +290,8 @@ class HomePage extends HookConsumerWidget {
     /// Set signal to red state and reset button.
     /// A trial cycle opens the paywall here and the red sound resumes once it closes; a cycle started before "Try" ends without it.
     setRedState() async {
+      // Cycles count once the trial is used up, whatever the store price; the trial's own cycle never does
+      if (cyclesCount.value && !trialOwnsCycle.value) ref.read(cycleProvider.notifier).recordCycle();
       final endsTrial = trialActive.value && trialOwnsCycle.value;
       final trialWaits = trialActive.value && !endsTrial;
       signalColor.value = [false, false, false];
@@ -375,18 +392,26 @@ class HomePage extends HookConsumerWidget {
 
     /// Navigate to settings page
     Future<void> toSettings() async {
+      resetLockTaps();
       await audioManager.stopAll();
       if (context.mounted) context.pushSettingsPage();
     }
 
-    /// Swings the padlock on every tap; a tap after an earlier one, once its swing ends, opens the purchase page.
-    /// Opening the page, or going to the background, sets isLockTapped back to false.
+    /// Swings the padlock on every tap; after the swing the first two taps show the balloon and the third opens the purchase page.
+    /// Opening the page, going to settings, or going to the background sets the tap count back to 0.
     Future<void> tapPadlock() async {
-      final opens = isLockTapped.value;
-      isLockTapped.value = true;
+      lockBalloonTimer.value?.cancel();
+      lockBalloon.value = false;
+      final taps = ++lockTaps.value;
       if (!premiumReduceMotion(context)) await padlockSwing.forward(from: 0).orCancel.catchError((_) {});
-      if (!opens || !context.mounted) return;
-      isLockTapped.value = false;
+      // A newer tap restarted the swing and owns the result
+      if (!context.mounted || lockTaps.value != taps) return;
+      if (taps < 3) {
+        lockBalloon.value = true;
+        lockBalloonTimer.value = Timer(const Duration(seconds: 4), () => lockBalloon.value = false);
+        return;
+      }
+      resetLockTaps();
       await audioManager.stopAll();
       if (context.mounted) await context.pushUpgradePage(source: UpgradeSource.lock);
       if (context.mounted) (signalColor.value[0]) ? setGreenSound(): setRedSound();
@@ -432,12 +457,14 @@ class HomePage extends HookConsumerWidget {
           ),
         ],
       ),
+      floatingActionButtonLocation: const FullWidthFloatLocation(),
       floatingActionButton: Container(
         margin: EdgeInsets.only(bottom: context.floatingMarginBottom()),
+        padding: EdgeInsets.symmetric(horizontal: context.edgeMargin()),
         child: Column(children: [
           const Spacer(flex: modeTopFlex),
-          // One black button for everyone; unpurchased users see the "Try" ribbon, then the padlock, while no trial runs
-          if (isPremiumProvider || trialActive.value) home.changeIsPedestrianButton(
+          // One black button for everyone; users without the car signal see the "Try" ribbon, then the padlock, while no trial runs
+          if (hasCarSignal || trialActive.value) home.changeIsPedestrianButton(
             isPedestrian: isPedestrian.value,
             onPressed: () => changeIsPedestrian(),
           )
@@ -452,6 +479,8 @@ class HomePage extends HookConsumerWidget {
             onPressed: () => tapPadlock(),
             isPadlock: true,
             padlockSwing: padlockSwing,
+            padlockRemaining: max(0, cycleUnlockTarget - ref.watch(cycleProvider).count),
+            showLockBalloon: lockBalloon.value,
             semanticsLabel: context.carSignalAvailable(),
           ),
           const Spacer(flex: modeBottomFlex),
@@ -525,6 +554,7 @@ class HomeWidget {
         if (onPressed != null) Opacity(
           opacity: enabled ? 1: 0.4,
           child: IconButton(
+            padding: EdgeInsets.all(context.iconButtonPadding()),
             icon: Icon(Icons.settings,
               color: whiteColor,
               size: context.appBarIconSize()
@@ -565,14 +595,16 @@ class HomeWidget {
 
   /// Mode button between the pedestrian and car signals: the same light box and black signal art for every user.
   /// The art shows the signal a tap switches to.
-  /// [isTag] hangs the yellow swallowtail "Try" ribbon diagonally across the top-right corner (unpurchased users).
-  /// [isPadlock] lays the yellow star padlock, outlined in black, over the centre of the art; it is never disabled.
+  /// [isTag] hangs the yellow swallowtail "Try" ribbon diagonally across the top-right corner (users without the car signal).
+  /// [isPadlock] lays the yellow padlock, outlined in black, over the centre of the art; it is never disabled.
   Widget changeIsPedestrianButton({
     required bool isPedestrian,
     required void Function() onPressed,
     bool isTag = false,
     bool isPadlock = false,
     Animation<double>? padlockSwing,
+    int? padlockRemaining,
+    bool showLockBalloon = false,
     String? semanticsLabel,
   }) {
     final size = context.floatingButtonSize();
@@ -585,8 +617,31 @@ class HomeWidget {
     Widget? padlock;
     if (isPadlock) {
       final lockHeight = context.modePadlockHeight();
-      // padlock_star.svg's own black outline keeps the yellow padlock apart from the art behind it
-      padlock = SvgPicture.asset(padlockStar, key: const Key('trialPadlock'), height: lockHeight * padlockOutlineScale);
+      // padlock.svg's own black outline keeps the yellow padlock apart from the art behind it
+      final lockOutlineHeight = lockHeight * padlockOutlineScale;
+      padlock = SvgPicture.asset(padlockSvg, key: const Key('trialPadlock'), height: lockOutlineHeight);
+      // The remaining cycles, always three digits, sit in the body in a box placed in padlock.svg's own units
+      if (padlockRemaining != null) {
+        final unit = lockOutlineHeight / padlockViewBoxHeight;
+        padlock = SizedBox(
+          width: padlockViewBoxWidth * unit,
+          height: lockOutlineHeight,
+          child: Stack(clipBehavior: Clip.none, children: [
+            Positioned.fill(child: padlock),
+            Positioned(
+              left: (padlockDigitCentreX - padlockDigitWidth / 2 - padlockViewBoxLeft) * unit,
+              top: (padlockDigitCentreY - padlockDigitHeight / 2 - padlockViewBoxTop) * unit,
+              width: padlockDigitWidth * unit,
+              height: padlockDigitHeight * unit,
+              child: FittedBox(child: Text(padlockRemaining.toString().padLeft(3, '0'),
+                key: const Key('padlockRemaining'),
+                style: TextStyle(color: blackColor, fontFamily: 'beon', fontWeight: FontWeight.bold, height: 1.0),
+                textScaler: const TextScaler.linear(1.0),
+              )),
+            ),
+          ]),
+        );
+      }
       if (padlockSwing != null) {
         padlock = AnimatedBuilder(
           animation: padlockSwing,
@@ -618,6 +673,15 @@ class HomeWidget {
               )),
               // Drawn over the button and past its edges; taps fall through to the button beneath
               if (isTag) Positioned.fill(child: IgnorePointer(child: trialRibbon())),
+              // Left of the button, its tail pointing right at the padlock and centred on the button's height
+              if (showLockBalloon && padlockRemaining != null) Positioned(
+                right: size,
+                top: size / 2,
+                child: IgnorePointer(child: FractionalTranslation(
+                  translation: const Offset(0, -0.5),
+                  child: lockBalloon(padlockRemaining),
+                )),
+              ),
             ]),
           ),
         ),
@@ -690,12 +754,65 @@ class HomeWidget {
     ),
   );
 
+  /// The balloon's text with every number in beon at its own size, so the number stands out from the words
+  TextSpan lockBalloonSpan(String text) {
+    final base = TextStyle(
+      color: whiteColor,
+      fontFamily: context.font("beon"),
+      fontSize: context.lockBalloonFontSize(),
+      fontWeight: FontWeight.bold,
+    );
+    final digits = base.copyWith(fontFamily: 'beon', fontSize: context.lockBalloonDigitFontSize());
+    final spans = <TextSpan>[];
+    var last = 0;
+    for (final m in RegExp(r'\d+').allMatches(text)) {
+      if (m.start > last) spans.add(TextSpan(text: text.substring(last, m.start)));
+      spans.add(TextSpan(text: m.group(0), style: digits));
+      last = m.end;
+    }
+    if (last < text.length) spans.add(TextSpan(text: text.substring(last)));
+    return TextSpan(style: base, children: spans);
+  }
+
+  /// Speech balloon left of the padlock, in the trial banner's black 60% and white bold text, with a tail pointing right at the padlock.
+  /// Its left edge is as far from the screen's left edge as the mode button's right edge is from the right one.
+  Widget lockBalloon(int remaining) {
+    final tailWidth = context.floatingIconSize() * 0.5;
+    final margin = context.edgeMargin();
+    final width = context.width() - 2 * margin - context.floatingButtonSize() - tailWidth;
+    return Row(key: const Key('lockBalloon'), mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Container(
+        key: const Key('lockBalloonBody'),
+        // The box fits its text, shrinking on the left, up to the full width
+        constraints: BoxConstraints(maxWidth: width),
+        padding: EdgeInsets.symmetric(horizontal: context.floatingIconSize(), vertical: context.trialBannerPaddingV()),
+        decoration: BoxDecoration(
+          color: blackColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(context.floatingIconSize()),
+        ),
+        // Two fixed lines that never wrap; the text shrinks to the balloon's width when it does not fit
+        child: FittedBox(fit: BoxFit.scaleDown, child: Text.rich(
+          lockBalloonSpan(context.carSignalLockBalloon(remaining)),
+          key: const Key('lockBalloonText'),
+          textAlign: TextAlign.center,
+          softWrap: false,
+          maxLines: 2,
+          textScaler: const TextScaler.linear(1.0),
+        )),
+      ),
+      CustomPaint(
+        key: const Key('lockBalloonTail'),
+        size: Size(tailWidth, context.floatingIconSize()),
+        painter: _BalloonTailPainter(blackColor.withValues(alpha: 0.6)),
+      ),
+    ]);
+  }
+
   /// Country navigation button; isForward picks the forward or backward arrow
   Widget countryChangeButton({
     required void Function() onPressed,
     required bool isForward
-  }) => Container(
-    margin: EdgeInsets.only(left: context.floatingButtonSize() / 2),
+  }) => SizedBox(
     width: context.floatingButtonSize(),
     height: context.floatingButtonSize(),
     child: FloatingActionButton(
@@ -939,3 +1056,26 @@ class _TrialRibbonPainter extends CustomPainter {
     old.centre != centre || old.length != length || old.thickness != thickness || old.edgeWidth != edgeWidth;
 }
 
+
+/// A triangle pointing right, the speech balloon's tail
+class _BalloonTailPainter extends CustomPainter {
+  final Color color;
+  _BalloonTailPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()..moveTo(0, 0)..lineTo(0, size.height)..lineTo(size.width, size.height / 2)..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_BalloonTailPainter old) => old.color != color;
+}
+
+/// Like the end-float place, but as wide as the screen with no side margin, so the buttons set their own distance from the sides
+class FullWidthFloatLocation extends FloatingActionButtonLocation {
+  const FullWidthFloatLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry geometry) => Offset(0, FloatingActionButtonLocation.endFloat.getOffset(geometry).dy);
+}

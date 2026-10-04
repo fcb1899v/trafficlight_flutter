@@ -109,6 +109,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get carSignalTrialButtonLabel => 'Try the car signal';
 
   @override
+  String carSignalLockBalloon(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Car signal unlocks in\n$count cycles',
+      one: 'Car signal unlocks in\n1 cycle',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get carSignalTrialTag => 'TRY';
 
   @override

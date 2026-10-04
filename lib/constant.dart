@@ -174,16 +174,19 @@ const Color premiumPlateColor = Color.fromRGBO(0, 0, 0, 0.35);  // Benefit plate
 const Color trialTagColor = yellowColor;             // "Try" ribbon fill
 const Color trialTagTextColor = signalGrayColor;     // "Try" word on the ribbon, as on the price pill
 const Color trialTagEdgeColor = signalGrayColor;     // Dark edge around the ribbon
-const String padlockStar = "assets/images/icons/padlock_star.svg"; // Padlock over the art once the trial is used up, with its black outline baked in
+const String padlockSvg = "assets/images/icons/padlock.svg"; // Padlock over the art once the trial is used up, with its black outline baked in
 const String settingsPremiumCardIcon = "assets/images/icons/traffic_signal.svg"; // Colour signal on the settings premium card
-const double padlockOutlineScale = 359.52 / 329.52;  // padlock_star.svg's viewBox height over the padlock shape's own height (15-unit outline margin each side)
+const double padlockViewBoxLeft = 93.60;  // padlock.svg's viewBox left edge
+const double padlockViewBoxTop = 82.78;  // padlock.svg's viewBox top edge
+const double padlockViewBoxWidth = 316.20;  // padlock.svg's viewBox width
+const double padlockViewBoxHeight = 306.22;  // padlock.svg's viewBox height
+const double padlockDigitCentreX = 252.19;  // Digits' box centre in padlock.svg units; beon's ink and visual centres differ, so 888's ink centre sits on the body's centre
+const double padlockDigitCentreY = 292.72;  // As above, vertically
+const double padlockDigitWidth = 400.00;  // The digits' box width in padlock.svg units
+const double padlockDigitHeight = 159.20;  // The digits' box height in padlock.svg units
+const double padlockOutlineScale = 306.22 / 291.22;  // padlock.svg's viewBox height over the padlock shape's own height (7.5-unit outline margin each side)
 const String trafficSignal = "assets/images/icons/traffic_signal.svg"; // Traffic mode button art, colours baked in
 const String pedestrianSignal = "assets/images/icons/pedestrian_signal.svg"; // Pedestrian mode button art, colours baked in
-
-/// Settings Screen Configuration
-/// UI settings for the settings screen
-const double settingsTilePaddingSize = 20;                      // Padding size for settings tiles
-const double settingsTileRadiusSize = 15;                       // Border radius for settings tiles
 
 /// RevenueCat API key selected by platform (iOS/Android)
 String revenueCatApiKey = (Platform.isIOS || Platform.isMacOS) ?

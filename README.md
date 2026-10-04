@@ -23,7 +23,8 @@ It provides a realistic and educational experience through authentic sounds, ani
 - **Firebase Integration**: Analytics
 - **Audio & Vibration Feedback**: Authentic signal sounds and haptic feedback
 - **Premium Features**: Car signals and an ad-free experience with RevenueCat integration. The upgrade page dims the car-signal home screen and keeps only the real push button (the buy action) and the ad lit, with a "Buy" cue that blinks five times and stops (static when the OS reduces motion)
-- **Car-Signal Trial**: Unpurchased users with a known store price see a yellow "Try" ribbon across the mode button's top-right corner. Tapping it runs one car-signal cycle on fixed timing (free to switch between the pedestrian and car display throughout), then opens the purchase page. After two closes of that page, a yellow padlock replaces the ribbon: the first tap swings it, and the second opens the purchase page. The button sizes to tune are together in `lib/size_extension.dart`
+- **Car-Signal Trial**: Users without the car signal (not bought, not unlocked by cycles) see a yellow "Try" ribbon across the mode button's top-right corner once the store price is known. Tapping it runs one car-signal cycle on fixed timing (free to switch between the pedestrian and car display throughout), then opens the purchase page. After two closes of that page, a yellow padlock replaces the ribbon with the number of cycles left until the car signal unlocks (999 down to 1). Cycles count from the moment the trial is used up, whether or not the store price is known. Each tap swings the padlock; after the swing the first two taps show a balloon with the cycles left, and the third opens the purchase page. Visiting settings or the purchase page sets the tap count back to 0. The button sizes to tune are together in `lib/size_extension.dart`
+- **Free car signal**: 999 finished crosswalk cycles (counted in `key_cycleCount` from the moment the trial is used up) unlock the car signal for good (`key_cycleUnlocked`). Ads and the settings card still follow the purchase alone
 - **Customizable Settings**: Adjustable signal timing and audio preferences. Unpurchased users with a known store price see a green premium card at the top of settings (colour signal icon, title, price pill, two benefits and a forward arrow); the whole card opens the purchase page. Its sizes are the `settingsPremiumCard*` group in `lib/size_extension.dart`. While the ad is shown, a gap at the end of the list (`settingsListEndGap`) keeps the last row clear of the ad when scrolled to the end
 
 ## 🚀 Technology Stack
@@ -112,6 +113,7 @@ lib/
 ├── settings.dart          # Settings page
 ├── upgrade.dart           # Premium upgrade page
 ├── plan_provider.dart     # Premium state management
+├── cycle_unlock.dart      # Cycle count, the free car-signal unlock at 999 cycles, and carSignalProvider (bought or unlocked)
 ├── sound_manager.dart     # Audio management
 ├── admob_banner.dart      # Banner advertisement management
 ├── analytics.dart         # Firebase Analytics wrapper, replaceable in tests
@@ -139,6 +141,8 @@ test/
 ├── upgrade_cue_blink_test.dart       # Upgrade page "Buy" cue blink timing and reduced motion
 ├── upgrade_ad_premium_gate_test.dart # Purchase page: no banner for purchasers, with the same layout as non-purchasers
 ├── upgrade_source_test.dart          # Purchase-page analytics event names and close counting, by open source (trial vs. settings)
+├── cycle_unlock_test.dart            # Cycle count, unlock at 999 and its persistence, no cycle_unlock for purchasers, milestones and cycle_bucket edges
+├── home_car_signal_entry_test.dart   # Home mode button follows bought-or-unlocked (not the store price); cycles count once the trial is used up, with or without a store price; the padlock's remaining number, balloon and three-tap flow
 ├── mode_button_test.dart             # Mode button: art by displayed signal, the Try ribbon, a tap during a pedestrian cycle, the padlock, tap targets
 ├── mode_button_icon_preview_test.dart # Golden PNG of the mode button's four real-size states: purchaser (pedestrian and car art), Try ribbon, padlock
 ├── mode_button_position_test.dart    # Mode button position: at most a brush on the signal and trial banner, no touch on the country buttons, across 7 styles and 4 screen sizes (slow; SHOT_DIR=<dir> also saves images)

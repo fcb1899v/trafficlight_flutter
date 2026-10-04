@@ -435,7 +435,11 @@ void main() {
     await hold(tester, "SHOT_PADLOCK_SWING", seconds: 1);
     expect(find.byType(UpgradePage), findsNothing, reason: "one tap on the padlock must not open the purchase page");
     expect(trialBanner, findsNothing);
-    // The second tap swings it again, then opens the purchase page from the padlock
+    // The second tap swings it again and the balloon shows; the third opens the purchase page from the padlock
+    await tester.tap(modeButton);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byKey(const Key('lockBalloon')), findsOneWidget);
+    expect(find.byType(UpgradePage), findsNothing, reason: "two taps on the padlock must not open the purchase page");
     await tester.tap(modeButton);
     await pumpUntilFound(tester, find.byType(UpgradePage), timeout: const Duration(seconds: 5));
     expect(tester.widget<UpgradePage>(find.byType(UpgradePage)).source, UpgradeSource.lock);
@@ -445,7 +449,7 @@ void main() {
     expect(find.byType(UpgradePage), findsNothing);
     expect(events, containsAllInOrder(["paywall_view_lock", "paywall_close_lock"]));
     expect("trialPaywallCloseCount".getSettingsValueInt(0), closesBefore, reason: "closing the padlock's page is not a trial close");
-    // Opening the page started the count again: one tap after it only swings
+    // Opening the page started the count again: one tap after it only swings and shows the balloon
     await tester.tap(modeButton);
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(UpgradePage), findsNothing, reason: "the tap count should start again after the page opens");

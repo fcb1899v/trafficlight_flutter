@@ -92,8 +92,8 @@ class SettingsPage extends HookConsumerWidget {
                 alignment: Alignment.topCenter,
                 child: (!isPremiumProvider && premiumPrice.isNotEmpty) ? Padding(
                   padding: EdgeInsetsDirectional.only(
-                    start: context.settingsPremiumCardOuterSide(),
-                    end: context.settingsPremiumCardOuterSide(),
+                    start: context.edgeMargin(),
+                    end: context.edgeMargin(),
                     top: context.settingsPremiumCardOuterTop(),
                     bottom: context.settingsPremiumCardOuterBottom(),
                   ),
@@ -103,7 +103,8 @@ class SettingsPage extends HookConsumerWidget {
             ),
             /// Time Settings Section
             SettingsSection(
-              title: Text(context.timeSettings()),
+              margin: context.settingsSectionMargin(),
+              title: Text(context.timeSettings(), style: TextStyle(fontSize: context.settingsSectionTitleFontSize())),
               tiles: [
                 settings.setTimeTile(key: 'wait', onChanged: (value) => setTime(value, 'wait')),
                 settings.setTimeTile(key: 'go', onChanged: (value) => setTime(value, 'go')),
@@ -112,7 +113,8 @@ class SettingsPage extends HookConsumerWidget {
             ),
             /// Sound Settings Section
             SettingsSection(
-              title: Text(context.soundSettings()),
+              margin: context.settingsSectionMargin(isLast: true),
+              title: Text(context.soundSettings(), style: TextStyle(fontSize: context.settingsSectionTitleFontSize())),
               tiles: [
                 settings.setSoundTile(onChanged: (value) => setSound(value)),
               ]
@@ -167,11 +169,19 @@ class SettingsWidget {
       automaticallyImplyLeading: false,
       backgroundColor: signalGrayColor,
       foregroundColor: whiteColor,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios, size: context.appBarIconSize()),
-        onPressed: () async {
-          if (context.mounted) context.pushHomePage();
-        },
+      // The icon's left edge sits edgeMargin() from the screen's left edge, as on the purchase page
+      leading: Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: EdgeInsets.only(left: context.premiumBackCenterX() - context.backButtonSize() / 2),
+          child: IconButton(
+            padding: EdgeInsets.all(context.iconButtonPadding()),
+            icon: Icon(Icons.arrow_back_ios, size: context.appBarIconSize()),
+            onPressed: () async {
+              if (context.mounted) context.pushHomePage();
+            },
+          ),
+        ),
       ),
     ),
   );
@@ -189,35 +199,36 @@ class SettingsWidget {
     return CustomSettingsTile(
       child: Container(
         padding: EdgeInsets.only(
-          top: settingsTilePaddingSize,
-          bottom: isBottom ? settingsTilePaddingSize / 2: 0,
-          left: settingsTilePaddingSize,
-          right: settingsTilePaddingSize,
+          top: context.settingsTilePadding(),
+          bottom: isBottom ? context.settingsTilePadding() / 2: 0,
+          left: context.settingsTilePadding(),
+          right: context.settingsTilePadding(),
         ),
         decoration: BoxDecoration(
           color: (Platform.isIOS || Platform.isMacOS) ? whiteColor: transpColor,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(isTop ? settingsTileRadiusSize: 0),
-            topRight: Radius.circular(isTop ? settingsTileRadiusSize: 0),
-            bottomLeft: Radius.circular(isBottom ? settingsTileRadiusSize: 0),
-            bottomRight: Radius.circular(isBottom ? settingsTileRadiusSize: 0),
+            topLeft: Radius.circular(isTop ? context.settingsTileRadius(): 0),
+            topRight: Radius.circular(isTop ? context.settingsTileRadius(): 0),
+            bottomLeft: Radius.circular(isBottom ? context.settingsTileRadius(): 0),
+            bottomRight: Radius.circular(isBottom ? context.settingsTileRadius(): 0),
           ),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              const Icon(Icons.watch_later_outlined, color: grayColor),
-              const SizedBox(width: 10),
+              Icon(Icons.watch_later_outlined, color: grayColor, size: context.settingsTileIconSize()),
+              SizedBox(width: context.settingsTileIconGap()),
               Text(title[key]!,
-                style: const TextStyle(color: blackColor)
+                style: TextStyle(color: blackColor, fontSize: context.settingsTileFontSize())
               ),
               const Spacer(),
-              Text("${time[key]!}${context.timeUnit()} ", style: const TextStyle(color: blackColor)),
+              Text("${time[key]!}${context.timeUnit()} ", style: TextStyle(color: blackColor, fontSize: context.settingsTileFontSize())),
             ]),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                trackHeight: 6,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                trackHeight: context.settingsSliderTrackHeight(),
+                thumbShape: RoundSliderThumbShape(enabledThumbRadius: context.settingsSliderThumbRadius()),
+                overlayShape: RoundSliderOverlayShape(overlayRadius: context.settingsSliderOverlayRadius()),
                 thumbColor: color[key]!,
                 valueIndicatorColor: color[key]!,
                 overlayColor: color[key]!.withAlpha(80),
@@ -245,9 +256,9 @@ class SettingsWidget {
   SettingsTile setSoundTile({
     required void Function(bool) onChanged,
   }) => SettingsTile.switchTile(
-    leading: const Icon(Icons.music_note),
+    leading: Icon(Icons.music_note, size: context.settingsTileIconSize()),
     activeSwitchColor: transpGreenColor,
-    title: Text(context.crosswalkSound()),
+    title: Text(context.crosswalkSound(), style: TextStyle(fontSize: context.settingsTileFontSize())),
     initialValue: isSound,
     onToggle: (bool value) => onChanged(value),
   );

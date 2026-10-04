@@ -106,6 +106,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get carSignalTrialButtonLabel => '車用信号を試す';
 
   @override
+  String carSignalLockBalloon(int count) {
+    return '車用信号の解放まであと\n$count 周';
+  }
+
+  @override
   String get carSignalTrialTag => 'お試し';
 
   @override

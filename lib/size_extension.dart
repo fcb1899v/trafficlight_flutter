@@ -6,19 +6,17 @@ extension SizeExt on BuildContext {
   double width() => MediaQuery.of(this).size.width;
   double height() => MediaQuery.of(this).size.height;
   double topPadding() => MediaQuery.of(this).padding.top;
-  /// Width basis for purchase-page sizes, capped past phone width so they stop growing on tablets
-  double responsibleWidth() => width() > 460 ? 460: width();
+  /// Width basis for purchase-page sizes, capped at a share of the height so they stop growing on tablets (the share gives 460 on a 402 x 874 phone)
+  double responsibleWidth() => min(width(), height() * 0.5263);
 
   /// Settings screen specific sizing
-  double settingsSidePadding() => width() < 600 ? 10: width() / 2 - 290;
   double settingsListEndGap() => height() * 0.012;
 
   /// Settings premium card: header row sized by width, benefit rows by height.
   /// Side and base top margins match settings_ui's tile edges; an extra top and bottom margin of 1.2% of the screen height is added.
   bool _isIosSettingsStyle() => Theme.of(this).platform == TargetPlatform.iOS;
-  double settingsPremiumCardOuterSide() => _isIosSettingsStyle() ? 20: 16;
   double settingsPremiumCardOuterExtra() => height() * 0.012;
-  double settingsPremiumCardOuterTop() => (_isIosSettingsStyle() ? 14: 16) + settingsPremiumCardOuterExtra();
+  double settingsPremiumCardOuterTop() => height() * (_isIosSettingsStyle() ? 0.016: 0.0183) + settingsPremiumCardOuterExtra();
   double settingsPremiumCardOuterBottom() => settingsPremiumCardOuterExtra();
   double settingsPremiumCardPaddingV() => height() * 0.018;
   double settingsPremiumCardPaddingH() => width() * 0.05;
@@ -45,8 +43,12 @@ extension SizeExt on BuildContext {
   double appBarHeight() => height() * 0.06;
   double appBarFontSize() => height() * (font("beon") == "beon" ? 0.036: 0.03);
   double appBarIconSize() => height() * 0.036;
-  // AppBar's leading slot: the framework default, widened on tall bars (iPad) so the icon keeps its size
-  double appBarLeadingWidth() => appBarHeight() > kToolbarHeight ? appBarHeight(): kToolbarHeight;
+  /// The icon buttons' padding around the icon, in place of the framework's fixed 8
+  double iconButtonPadding() => appBarIconSize() * 0.254;
+  /// The back button's tap target: the icon with its padding on each side, never under the platform's minimum tap target
+  double backButtonSize() => max(kMinInteractiveDimension, appBarIconSize() + 2 * iconButtonPadding());
+  /// AppBar's leading slot: from the screen's left edge to the back button's right edge
+  double appBarLeadingWidth() => premiumBackCenterX() + backButtonSize() / 2;
 
   /// Traffic Signal Display Responsive Sizing
   double flagSize() => height() * 0.33;
@@ -69,7 +71,33 @@ extension SizeExt on BuildContext {
   double floatingIconSize() => height() * 0.03;
   double floatingMarginBottom() => admobHeight() + floatingButtonSize() / 2;
   double modeIconHeight() => floatingButtonSize() * 0.75;
-  double modePadlockHeight() => floatingButtonSize() * 0.60;
+  double modePadlockHeight() => floatingButtonSize() * 0.72;
+  /// The restore button's own padding, replacing the framework's fixed 12 and 8
+  double restoreButtonPaddingH() => 0;
+  double restoreButtonPaddingV() => height() * 0.009;
+  /// The settings sections' outer margin: iOS style takes the sides from edgeMargin(); Android style keeps the package's fixed 16 inside
+  /// The vertical values grow with the text size setting, as the package's own do; the last section ends with a wider gap
+  EdgeInsetsDirectional settingsSectionMargin({bool isLast = false}) => _isIosSettingsStyle()
+    ? EdgeInsetsDirectional.only(
+        start: edgeMargin(), end: edgeMargin(),
+        top: MediaQuery.textScalerOf(this).scale(height() * 0.016),
+        bottom: MediaQuery.textScalerOf(this).scale(height() * (isLast ? 0.0309: 0.0114)),
+      )
+    : EdgeInsetsDirectional.zero;
+  double settingsSectionTitleFontSize() => height() * 0.0195;
+  double upgradeProgressSize() => height() * 0.0412;
+  double upgradeProgressStrokeWidth() => upgradeProgressSize() * 0.111;
+  /// Settings time rows
+  double settingsTilePadding() => width() * 0.0498;
+  double settingsTileRadius() => height() * 0.0172;
+  double settingsTileIconSize() => height() * 0.0275;
+  double settingsTileIconGap() => width() * 0.025;
+  double settingsTileFontSize() => height() * 0.016;
+  double settingsSliderTrackHeight() => height() * 0.0069;
+  double settingsSliderThumbRadius() => height() * 0.0114;
+  double settingsSliderOverlayRadius() => height() * 0.0275;
+  /// The distance of the left, right and mode buttons and the padlock's balloon from the screen's sides; it scales with the button, as the buttons do
+  double edgeMargin() => floatingButtonSize() * 0.2615;
   double modeButtonBorderWidth() => floatingButtonSize() * 0.03;
 
   /// Trial Ribbon Responsive Sizing
@@ -82,6 +110,9 @@ extension SizeExt on BuildContext {
   /// Trial Banner Responsive Sizing
   double trialBannerCenterY() => signalHeight();
   double trialBannerPaddingV() => floatingIconSize() * 0.2;
+  /// The balloon's text is small so the number, drawn larger in beon, leads; every language shares the sizes
+  double lockBalloonFontSize() => trialBannerFontSize() * 0.75;
+  double lockBalloonDigitFontSize() => trialBannerFontSize() * 1.5;
   double trialBannerFontSize() => appBarFontSize() * (font("beon") == "beon" ? 0.80: 1.0);
 
   /// Upgrade Screen Responsive Sizing
@@ -115,7 +146,8 @@ extension SizeExt on BuildContext {
   double premiumCueArrowGap() => premiumCaptionFontSize() * 0.227;
 
   /// Purchase page back button centre: the settings AppBar's leading slot and the top bar's height
-  double premiumBackCenterX() => appBarLeadingWidth() / 2;
+  /// The back button's centre, so the icon's left edge sits edgeMargin() from the screen's left edge, unless the tap target would leave the screen
+  double premiumBackCenterX() => max(edgeMargin() + appBarIconSize() / 2, backButtonSize() / 2);
   double premiumBackCenterY() => topPadding() + appBarHeight() / 2;
 
   /// Distance from the screen's bottom edge, clear of the real ad banner below it.

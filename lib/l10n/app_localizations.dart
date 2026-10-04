@@ -292,6 +292,12 @@ abstract class AppLocalizations {
   /// **'Try the car signal'**
   String get carSignalTrialButtonLabel;
 
+  /// No description provided for @carSignalLockBalloon.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Car signal unlocks in\n1 cycle} other{Car signal unlocks in\n{count} cycles}}'**
+  String carSignalLockBalloon(int count);
+
   /// No description provided for @carSignalTrialTag.
   ///
   /// In en, this message translates to:

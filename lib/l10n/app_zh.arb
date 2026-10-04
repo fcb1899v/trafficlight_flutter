@@ -32,6 +32,12 @@
   "toPurchase": "购买",
   "carSignalTrialBanner": "正在试用车辆信号灯",
   "carSignalTrialButtonLabel": "试用车辆信号灯",
+  "carSignalLockBalloon": "{count, plural, =1{Car signal unlocks in\n[1 cycle]} other{Car signal unlocks in\n[{count} cycles]}}",
+  "@carSignalLockBalloon": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "carSignalTrialTag": "试用",
   "timeSettings": "时间设置",
   "timeUnit": " [秒]",

@@ -12,6 +12,7 @@ import 'plan_provider.dart';
 import 'homepage.dart';
 import 'admob_banner.dart';
 import 'analytics.dart';
+import 'cycle_unlock.dart';
 
 /// Where the purchase page was opened from: the trial's end, the settings entry, or the home screen's padlock.
 /// Every action on this page sends an analytics event named after it (for example paywall_view_lock).
@@ -104,7 +105,7 @@ class UpgradePage extends HookConsumerWidget {
         initPurchase();
         // Once per page instance, named by where it was opened from.
         // Sent before the locale lookup below, which a platform without it would leave hanging.
-        SignalAnalytics.log('paywall_view_${source.name}');
+        SignalAnalytics.log('paywall_view_${source.name}', {'cycle_bucket': cycleBucket(ref.read(cycleProvider).count)});
         final (detectedCounter, detectedFlagKey) = await getCountryCounter();
         counter.value = _toNewSignalCounter(detectedCounter);
         flagKey.value = detectedFlagKey;
@@ -131,7 +132,8 @@ class UpgradePage extends HookConsumerWidget {
         }
         // Logged only when premium was really granted, for both a purchase and a restore.
         if (isPremium) {
-          SignalAnalytics.log(isRestore ? 'premium_restore_${source.name}': 'premium_purchase_${source.name}');
+          SignalAnalytics.log(isRestore ? 'premium_restore_${source.name}': 'premium_purchase_${source.name}',
+            isRestore ? null: {'cycle_bucket': cycleBucket(ref.read(cycleProvider).count)});
         }
         upgrade.purchaseDialog(
           isSuccess: true,
@@ -209,8 +211,10 @@ class UpgradePage extends HookConsumerWidget {
               SizedBox(height: context.admobHeight()),
             ]),
           ]),
+          floatingActionButtonLocation: const FullWidthFloatLocation(),
           floatingActionButton: Container(
             margin: EdgeInsets.only(bottom: context.floatingMarginBottom()),
+            padding: EdgeInsets.symmetric(horizontal: context.edgeMargin()),
             child: Column(children: [
               const Spacer(flex: 3),
               const Spacer(flex: 2),
@@ -266,6 +270,7 @@ class UpgradePage extends HookConsumerWidget {
         ),
         // Restore, in the bottom-left corner between the left FAB and the ad
         Positioned(
+          left: context.edgeMargin(),
           bottom: context.premiumRestoreBottom(),
           child: upgrade.premiumRestore(onRestore: () => buyUpgrade(true)),
         ),
@@ -423,6 +428,11 @@ class UpgradeWidget {
   /// Restore, a quiet underlined link in the bottom-left corner
   Widget premiumRestore({required void Function() onRestore}) => TextButton(
     onPressed: onRestore,
+    style: TextButton.styleFrom(
+      padding: EdgeInsets.symmetric(horizontal: context.restoreButtonPaddingH(), vertical: context.restoreButtonPaddingV()),
+      minimumSize: const Size(0, kMinInteractiveDimension),
+      alignment: Alignment.centerLeft,
+    ),
     child: Text(context.toRestore(),
       style: premiumTextStyle(context.premiumRestoreFontSize(), whiteColor, isBold: false).copyWith(
         decoration: TextDecoration.underline,
@@ -434,6 +444,7 @@ class UpgradeWidget {
 
   /// White back button, the same "<" as the settings page this page is pushed from
   Widget premiumBack({required void Function() onBack}) => IconButton(
+    padding: EdgeInsets.all(context.iconButtonPadding()),
     icon: Icon(Icons.arrow_back_ios, color: whiteColor, size: context.appBarIconSize()),
     onPressed: onBack,
   );
@@ -454,7 +465,11 @@ class UpgradeWidget {
   Widget circularProgressIndicator() => Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      const CircularProgressIndicator(color: greenColor),
+      SizedBox(
+        width: context.upgradeProgressSize(),
+        height: context.upgradeProgressSize(),
+        child: CircularProgressIndicator(color: greenColor, strokeWidth: context.upgradeProgressStrokeWidth()),
+      ),
       SizedBox(height: context.upgradeCircularProgressMarginBottom()),
     ]
   );

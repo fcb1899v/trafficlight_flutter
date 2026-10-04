@@ -32,6 +32,12 @@
   "toPurchase": "購入する",
   "carSignalTrialBanner": "車用信号 お試し中",
   "carSignalTrialButtonLabel": "車用信号を試す",
+  "carSignalLockBalloon": "車用信号の解放まであと\n{count} 周",
+  "@carSignalLockBalloon": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "carSignalTrialTag": "お試し",
   "timeSettings": "時間の設定",
   "timeUnit": " [秒]",

@@ -31,6 +31,12 @@
   "toPurchase": "Buy",
   "carSignalTrialBanner": "Trying the car signal",
   "carSignalTrialButtonLabel": "Try the car signal",
+  "carSignalLockBalloon": "{count, plural, =1{Car signal unlocks in\n1 cycle} other{Car signal unlocks in\n{count} cycles}}",
+  "@carSignalLockBalloon": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "carSignalTrialTag": "TRY",
   "timeSettings": "Time Settings",
   "timeUnit": " [sec]",

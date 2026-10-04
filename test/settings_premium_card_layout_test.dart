@@ -28,7 +28,11 @@ final arrow = find.byIcon(Icons.arrow_forward_ios);
 
 Future<BuildContext> pumpSettings(WidgetTester tester, {
   required Size size, required double top, required double bottom, required String locale, bool isPremium = false,
+  bool cycleUnlocked = false,
 }) async {
+  // Settings are mocked before the first read, as at launch
+  SharedPreferences.setMockInitialValues({'flutter.key_cycleUnlocked': cycleUnlocked});
+  await Settings.init(cacheProvider: SharePreferenceCache());
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
   tester.view.padding = FakeViewPadding(top: top, bottom: bottom);
@@ -135,5 +139,11 @@ void main() {
     expect(find.byType(AdBannerWidget), findsNothing);
     // Control: the rest of the settings were drawn
     expect(soundSwitch, findsOneWidget);
+  });
+
+  testWidgets('a user who unlocked the car signal by cycles still sees the card and the ad', (tester) async {
+    await pumpSettings(tester, size: const Size(402, 874), top: 62, bottom: 34, locale: 'en', cycleUnlocked: true);
+    expect(card, findsOneWidget);
+    expect(find.byType(AdBannerWidget), findsOneWidget);
   });
 }
