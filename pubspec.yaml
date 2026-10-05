@@ -1,7 +1,7 @@
 name: signalbutton
 description: push button signal simulator
 publish_to: 'none'
-version: 1.3.0+35
+version: 1.3.1+36
 
 environment:
   # 3.47 is the floor, not 3.3: Android Gradle Plugin 9 rejects the Kotlin
